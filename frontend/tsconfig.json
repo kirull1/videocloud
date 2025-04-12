@@ -1,4 +1,12 @@
 {
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
   "files": [],
   "references": [
     {

@@ -1,0 +1,45 @@
+{
+  "name": "videocloud",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VideoCloud - A comprehensive video hosting platform",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "build": "pnpm run --sequential build",
+    "test": "pnpm run --parallel test",
+    "lint": "pnpm run --parallel lint",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,vue,json,md}\"",
+    "frontend:dev": "pnpm --filter frontend run dev",
+    "frontend:build": "pnpm --filter frontend run build",
+    "frontend:test": "pnpm --filter frontend run test",
+    "frontend:lint": "pnpm --filter frontend run lint",
+    "backend:dev": "pnpm --filter backend run start:dev",
+    "backend:build": "pnpm --filter backend run build",
+    "backend:test": "pnpm --filter backend run test",
+    "backend:lint": "pnpm --filter backend run lint"
+  },
+  "devDependencies": {
+    "@eslint/js": "^8.56.0",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.2",
+    "globals": "^13.24.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^6.16.0"
+  },
+  "engines": {
+    "node": ">=20.16.0",
+    "pnpm": ">=7.33.6"
+  },
+  "packageManager": "pnpm@7.33.6",
+  "author": "",
+  "license": "UNLICENSED"
+}
