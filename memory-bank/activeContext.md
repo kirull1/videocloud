@@ -54,11 +54,14 @@ As this is the project initialization phase, the following foundational elements
    - Created docker-compose.yml for development services
 
 5. **Project Configuration**
-   - Established common ESLint configuration
+   - Established simplified common ESLint configuration
    - Created shared Prettier settings
    - Set up base TypeScript configuration
    - Added unified .gitignore and .gitattributes
    - Created common .editorconfig
+   - Configured minimal root dependencies
+   - Added required dependencies to frontend and backend packages
+   - Set up pnpm workspace with pnpm-workspace.yaml
 
 ## Next Steps
 

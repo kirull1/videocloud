@@ -3,10 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "VideoCloud - A comprehensive video hosting platform",
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
   "scripts": {
     "dev": "pnpm run --parallel dev",
     "build": "pnpm run --sequential build",
@@ -20,20 +16,17 @@
     "backend:dev": "pnpm --filter backend run start:dev",
     "backend:build": "pnpm --filter backend run build",
     "backend:test": "pnpm --filter backend run test",
-    "backend:lint": "pnpm --filter backend run lint"
+    "backend:lint": "pnpm --filter backend run lint",
+    "deps": "pnpm install --frozen-lockfile",
+    "clean:deps": "rm -rf ~/.schoolbook-frontend-monorepo-tmp/ && pnpm clean:node_modules",
+    "clean:cache": "tsx scripts/clean-cache.mts",
+    "clean:node_modules": "find . -type d -name node_modules -prune -exec rm -rf {} \\;"
   },
   "devDependencies": {
-    "@eslint/js": "^8.56.0",
     "@types/node": "^20.10.5",
-    "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "@typescript-eslint/parser": "^6.16.0",
     "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.2",
-    "globals": "^13.24.0",
     "prettier": "^3.1.1",
-    "typescript": "^5.3.3",
-    "typescript-eslint": "^6.16.0"
+    "typescript": "^5.3.3"
   },
   "engines": {
     "node": ">=20.16.0",

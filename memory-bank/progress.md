@@ -15,8 +15,12 @@
 - ✅ Git repository initialized
 - ✅ Memory bank documentation initialized
 - ✅ Common configuration files moved to root level
-- ✅ Workspace package.json created
+- ✅ Root package.json created with minimal dependencies
+- ✅ pnpm workspace configuration added with pnpm-workspace.yaml
 - ✅ Docker Compose configuration added
+- ✅ Simplified ESLint configuration for compatibility
+- ✅ Added MobX dependencies to frontend
+- ✅ Added TypeORM, PostgreSQL, and JWT dependencies to backend
 
 ### Frontend
 

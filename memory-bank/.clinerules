@@ -9,6 +9,8 @@ This file captures important patterns, preferences, and project intelligence tha
 - **Backend Structure**: NestJS modules are organized by domain (users, videos, comments, etc.).
 - **Memory Bank**: Documentation is maintained in the memory-bank directory with specific files for different aspects of the project.
 - **Configuration**: Common configuration files are placed at the root level and extended by specific packages.
+- **Dependencies**: Root package.json contains minimal dependencies, with most dependencies managed at the package level.
+- **Workspace**: Project uses pnpm workspaces with pnpm-workspace.yaml for monorepo management.
 
 ## Coding Conventions
 
