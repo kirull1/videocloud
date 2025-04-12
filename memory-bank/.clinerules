@@ -1,0 +1,89 @@
+# VideoCloud Project Intelligence
+
+This file captures important patterns, preferences, and project intelligence that help me work more effectively with the VideoCloud project. It serves as a learning journal that evolves as I work with the project and discover new insights.
+
+## Project Structure Patterns
+
+- **Monorepo Organization**: The project follows a monorepo structure with separate directories for frontend and backend, with common configuration at the root.
+- **Frontend Structure**: Vue.js components follow the standard Vue 3 Composition API pattern.
+- **Backend Structure**: NestJS modules are organized by domain (users, videos, comments, etc.).
+- **Memory Bank**: Documentation is maintained in the memory-bank directory with specific files for different aspects of the project.
+- **Configuration**: Common configuration files are placed at the root level and extended by specific packages.
+
+## Coding Conventions
+
+- **TypeScript**: All code is written in TypeScript with strict type checking.
+- **Naming Conventions**:
+  - PascalCase for component names, interfaces, and classes
+  - camelCase for variables, functions, and methods
+  - kebab-case for file names
+  - UPPER_SNAKE_CASE for constants
+- **Import Order**: Imports should be organized in groups: external libraries, internal modules, types, assets.
+- **Component Structure**: Vue components follow the script-template-style structure with script setup.
+
+## Development Workflow
+
+- **Version Control**: 
+  - Feature branches should be created from main
+  - Branch naming: feature/feature-name, fix/issue-name, etc.
+  - Commits should be atomic and follow conventional commits format
+- **Testing Requirements**: 
+  - New features require unit tests
+  - Critical components require E2E tests
+  - Backend endpoints require integration tests
+- **Code Review Process**: 
+  - All PRs require at least one reviewer
+  - CI checks must pass before merging
+  - Documentation updates should be included when relevant
+
+## Technical Decisions
+
+- **State Management**: MobX is preferred over Vuex/Pinia for state management.
+- **API Design**: RESTful API is the current approach, with potential for GraphQL later.
+- **Authentication**: JWT-based authentication with refresh tokens.
+- **Storage Strategy**: AWS S3 for video storage with CloudFront for CDN.
+- **Database Access**: TypeORM repositories with query builders for complex queries.
+
+## User Preferences
+
+- **Documentation Style**: Markdown with clear sections and examples.
+- **Code Organization**: Prefer smaller, focused files over large monolithic ones.
+- **Error Handling**: Comprehensive error handling with meaningful error messages.
+- **Performance Considerations**: Optimize for video playback performance and page load times.
+
+## Common Challenges
+
+- **Video Processing**: Transcoding is resource-intensive and requires careful optimization.
+- **Real-time Features**: WebSockets implementation needs careful consideration for scaling.
+- **State Synchronization**: Keeping UI state in sync with backend changes.
+- **Large File Uploads**: Handling video uploads requires chunked uploading and progress tracking.
+
+## Project Evolution
+
+- **Initial Phase**: Focus on core video upload and playback functionality.
+- **Second Phase**: Enhance with social features and content discovery.
+- **Third Phase**: Add monetization and advanced analytics.
+- **Future Expansion**: Mobile apps and third-party integrations.
+
+## Tool Usage Patterns
+
+- **Package Management**: Use pnpm for all package management operations.
+- **Testing**: Jest for unit tests, Playwright for E2E tests.
+- **Linting**: ESLint with Prettier integration.
+- **Build Process**: Vite for frontend, NestJS CLI for backend.
+- **Database Migrations**: TypeORM migrations for schema changes.
+
+## Critical Implementation Paths
+
+- **Authentication Flow**: User registration → Email verification → Login → JWT issuance
+- **Video Upload Flow**: File selection → Chunked upload → Backend validation → Processing queue → Transcoding → Storage → Availability
+- **Video Playback Flow**: Request → Authorization check → CDN delivery → Adaptive streaming → Analytics tracking
+
+## Known Limitations
+
+- **Initial Version**: No support for live streaming in the MVP.
+- **Scalability**: Initial implementation may have limitations for very high traffic.
+- **Browser Support**: Targeting modern browsers only (last 2 versions).
+- **Mobile Experience**: Responsive design but no native mobile apps in initial version.
+
+This file will be updated as new patterns and insights are discovered throughout the development process.
