@@ -31,7 +31,9 @@ As this is the project initialization phase, the following foundational elements
 1. **Project Repository Structure**
    - Created separate directories for frontend and backend
    - Initialized Git repository with initial commit
-   - Added basic README documentation
+   - Added comprehensive README documentation with running instructions for macOS and Linux
+   - Extracted Node.js and pnpm installation instructions into a separate section
+   - Added .nvmrc file specifying Node.js version 20.16.0
    - Set up memory bank documentation
    - Moved common configurations to the root level
 

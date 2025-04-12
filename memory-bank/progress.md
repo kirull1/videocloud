@@ -11,7 +11,9 @@
 ### Project Infrastructure
 
 - ✅ Project repository structure established
-- ✅ Basic README documentation created
+- ✅ Comprehensive README documentation created with running instructions for macOS and Linux
+- ✅ Extracted Node.js and pnpm installation instructions into a separate section
+- ✅ Added .nvmrc file specifying Node.js version 20.16.0
 - ✅ Git repository initialized
 - ✅ Memory bank documentation initialized
 - ✅ Common configuration files moved to root level

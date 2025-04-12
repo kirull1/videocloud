@@ -29,7 +29,54 @@ videocloud/
 
 - **Node.js**: Version 20.16.0 or higher
 - **pnpm**: Version 7.33.6 or higher
-- **Docker**: Latest version (optional, for running PostgreSQL and Redis)
+- **Docker**: Latest version (for running PostgreSQL and Redis)
+
+### Node.js and pnpm Setup
+
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+source ~/.bashrc  # or ~/.zshrc for macOS
+
+# Use correct Node.js version (from .nvmrc)
+nvm use
+
+# Install pnpm
+npm install -g pnpm@7.33.6
+```
+
+### Platform-Specific Docker Setup
+
+#### macOS
+
+For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima instead of Docker Desktop:
+
+1. **Install Colima**:
+   ```bash
+   brew install colima docker docker-compose
+   ```
+
+2. **Start Colima** (for Intel Macs):
+   ```bash
+   colima start
+   ```
+
+   **For Apple Silicon (ARM) Macs**:
+   ```bash
+   colima start --arch aarch64 --vm-type=vz --vz-rosetta --cpu 6 --memory 8
+   ```
+
+#### Linux
+
+**Install Docker and Docker Compose**:
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install docker.io docker-compose
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+# Log out and log back in to apply group changes
+```
 
 ## Getting Started
 
@@ -41,23 +88,100 @@ videocloud/
 
 2. **Install Dependencies**:
    ```bash
-   pnpm install
+   pnpm run deps
    ```
 
-3. **Start Development Services** (optional):
+3. **Start Development Services**:
    ```bash
+   # Start PostgreSQL and Redis services
    docker-compose up -d
    ```
 
-4. **Start Development Servers**:
+4. **Configure Environment Variables**:
+   Create a `.env` file in the backend directory:
+   ```bash
+   # Create backend .env file
+   cat > backend/.env << EOL
+   DATABASE_HOST=localhost
+   DATABASE_PORT=5432
+   DATABASE_USER=postgres
+   DATABASE_PASSWORD=postgres
+   DATABASE_NAME=videocloud
+   JWT_SECRET=your-secret-key
+   EOL
+   ```
+
+5. **Start Development Servers**:
    ```bash
    # Start both frontend and backend
    pnpm run dev
    
    # Or start them individually
-   pnpm run frontend:dev
-   pnpm run backend:dev
+   pnpm run frontend:dev  # Runs on http://localhost:3000
+   pnpm run backend:dev   # Runs on http://localhost:3001
    ```
+
+## Running the Project
+
+### Development Mode
+
+The project consists of three main components that need to be running:
+
+1. **Database Services** (PostgreSQL and Redis):
+   ```bash
+   # Start the services
+   docker-compose up -d
+   
+   # Check if services are running
+   docker-compose ps
+   
+   # View logs
+   docker-compose logs -f
+   ```
+
+2. **Backend Server**:
+   ```bash
+   # Start in development mode with hot reload
+   pnpm run backend:dev
+   
+   # Run tests
+   pnpm run backend:test
+   
+   # Lint code
+   pnpm run backend:lint
+   ```
+
+3. **Frontend Server**:
+   ```bash
+   # Start in development mode with hot reload
+   pnpm run frontend:dev
+   
+   # Run tests
+   pnpm run frontend:test
+   
+   # Lint code
+   pnpm run frontend:lint
+   ```
+
+### Production Build
+
+To create production builds:
+
+```bash
+# Build both frontend and backend
+pnpm run build
+
+# Or build them individually
+pnpm run frontend:build
+pnpm run backend:build
+```
+
+### Accessing the Application
+
+- **Frontend**: Open http://localhost:3000 in your browser
+- **Backend API**: Available at http://localhost:3001
+- **PostgreSQL**: Available at localhost:5432
+- **Redis**: Available at localhost:6379
 
 ## Development
 

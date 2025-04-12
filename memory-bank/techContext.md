@@ -63,7 +63,7 @@
 - **Node.js**: Version 20.16.0
 - **pnpm**: Version 7.33.6
 - **PostgreSQL**: Version 15.x
-- **Docker**: Latest version (optional, for containerized development)
+- **Docker**: Latest version (for containerized development)
 - **Git**: Latest version
 - **IDE**: VSCode recommended with extensions:
   - Vue Language Features (Volar)
@@ -72,6 +72,38 @@
   - Prettier
   - GitLens
   - REST Client
+
+### Node.js and pnpm Setup
+
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+source ~/.bashrc  # or ~/.zshrc for macOS
+
+# Use correct Node.js version (from .nvmrc file with version 20.16.0)
+nvm use
+
+# Install pnpm
+npm install -g pnpm@7.33.6
+```
+
+### Platform-Specific Docker Setup
+
+#### macOS
+
+For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima instead of Docker Desktop:
+
+- **Colima**: Provides a container runtime for macOS
+  - Install via Homebrew: `brew install colima docker docker-compose`
+  - For Intel Macs: `colima start`
+  - For Apple Silicon (ARM) Macs: `colima start --arch aarch64 --vm-type=vz --vz-rosetta --cpu 6 --memory 8`
+
+#### Linux
+
+- **Docker and Docker Compose**: Install via package manager
+  - Ubuntu/Debian: `sudo apt install docker.io docker-compose`
+  - Enable service: `sudo systemctl enable --now docker`
+  - Add user to docker group: `sudo usermod -aG docker $USER`
 
 ### Frontend Setup
 
