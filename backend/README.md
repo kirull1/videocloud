@@ -1,6 +1,44 @@
 # VideoCloud Backend
 
-TODO:
+## Project Structure
+
+```
+src/
+├── app.module.ts      # Main application module
+├── main.ts            # Application entry point
+├── modules/           # Feature modules (auth, users, videos)
+├── common/            # Common utilities and helpers
+├── config/            # Configuration files
+├── utils/             # Utility functions
+├── entities/          # Database entities
+├── repositories/      # TypeORM repositories
+├── services/          # Service implementations
+├── controllers/       # API controllers
+├── middleware/        # HTTP middleware
+└── guards/            # Authentication guards
+```
+
+### Path Aliases
+
+The project uses path aliases to simplify imports:
+
+```typescript
+// Instead of relative imports
+import { Logger } from '../../utils/logger';
+
+// Use path aliases
+import { Logger } from '@utils/logger';
+```
+
+Available aliases:
+- `@app/*` → `src/*`
+- `@modules/*` → `src/modules/*`
+- `@common/*` → `src/common/*`
+- `@config/*` → `src/config/*`
+- `@utils/*` → `src/utils/*`
+- `@entities/*` → `src/entities/*`
+- `@services/*` → `src/services/*`
+- `@controllers/*` → `src/controllers/*`
 
 ## Requirements
 

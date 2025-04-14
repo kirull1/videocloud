@@ -4,29 +4,43 @@ This is the frontend application for the VideoCloud platform, built with Vue.js 
 
 ## Project Structure
 
-The project follows the Feature-Sliced Design (FSD) methodology, which organizes code by business domain and technical purpose:
-
 ```
 src/
-├── app/              # Application initialization, global providers, styles
+├── app/              # Application initialization, global styles
 │   ├── styles/       # Global styles
 │   ├── App.vue       # Root component
 │   └── main.ts       # Entry point
 ├── pages/            # Application routes and layouts
-│   ├── home/         # Home page
-│   └── about/        # About page
-├── widgets/          # Composite components that represent business features
-│   └── welcome/      # Welcome widget
-├── features/         # User interactions, actions that change the state
+├── widgets/          # Composite components for business features
+├── features/         # User interactions, actions that change state
 ├── entities/         # Business entities with their data and logic
-└── shared/           # Reusable infrastructure code, UI kit, API, etc.
+└── shared/           # Reusable code, UI kit, API, etc.
     ├── api/          # API clients
     ├── config/       # Configuration constants
     ├── lib/          # Utility functions
     └── ui/           # UI components
-        ├── icons/    # Icon components
-        └── WelcomeItem/ # Welcome item component
 ```
+
+### Path Aliases
+
+The project uses path aliases to simplify imports:
+
+```typescript
+// Instead of relative imports
+import { Button } from '../../../shared/ui/Button';
+
+// Use path aliases
+import { Button } from '@shared/ui/Button';
+```
+
+Available aliases:
+- `@/*` → `./src/*`
+- `@app/*` → `./src/app/*`
+- `@pages/*` → `./src/pages/*`
+- `@widgets/*` → `./src/widgets/*`
+- `@features/*` → `./src/features/*`
+- `@entities/*` → `./src/entities/*`
+- `@shared/*` → `./src/shared/*`
 
 For more information about Feature-Sliced Design, visit [feature-sliced.design](https://feature-sliced.design/).
 
