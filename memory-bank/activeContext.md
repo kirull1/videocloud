@@ -44,6 +44,7 @@ As this is the project initialization phase, the following foundational elements
    - Configured path aliases for both frontend and backend to improve code organization
    - Created common .gitignore and .gitattributes files
    - Set up a comprehensive style guide based on Airbnb JavaScript Style Guide
+   - Created Docker configuration for the frontend with Nginx in the devops directory
 
 2. **Frontend Setup**
 
