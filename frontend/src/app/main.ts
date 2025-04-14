@@ -3,8 +3,8 @@ import './styles/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from '../router'
-import { appConfig } from '@/shared/config/app.config'
-import { createLogger } from '@/shared/lib/logger'
+import { appConfig } from '../shared/config/app.config'
+import { createLogger } from '../shared/lib/logger'
 
 const logger = createLogger('App')
 
