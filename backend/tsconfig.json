@@ -9,6 +9,23 @@
     "baseUrl": "./",
     "incremental": true,
     "strictBindCallApply": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "paths": {
+      "@app/*": ["src/*"],
+      "@modules/*": ["src/modules/*"],
+      "@common/*": ["src/common/*"],
+      "@config/*": ["src/config/*"],
+      "@utils/*": ["src/utils/*"],
+      "@interfaces/*": ["src/interfaces/*"],
+      "@dto/*": ["src/dto/*"],
+      "@entities/*": ["src/entities/*"],
+      "@repositories/*": ["src/repositories/*"],
+      "@services/*": ["src/services/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@middleware/*": ["src/middleware/*"],
+      "@guards/*": ["src/guards/*"],
+      "@decorators/*": ["src/decorators/*"],
+      "@strategies/*": ["src/strategies/*"]
+    }
   }
 }

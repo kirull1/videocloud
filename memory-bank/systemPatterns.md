@@ -127,25 +127,31 @@ VideoCloud follows a modern, microservices-oriented architecture that separates 
 
 ### Frontend Patterns
 
-1. **Component Pattern**
+1. **Feature-Sliced Design (FSD)**
+   - Architecture methodology that organizes code by business domain and technical purpose
+   - Layered structure: app → pages → widgets → features → entities → shared
+   - Clear boundaries between layers with unidirectional dependencies
+   - Improved maintainability and scalability
+
+2. **Component Pattern**
    - Reusable UI components with clear interfaces
    - Composition over inheritance
    - Slot-based content distribution
    - Prop validation and typing
 
-2. **Container/Presenter Pattern**
+3. **Container/Presenter Pattern**
    - Separation of data fetching from presentation
    - Smart containers connected to state
    - Dumb presenters focused on rendering
    - Improved testability and reusability
 
-3. **Observer Pattern (via MobX)**
+4. **Observer Pattern (via MobX)**
    - Observable state
    - Automatic tracking of dependencies
    - Reactive updates to the UI
    - Decoupled state from components
 
-4. **Module Pattern**
+5. **Module Pattern**
    - Encapsulated functionality
    - Clear public interfaces
    - Private implementation details

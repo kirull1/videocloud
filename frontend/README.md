@@ -1,6 +1,34 @@
 # VideoCloud Frontend
 
-TODO:
+This is the frontend application for the VideoCloud platform, built with Vue.js and following the Feature-Sliced Design (FSD) methodology.
+
+## Project Structure
+
+The project follows the Feature-Sliced Design (FSD) methodology, which organizes code by business domain and technical purpose:
+
+```
+src/
+├── app/              # Application initialization, global providers, styles
+│   ├── styles/       # Global styles
+│   ├── App.vue       # Root component
+│   └── main.ts       # Entry point
+├── pages/            # Application routes and layouts
+│   ├── home/         # Home page
+│   └── about/        # About page
+├── widgets/          # Composite components that represent business features
+│   └── welcome/      # Welcome widget
+├── features/         # User interactions, actions that change the state
+├── entities/         # Business entities with their data and logic
+└── shared/           # Reusable infrastructure code, UI kit, API, etc.
+    ├── api/          # API clients
+    ├── config/       # Configuration constants
+    ├── lib/          # Utility functions
+    └── ui/           # UI components
+        ├── icons/    # Icon components
+        └── WelcomeItem/ # Welcome item component
+```
+
+For more information about Feature-Sliced Design, visit [feature-sliced.design](https://feature-sliced.design/).
 
 ## Requirements
 

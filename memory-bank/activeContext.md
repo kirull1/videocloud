@@ -36,6 +36,8 @@ As this is the project initialization phase, the following foundational elements
    - Added .nvmrc file specifying Node.js version 20.16.0
    - Set up memory bank documentation
    - Moved common configurations to the root level
+   - Reorganized frontend structure following Feature-Sliced Design (FSD) methodology
+   - Configured path aliases for both frontend and backend to improve code organization
 
 2. **Frontend Setup**
    - Initialized Vue.js project with Nuxt.js

@@ -23,6 +23,8 @@
 - ✅ Simplified ESLint configuration for compatibility
 - ✅ Added MobX dependencies to frontend
 - ✅ Added TypeORM, PostgreSQL, and JWT dependencies to backend
+- ✅ Configured path aliases for both frontend and backend projects
+- ✅ Created documentation for path aliases usage
 
 ### Frontend
 
@@ -31,6 +33,7 @@
 - ✅ ESLint and Prettier configured
 - ✅ Basic routing structure added
 - ✅ Initial component structure defined
+- ✅ Implemented Feature-Sliced Design (FSD) architecture
 
 ### Backend
 
