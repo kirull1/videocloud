@@ -18,4 +18,4 @@ export const appConfig = {
     animationsEnabled: true,
     defaultLanguage: 'en',
   },
-};
+}

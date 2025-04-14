@@ -14,19 +14,20 @@ src/
 
 ### Frontend Path Aliases
 
-| Alias | Path |
-|-------|------|
-| `@/*` | `./src/*` |
-| `@app/*` | `./src/app/*` |
-| `@pages/*` | `./src/pages/*` |
-| `@widgets/*` | `./src/widgets/*` |
+| Alias         | Path               |
+| ------------- | ------------------ |
+| `@/*`         | `./src/*`          |
+| `@app/*`      | `./src/app/*`      |
+| `@pages/*`    | `./src/pages/*`    |
+| `@widgets/*`  | `./src/widgets/*`  |
 | `@features/*` | `./src/features/*` |
 | `@entities/*` | `./src/entities/*` |
-| `@shared/*` | `./src/shared/*` |
+| `@shared/*`   | `./src/shared/*`   |
 
 ### Example
+
 ```typescript
-import { appConfig } from '@/shared/config/app.config';
+import { appConfig } from '@/shared/config/app.config'
 ```
 
 ## Backend Structure (NestJS)
@@ -44,18 +45,19 @@ src/
 
 ### Backend Path Aliases
 
-| Alias | Path |
-|-------|------|
-| `@app/*` | `src/*` |
-| `@modules/*` | `src/modules/*` |
-| `@common/*` | `src/common/*` |
-| `@config/*` | `src/config/*` |
-| `@utils/*` | `src/utils/*` |
-| `@entities/*` | `src/entities/*` |
-| `@services/*` | `src/services/*` |
+| Alias            | Path                |
+| ---------------- | ------------------- |
+| `@app/*`         | `src/*`             |
+| `@modules/*`     | `src/modules/*`     |
+| `@common/*`      | `src/common/*`      |
+| `@config/*`      | `src/config/*`      |
+| `@utils/*`       | `src/utils/*`       |
+| `@entities/*`    | `src/entities/*`    |
+| `@services/*`    | `src/services/*`    |
 | `@controllers/*` | `src/controllers/*` |
 
 ### Example
+
 ```typescript
-import { appConfig } from '@config/app.config';
+import { appConfig } from '@config/app.config'
 ```

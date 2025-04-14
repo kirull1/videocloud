@@ -7,9 +7,6 @@
       "@backend/*": ["backend/src/*"]
     }
   },
-  "references": [
-    { "path": "./frontend" },
-    { "path": "./backend" }
-  ],
+  "references": [{ "path": "./frontend" }, { "path": "./backend" }],
   "files": []
 }

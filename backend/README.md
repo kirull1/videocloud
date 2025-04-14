@@ -31,6 +31,7 @@ import { Logger } from '@utils/logger';
 ```
 
 Available aliases:
+
 - `@app/*` → `src/*`
 - `@modules/*` → `src/modules/*`
 - `@common/*` → `src/common/*`
@@ -57,12 +58,14 @@ Available aliases:
 ### Installation
 
 1. **Clone the Repository**:
+
    ```bash
    git clone https://github.com/kirull1/videocloud.git
    cd videocloud/backend
    ```
 
 2. **Install Dependencies**:
+
    ```bash
    pnpm install
    ```
@@ -70,6 +73,7 @@ Available aliases:
 3. **Configure the Environment**:
 
    Create a `.env` file in the root directory of the backend with the required environment variables:
+
    ```plaintext
    DATABASE_HOST=your-database-host
    DATABASE_PORT=your-database-port
@@ -80,11 +84,13 @@ Available aliases:
    ```
 
 4. **Run Database Migrations**:
+
    ```bash
    pnpm run typeorm migration:run
    ```
 
 5. **Start the Development Server**:
+
    ```bash
    pnpm run start:dev
    ```
@@ -98,6 +104,7 @@ Available aliases:
 We use **Jest** as our testing framework to perform unit and integration tests, validating the functionality of individual components and their interactions.
 
 - **Run Tests**:
+
   ```bash
   pnpm run test
   ```

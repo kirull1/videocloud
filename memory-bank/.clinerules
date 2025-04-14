@@ -18,6 +18,7 @@ This file captures important patterns, preferences, and project intelligence tha
 
 ## Coding Conventions
 
+- **Style Guide**: The project follows the Airbnb JavaScript Style Guide with project-specific modifications documented in `docs/style-guide.md`.
 - **TypeScript**: All code is written in TypeScript with strict type checking.
 - **Naming Conventions**:
   - PascalCase for component names, interfaces, and classes
@@ -26,6 +27,7 @@ This file captures important patterns, preferences, and project intelligence tha
   - UPPER_SNAKE_CASE for constants
 - **Import Order**: Imports should be organized in groups: external libraries, internal modules, types, assets.
 - **Component Structure**: Vue components follow the script-template-style structure with script setup.
+- **Linting and Formatting**: ESLint and Prettier are used to enforce code style. Run `pnpm run style` to format code.
 
 ## Development Workflow
 

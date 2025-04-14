@@ -4,57 +4,57 @@
 
 ### Frontend Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Vue.js | 3.x | Core UI framework |
-| Nuxt.js | 3.x | Vue meta-framework for SSR/SSG |
-| TypeScript | 5.x | Type-safe JavaScript |
-| MobX | 6.x | State management |
-| SCSS | - | Enhanced styling |
-| Vite | 4.x | Build tool and dev server |
-| Vitest | - | Unit testing framework |
-| Playwright | - | End-to-end testing |
-| ESLint | - | Code linting |
-| Prettier | - | Code formatting |
+| Technology | Version | Purpose                        |
+| ---------- | ------- | ------------------------------ |
+| Vue.js     | 3.x     | Core UI framework              |
+| Nuxt.js    | 3.x     | Vue meta-framework for SSR/SSG |
+| TypeScript | 5.x     | Type-safe JavaScript           |
+| MobX       | 6.x     | State management               |
+| SCSS       | -       | Enhanced styling               |
+| Vite       | 4.x     | Build tool and dev server      |
+| Vitest     | -       | Unit testing framework         |
+| Playwright | -       | End-to-end testing             |
+| ESLint     | -       | Code linting                   |
+| Prettier   | -       | Code formatting                |
 
 ### Backend Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| NestJS | 10.x | Backend framework |
-| TypeScript | 5.x | Type-safe JavaScript |
-| TypeORM | 0.3.x | ORM for database interactions |
-| PostgreSQL | 15.x | Relational database |
-| Jest | 29.x | Testing framework |
-| Swagger/OpenAPI | 3.0 | API documentation |
-| Passport | - | Authentication |
-| JWT | - | Token-based auth |
-| pnpm | 7.33.6 | Package manager |
-| Node.js | 20.16.0 | JavaScript runtime |
+| Technology      | Version | Purpose                       |
+| --------------- | ------- | ----------------------------- |
+| NestJS          | 10.x    | Backend framework             |
+| TypeScript      | 5.x     | Type-safe JavaScript          |
+| TypeORM         | 0.3.x   | ORM for database interactions |
+| PostgreSQL      | 15.x    | Relational database           |
+| Jest            | 29.x    | Testing framework             |
+| Swagger/OpenAPI | 3.0     | API documentation             |
+| Passport        | -       | Authentication                |
+| JWT             | -       | Token-based auth              |
+| pnpm            | 7.33.6  | Package manager               |
+| Node.js         | 20.16.0 | JavaScript runtime            |
 
 ### Infrastructure & DevOps
 
-| Technology | Purpose |
-|------------|---------|
-| Docker | Containerization |
-| GitHub Actions | CI/CD pipeline |
-| AWS S3 | Video storage |
-| AWS CloudFront | CDN for video delivery |
-| AWS RDS | Managed PostgreSQL |
-| Redis | Caching and session storage |
-| Prometheus | Monitoring |
-| Grafana | Metrics visualization |
-| ELK Stack | Logging and analysis |
+| Technology     | Purpose                     |
+| -------------- | --------------------------- |
+| Docker         | Containerization            |
+| GitHub Actions | CI/CD pipeline              |
+| AWS S3         | Video storage               |
+| AWS CloudFront | CDN for video delivery      |
+| AWS RDS        | Managed PostgreSQL          |
+| Redis          | Caching and session storage |
+| Prometheus     | Monitoring                  |
+| Grafana        | Metrics visualization       |
+| ELK Stack      | Logging and analysis        |
 
 ### Video Processing
 
-| Technology | Purpose |
-|------------|---------|
-| FFmpeg | Video transcoding |
-| HLS | HTTP Live Streaming |
-| DASH | Dynamic Adaptive Streaming over HTTP |
-| WebRTC | Real-time communication |
-| Media Source Extensions | Adaptive streaming in browser |
+| Technology              | Purpose                              |
+| ----------------------- | ------------------------------------ |
+| FFmpeg                  | Video transcoding                    |
+| HLS                     | HTTP Live Streaming                  |
+| DASH                    | Dynamic Adaptive Streaming over HTTP |
+| WebRTC                  | Real-time communication              |
+| Media Source Extensions | Adaptive streaming in browser        |
 
 ## Development Setup
 
@@ -108,29 +108,33 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
 ### Frontend Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/kirull1/videocloud.git
    cd videocloud/frontend
    ```
 
 2. **Install dependencies**:
+
    ```bash
    pnpm install
    ```
 
 3. **Start development server**:
+
    ```bash
    pnpm run dev
    ```
 
 4. **Run tests**:
+
    ```bash
    # Unit tests
    pnpm run test
-   
+
    # E2E tests
    pnpm run test:e2e
-   
+
    # Coverage
    pnpm run test:coverage
    ```
@@ -143,17 +147,20 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
 ### Backend Setup
 
 1. **Navigate to backend directory**:
+
    ```bash
    cd videocloud/backend
    ```
 
 2. **Install dependencies**:
+
    ```bash
    pnpm install
    ```
 
 3. **Configure environment**:
    Create a `.env` file with the following variables:
+
    ```
    DATABASE_HOST=localhost
    DATABASE_PORT=5432
@@ -164,23 +171,26 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
    ```
 
 4. **Run database migrations**:
+
    ```bash
    pnpm run typeorm migration:run
    ```
 
 5. **Start development server**:
+
    ```bash
    pnpm run start:dev
    ```
 
 6. **Run tests**:
+
    ```bash
    # Unit tests
    pnpm run test
-   
+
    # E2E tests
    pnpm run test:e2e
-   
+
    # Coverage
    pnpm run test:cov
    ```
@@ -188,6 +198,7 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
 ### Docker Setup (Optional)
 
 1. **Build and run with Docker Compose**:
+
    ```bash
    docker-compose up -d
    ```
@@ -288,28 +299,33 @@ Key dependencies for the backend include:
 ## Development Workflow
 
 1. **Feature Planning**:
+
    - Requirements gathering
    - Technical specification
    - Task breakdown in issue tracker
 
 2. **Development**:
+
    - Branch creation from main (`feature/feature-name`)
    - Implementation with TDD approach
    - Self-review and local testing
 
 3. **Code Review**:
+
    - Pull request creation
    - Automated CI checks
    - Peer code review
    - Addressing feedback
 
 4. **Testing**:
+
    - Unit tests
    - Integration tests
    - E2E tests
    - Manual QA
 
 5. **Deployment**:
+
    - Merge to main branch
    - Automated deployment to staging
    - Verification in staging environment

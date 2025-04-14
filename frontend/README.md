@@ -27,13 +27,14 @@ The project uses path aliases to simplify imports:
 
 ```typescript
 // Instead of relative imports
-import { Button } from '../../../shared/ui/Button';
+import { Button } from '../../../shared/ui/Button'
 
 // Use path aliases
-import { Button } from '@shared/ui/Button';
+import { Button } from '@shared/ui/Button'
 ```
 
 Available aliases:
+
 - `@/*` → `./src/*`
 - `@app/*` → `./src/app/*`
 - `@pages/*` → `./src/pages/*`
@@ -62,17 +63,20 @@ For more information about Feature-Sliced Design, visit [feature-sliced.design](
 ### Installation
 
 1. **Clone the Repository**:
+
    ```bash
    git clone https://github.com/kirull1/videocloud.git
    cd videocloud/frontend
    ```
 
 2. **Install Dependencies**:
+
    ```bash
    pnpm install
    ```
 
 3. **Start the Development Server**:
+
    ```bash
    pnpm run dev
    ```
@@ -95,11 +99,13 @@ We use **Cypress** for end-to-end testing, allowing us to test the user interfac
 For unit tests, we use **Jest** and **Vue Testing Library** to verify the functionality of individual components and utilities.
 
 - **Run Unit Tests**:
+
   ```bash
   pnpm run test
   ```
 
   Combine unit tests with coverage:
+
   ```bash
   pnpm run test:coverage
   ```
@@ -109,6 +115,7 @@ For unit tests, we use **Jest** and **Vue Testing Library** to verify the functi
 Storybook is employed to document and test UI components in isolation. It enables developers to create, browse, and interact with components separate from the app.
 
 - **Start Storybook**:
+
   ```bash
   pnpm run storybook
   ```
@@ -124,6 +131,7 @@ Continuous Integration and Continuous Deployment (CI/CD) are crucial for maintai
 1. **Triggering Events**: The CI/CD pipeline is triggered by events such as commits pushed to the main branch or the creation of pull requests.
 
 2. **Build and Test**:
+
    - The pipeline installs dependencies and builds the project using Nuxt.js.
    - All unit and E2E tests are executed to ensure code quality.
 

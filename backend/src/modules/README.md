@@ -10,6 +10,7 @@ In NestJS, modules are used to organize the application structure. Each module e
 - Comments and interactions
 
 Each module typically contains:
+
 - Controllers: Handle HTTP requests
 - Services: Implement business logic
 - DTOs: Define data transfer objects

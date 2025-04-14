@@ -52,16 +52,19 @@ npm install -g pnpm@7.33.6
 For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima instead of Docker Desktop:
 
 1. **Install Colima**:
+
    ```bash
    brew install colima docker docker-compose
    ```
 
 2. **Start Colima** (for Intel Macs):
+
    ```bash
    colima start
    ```
 
    **For Apple Silicon (ARM) Macs**:
+
    ```bash
    colima start --arch aarch64 --vm-type=vz --vz-rosetta --cpu 6 --memory 8
    ```
@@ -69,6 +72,7 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
 #### Linux
 
 **Install Docker and Docker Compose**:
+
 ```bash
 # Ubuntu/Debian
 sudo apt update
@@ -81,17 +85,20 @@ sudo usermod -aG docker $USER
 ## Getting Started
 
 1. **Clone the Repository**:
+
    ```bash
    git clone https://github.com/kirull1/videocloud.git
    cd videocloud
    ```
 
 2. **Install Dependencies**:
+
    ```bash
    pnpm run deps
    ```
 
 3. **Start Development Services**:
+
    ```bash
    # Start PostgreSQL and Redis services
    docker-compose up -d
@@ -99,6 +106,7 @@ sudo usermod -aG docker $USER
 
 4. **Configure Environment Variables**:
    Create a `.env` file in the backend directory:
+
    ```bash
    # Create backend .env file
    cat > backend/.env << EOL
@@ -112,10 +120,11 @@ sudo usermod -aG docker $USER
    ```
 
 5. **Start Development Servers**:
+
    ```bash
    # Start both frontend and backend
    pnpm run dev
-   
+
    # Or start them individually
    pnpm run frontend:dev  # Runs on http://localhost:3000
    pnpm run backend:dev   # Runs on http://localhost:3001
@@ -128,37 +137,40 @@ sudo usermod -aG docker $USER
 The project consists of three main components that need to be running:
 
 1. **Database Services** (PostgreSQL and Redis):
+
    ```bash
    # Start the services
    docker-compose up -d
-   
+
    # Check if services are running
    docker-compose ps
-   
+
    # View logs
    docker-compose logs -f
    ```
 
 2. **Backend Server**:
+
    ```bash
    # Start in development mode with hot reload
    pnpm run backend:dev
-   
+
    # Run tests
    pnpm run backend:test
-   
+
    # Lint code
    pnpm run backend:lint
    ```
 
 3. **Frontend Server**:
+
    ```bash
    # Start in development mode with hot reload
    pnpm run frontend:dev
-   
+
    # Run tests
    pnpm run frontend:test
-   
+
    # Lint code
    pnpm run frontend:lint
    ```
