@@ -18,7 +18,7 @@ This file captures important patterns, preferences, and project intelligence tha
 
 ## Coding Conventions
 
-- **Style Guide**: The project follows the Airbnb JavaScript Style Guide with project-specific modifications documented in `docs/style-guide.md`.
+- **Style Guide**: The project follows the Airbnb JavaScript Style Guide with project-specific modifications documented in `docs/style-guide.md`, including the use of double quotes instead of single quotes.
 - **TypeScript**: All code is written in TypeScript with strict type checking.
 - **Naming Conventions**:
   - PascalCase for component names, interfaces, and classes

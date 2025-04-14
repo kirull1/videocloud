@@ -27,7 +27,7 @@ src/
 ### Example
 
 ```typescript
-import { appConfig } from '@/shared/config/app.config'
+import { appConfig } from "@/shared/config/app.config"
 ```
 
 ## Backend Structure (NestJS)
@@ -59,5 +59,5 @@ src/
 ### Example
 
 ```typescript
-import { appConfig } from '@config/app.config'
+import { appConfig } from "@config/app.config"
 ```

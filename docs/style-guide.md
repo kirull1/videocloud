@@ -28,7 +28,7 @@ This style guide outlines the coding standards and best practices for the VideoC
 We follow the Airbnb JavaScript Style Guide with the following modifications:
 
 - **Semicolons**: No semicolons at the end of statements.
-- **Quotes**: Use single quotes for strings.
+- **Quotes**: Use double quotes for strings.
 - **Indentation**: Use 2 spaces for indentation.
 - **Line Length**: Maximum line length is 100 characters.
 - **Trailing Commas**: Use trailing commas in multiline object literals and arrays.
@@ -37,15 +37,15 @@ We follow the Airbnb JavaScript Style Guide with the following modifications:
 
 ```javascript
 // Bad
-var foo = 'bar'
-if (foo === 'bar') {
-  console.log('foo is bar')
+var foo = "bar"
+if (foo === "bar") {
+  console.log("foo is bar")
 }
 
 // Good
-const foo = 'bar'
-if (foo === 'bar') {
-  console.info('foo is bar')
+const foo = "bar"
+if (foo === "bar") {
+  console.info("foo is bar")
 }
 ```
 
@@ -108,15 +108,15 @@ We follow the Vue.js Style Guide with the following modifications:
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import UserProfile from '@/components/UserProfile.vue'
+  import { ref } from "vue"
+  import UserProfile from "@/components/UserProfile.vue"
 
   interface User {
     id: number
     name: string
   }
 
-  const user = ref<User>({ id: 1, name: 'John Doe' })
+  const user = ref<User>({ id: 1, name: "John Doe" })
 
   const updateUser = (newUser: User): void => {
     user.value = newUser
@@ -213,18 +213,18 @@ function getUser(id: number): Promise<User> {
 
 ```typescript
 // External libraries
-import { ref, computed } from 'vue'
-import axios from 'axios'
+import { ref, computed } from "vue"
+import axios from "axios"
 
 // Internal modules
-import { useUserStore } from '@/stores/user'
-import UserAvatar from '@/components/UserAvatar.vue'
+import { useUserStore } from "@/stores/user"
+import UserAvatar from "@/components/UserAvatar.vue"
 
 // Types
-import type { User, UserRole } from '@/types'
+import type { User, UserRole } from "@/types"
 
 // Assets
-import userIcon from '@/assets/icons/user.svg'
+import userIcon from "@/assets/icons/user.svg"
 ```
 
 ## Path Aliases
@@ -233,10 +233,10 @@ Use path aliases to avoid deep relative imports:
 
 ```typescript
 // Bad
-import { Button } from '../../../shared/ui/Button'
+import { Button } from "../../../shared/ui/Button"
 
 // Good
-import { Button } from '@shared/ui/Button'
+import { Button } from "@shared/ui/Button"
 ```
 
 Available path aliases:
