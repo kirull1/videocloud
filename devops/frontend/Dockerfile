@@ -5,7 +5,7 @@ FROM node:22.14.0-alpine AS build
 WORKDIR /app
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@7.33.6 --activate
+RUN corepack enable && corepack prepare pnpm@10.8.1 --activate
 
 # Copy package.json and other configuration files
 COPY package.json pnpm-lock.yaml* ./
@@ -16,7 +16,7 @@ COPY env.d.ts ./
 COPY index.html ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --force
 
 # Copy source code
 COPY src/ ./src/

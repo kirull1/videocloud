@@ -29,7 +29,7 @@
 | Swagger/OpenAPI | 3.0     | API documentation             |
 | Passport        | -       | Authentication                |
 | JWT             | -       | Token-based auth              |
-| pnpm            | 7.33.6  | Package manager               |
+| pnpm            | 10.8.1  | Package manager               |
 | Node.js         | 22.14.0 | JavaScript runtime            |
 
 ### Infrastructure & DevOps
@@ -84,7 +84,7 @@ source ~/.bashrc  # or ~/.zshrc for macOS
 nvm use
 
 # Install pnpm
-npm install -g pnpm@7.33.6
+npm install -g pnpm@10.8.1
 ```
 
 ### Platform-Specific Docker Setup

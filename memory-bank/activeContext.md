@@ -56,6 +56,8 @@ As this is the project initialization phase, the following foundational elements
    - Fixed root dev command to properly run frontend and backend development servers in parallel
    - Fixed root test command to properly run frontend and backend tests in parallel
    - Fixed Docker build by using the simpler build-only script instead of the complex build script
+   - Updated pnpm version from 7.33.6 to 10.8.1 in all relevant files
+   - Modified Docker build to use --force flag with pnpm install to handle lockfile version differences
 
 2. **Frontend Setup**
 

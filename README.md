@@ -31,7 +31,7 @@ videocloud/
 ## Prerequisites
 
 - **Node.js**: Version 22.14.0 or higher
-- **pnpm**: Version 7.33.6 or higher
+- **pnpm**: Version 10.8.1 or higher
 - **Docker**: Latest version (for running PostgreSQL and Redis)
 
 ### Node.js and pnpm Setup
@@ -45,7 +45,7 @@ source ~/.bashrc  # or ~/.zshrc for macOS
 nvm use
 
 # Install pnpm
-npm install -g pnpm@7.33.6
+npm install -g pnpm@10.8.1
 ```
 
 ### Platform-Specific Docker Setup
@@ -202,9 +202,9 @@ pnpm run backend:build
 
 ### Available Scripts
 
-- `pnpm run dev`: Start both frontend and backend development servers
-- `pnpm run build`: Build both frontend and backend for production
-- `pnpm run test`: Run tests for both frontend and backend
+- `pnpm run dev`: Start both frontend and backend development servers in parallel
+- `pnpm run build`: Build both frontend and backend for production sequentially
+- `pnpm run test`: Run tests for both frontend and backend in parallel
 - `pnpm run lint`: Lint both frontend and backend code
 - `pnpm run format`: Format all code with Prettier
 - `pnpm run release`: Build Docker images for all components
@@ -251,6 +251,8 @@ pnpm run frontend:release:push
 ### Docker Image Details
 
 - **Frontend**: Multi-stage build with Node.js for building and Nginx for serving
+  - Uses pnpm 10.8.1 with force flag to handle lockfile version differences
+  - Directly uses build-only script for more reliable builds
 - **Backend**: (Coming soon)
 
 ### Release Workflow
