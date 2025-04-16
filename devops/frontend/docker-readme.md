@@ -17,11 +17,35 @@ This document provides instructions for building and running the VideoCloud fron
 
 ## Building and Running the Container
 
-### Option 1: Using the provided scripts
+### Option 1: Using npm/pnpm scripts
+
+1. Build the Docker image:
+
+```bash
+# From the project root
+pnpm run frontend:release
+```
+
+2. Build and push the Docker image to a registry:
+
+```bash
+# From the project root
+pnpm run frontend:release:push
+```
+
+You can also use the general release commands:
+
+```bash
+pnpm run release       # Build the Docker image
+pnpm run release:push  # Build and push the Docker image
+```
+
+### Option 2: Using the provided scripts directly
 
 1. Build and run the container:
 
 ```bash
+cd devops/frontend
 ./docker-build.sh
 ```
 
@@ -35,22 +59,44 @@ This script will:
 3. To stop and remove the container:
 
 ```bash
+cd devops/frontend
 ./docker-stop.sh
 ```
 
-### Option 2: Manual commands
+4. To build and push the Docker image to a registry:
+
+```bash
+cd devops/frontend
+./docker-release.sh --push
+```
+
+The release script supports the following options:
+- `--registry`: Docker registry URL (default: cr.yandex/crpthl8qb35r5jjhpc0v)
+- `--repository`: Repository name (default: videocloud)
+- `--tag`: Image tag (default: latest)
+- `--push`: Push the image to the registry
+
+Example with custom options:
+```bash
+./docker-release.sh --registry cr.yandex/crpthl8qb35r5jjhpc0v --repository videocloud --tag v1.0.0 --push
+```
+
+### Option 3: Manual commands
 
 1. Build the Docker image:
 
 ```bash
-cd frontend
-docker build -t videocloud-frontend -f ../devops/frontend/Dockerfile .
-```
+# From project root
+pnpm run frontend:release                  # Build development image
+pnpm run frontend:release:push             # Build and push development image
+pnpm run frontend:release:production       # Build production image
+pnpm run frontend:release:production:push  # Build and push production image
 
-2. Run the container:
-
-```bash
-docker run -d -p 8080:80 --name videocloud-frontend-container videocloud-frontend
+# Or using general release commands
+pnpm run release                  # Build development image
+pnpm run release:push             # Build and push development image
+pnpm run release:production       # Build production image
+pnpm run release:production:push  # Build and push production image
 ```
 
 3. Stop the container:

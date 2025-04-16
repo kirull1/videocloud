@@ -10,6 +10,7 @@ This directory contains DevOps-related configurations, scripts, and documentatio
   - `.dockerignore` - Files to exclude from the Docker build context
   - `docker-build.sh` - Script to build and run the frontend Docker container
   - `docker-stop.sh` - Script to stop and remove the frontend Docker container
+  - `docker-release.sh` - Script to build and push the frontend Docker image to a registry
   - `docker-readme.md` - Documentation for the frontend Docker setup
 
 ## Usage
@@ -28,6 +29,27 @@ To stop and remove the frontend Docker container:
 ```bash
 cd devops/frontend
 ./docker-stop.sh
+```
+
+To build and push the frontend Docker image to a registry:
+
+```bash
+cd devops/frontend
+./docker-release.sh --push
+```
+
+You can also use the npm/pnpm scripts from the project root:
+
+```bash
+# Build the Docker image
+pnpm run frontend:release
+
+# Build and push the Docker image
+pnpm run frontend:release:push
+
+# General release commands
+pnpm run release
+pnpm run release:push
 ```
 
 For more detailed information about the frontend Docker setup, please refer to the [frontend Docker README](frontend/docker-readme.md).

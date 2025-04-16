@@ -30,7 +30,7 @@
 | Passport        | -       | Authentication                |
 | JWT             | -       | Token-based auth              |
 | pnpm            | 7.33.6  | Package manager               |
-| Node.js         | 20.16.0 | JavaScript runtime            |
+| Node.js         | 22.14.0 | JavaScript runtime            |
 
 ### Infrastructure & DevOps
 
@@ -60,7 +60,7 @@
 
 ### Prerequisites
 
-- **Node.js**: Version 20.16.0
+- **Node.js**: Version 22.14.0
 - **pnpm**: Version 7.33.6
 - **PostgreSQL**: Version 15.x
 - **Docker**: Latest version (for containerized development)
@@ -80,7 +80,7 @@
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 source ~/.bashrc  # or ~/.zshrc for macOS
 
-# Use correct Node.js version (from .nvmrc file with version 20.16.0)
+# Use correct Node.js version (from .nvmrc file with version 22.14.0)
 nvm use
 
 # Install pnpm

@@ -37,7 +37,7 @@ As this is the project initialization phase, the following foundational elements
    - Initialized Git repository with initial commit
    - Added comprehensive README documentation with running instructions for macOS and Linux
    - Extracted Node.js and pnpm installation instructions into a separate section
-   - Added .nvmrc file specifying Node.js version 20.16.0
+   - Added .nvmrc file specifying Node.js version 22.14.0
    - Set up memory bank documentation
    - Moved common configurations to the root level
    - Reorganized frontend structure following Feature-Sliced Design (FSD) methodology
@@ -45,6 +45,17 @@ As this is the project initialization phase, the following foundational elements
    - Created common .gitignore and .gitattributes files
    - Set up a comprehensive style guide based on Airbnb JavaScript Style Guide
    - Created Docker configuration for the frontend with Nginx in the devops directory
+   - Created separate Docker release scripts for development and production environments
+   - Added simplified release commands to package.json
+   - Created comprehensive release process documentation
+   - Implemented automatic commit ID tagging for better image traceability
+   - Fixed Docker build context handling and nginx configuration paths
+   - Configured Yandex Cloud Container Registry integration
+   - Simplified Docker build by removing unnecessary .npmrc configuration
+   - Fixed root build command to properly run frontend and backend builds sequentially
+   - Fixed root dev command to properly run frontend and backend development servers in parallel
+   - Fixed root test command to properly run frontend and backend tests in parallel
+   - Fixed Docker build by using the simpler build-only script instead of the complex build script
 
 2. **Frontend Setup**
 

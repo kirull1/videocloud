@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM node:20.16.0-alpine AS build
+FROM node:22.14.0-alpine AS build
 
 # Set working directory
 WORKDIR /app
@@ -9,8 +9,8 @@ RUN corepack enable && corepack prepare pnpm@7.33.6 --activate
 
 # Copy package.json and other configuration files
 COPY package.json pnpm-lock.yaml* ./
-COPY .npmrc ./
 COPY tsconfig*.json ./
+COPY tsconfig.base.json ../
 COPY vite.config.ts ./
 COPY env.d.ts ./
 COPY index.html ./
@@ -23,7 +23,7 @@ COPY src/ ./src/
 COPY public/ ./public/
 
 # Build the application
-RUN pnpm build
+RUN pnpm run build-only
 
 # Stage 2: Serve the application with Nginx
 FROM nginx:stable-alpine
@@ -32,7 +32,7 @@ FROM nginx:stable-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy custom nginx config
-COPY ../devops/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80

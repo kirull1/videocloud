@@ -13,7 +13,10 @@ VideoCloud is a comprehensive video hosting platform designed for scalability, u
 videocloud/
 ├── frontend/           # Vue.js frontend application
 ├── backend/            # NestJS backend application
-├── memory-bank/        # Project documentation
+├── devops/             # DevOps configurations and scripts
+│   └── frontend/       # Frontend Docker configuration
+├── docs/               # Project documentation
+├── memory-bank/        # Project memory bank documentation
 ├── .editorconfig       # Editor configuration
 ├── .gitattributes      # Git attributes
 ├── .gitignore          # Git ignore rules
@@ -27,7 +30,7 @@ videocloud/
 
 ## Prerequisites
 
-- **Node.js**: Version 20.16.0 or higher
+- **Node.js**: Version 22.14.0 or higher
 - **pnpm**: Version 7.33.6 or higher
 - **Docker**: Latest version (for running PostgreSQL and Redis)
 
@@ -204,6 +207,8 @@ pnpm run backend:build
 - `pnpm run test`: Run tests for both frontend and backend
 - `pnpm run lint`: Lint both frontend and backend code
 - `pnpm run format`: Format all code with Prettier
+- `pnpm run release`: Build Docker images for all components
+- `pnpm run release:push`: Build and push Docker images to registry
 
 ### Frontend-specific Scripts
 
@@ -211,6 +216,8 @@ pnpm run backend:build
 - `pnpm run frontend:build`: Build frontend for production
 - `pnpm run frontend:test`: Run frontend tests
 - `pnpm run frontend:lint`: Lint frontend code
+- `pnpm run frontend:release`: Build frontend Docker image
+- `pnpm run frontend:release:push`: Build and push frontend Docker image
 
 ### Backend-specific Scripts
 
@@ -222,6 +229,36 @@ pnpm run backend:build
 ## Testing
 
 Both the frontend and backend have comprehensive test suites. Please refer to the respective README files in the `frontend` and `backend` directories for detailed testing instructions.
+
+## Release Process
+
+The project uses Docker for containerization and follows a structured release process. For detailed information, see [Release Process Documentation](docs/release-process.md).
+
+### Building Docker Images
+
+```bash
+# Build all Docker images
+pnpm run release
+
+# Build and push all Docker images to registry
+pnpm run release:push
+
+# Frontend-specific commands
+pnpm run frontend:release
+pnpm run frontend:release:push
+```
+
+### Docker Image Details
+
+- **Frontend**: Multi-stage build with Node.js for building and Nginx for serving
+- **Backend**: (Coming soon)
+
+### Release Workflow
+
+The project follows a GitFlow-inspired workflow:
+- Development builds from the `develop` branch
+- Production releases from the `main` branch
+- Semantic versioning for release tags (e.g., v1.0.0)
 
 ## CI/CD
 

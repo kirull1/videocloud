@@ -13,7 +13,7 @@
 - ✅ Project repository structure established
 - ✅ Comprehensive README documentation created with running instructions for macOS and Linux
 - ✅ Extracted Node.js and pnpm installation instructions into a separate section
-- ✅ Added .nvmrc file specifying Node.js version 20.16.0
+- ✅ Added .nvmrc file specifying Node.js version 22.14.0
 - ✅ Git repository initialized
 - ✅ Memory bank documentation initialized
 - ✅ Common configuration files moved to root level
@@ -27,6 +27,16 @@
 - ✅ Configured Prettier with project-specific settings
 - ✅ Created comprehensive style guide documentation
 - ✅ Set up Docker configuration for the frontend in the devops directory
+- ✅ Created Docker release scripts for development and production environments
+- ✅ Added simplified release commands to package.json
+- ✅ Created comprehensive release process documentation
+- ✅ Implemented automatic commit ID tagging for image traceability
+- ✅ Fixed Docker build context and nginx configuration issues
+- ✅ Removed unnecessary .npmrc configuration from Docker build
+- ✅ Fixed root build command to properly run frontend and backend builds sequentially
+- ✅ Fixed root dev command to properly run frontend and backend development servers in parallel
+- ✅ Fixed root test command to properly run frontend and backend tests in parallel
+- ✅ Fixed Docker build by using the simpler build-only script instead of the complex build script
 
 ### Frontend
 
