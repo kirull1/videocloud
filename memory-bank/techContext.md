@@ -11,7 +11,8 @@
 | TypeScript | 5.x     | Type-safe JavaScript           |
 | MobX       | 6.x     | State management               |
 | SCSS       | -       | Enhanced styling               |
-| Vite       | 4.x     | Build tool and dev server      |
+| Vite       | 6.x     | Build tool and dev server      |
+| Storybook  | 8.6.x   | Component development & docs   |
 | Vitest     | -       | Unit testing framework         |
 | Playwright | -       | End-to-end testing             |
 | ESLint     | -       | Code linting                   |
@@ -139,9 +140,20 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
    pnpm run test:coverage
    ```
 
-5. **Build for production**:
+5. **Run Storybook**:
+
+   ```bash
+   pnpm run storybook
+   ```
+
+6. **Build for production**:
    ```bash
    pnpm run build
+   ```
+
+7. **Build Storybook for production**:
+   ```bash
+   pnpm run build-storybook
    ```
 
 ### Backend Setup
@@ -269,6 +281,11 @@ Key dependencies for the frontend include:
 - **date-fns**: Date utility library
 - **lodash-es**: Utility library
 - **zod**: Schema validation
+- **storybook**: Component development environment
+- **@storybook/vue3**: Vue 3 integration for Storybook
+- **@storybook/addon-essentials**: Core Storybook addons
+- **@storybook/addon-links**: Navigation between stories
+- **@storybook/vue3-vite**: Vite builder for Storybook
 
 ### Backend Dependencies
 

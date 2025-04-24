@@ -3,8 +3,8 @@
 ## Current Status
 
 **Project Phase**: Initial Development (Pre-Alpha)
-**Last Updated**: April 12, 2025
-**Overall Progress**: 5%
+**Last Updated**: April 25, 2025
+**Overall Progress**: 7%
 
 ## What Works
 
@@ -48,6 +48,10 @@
 - ✅ Basic routing structure added
 - ✅ Initial component structure defined
 - ✅ Implemented Feature-Sliced Design (FSD) architecture
+- ✅ Set up Storybook for component development and documentation
+- ✅ Created Text component with proper structure (Text.vue and index.ts)
+- ✅ Added Storybook stories for the Text component
+- ✅ Connected project fonts (Rubik) to Storybook
 
 ### Backend
 
@@ -232,6 +236,8 @@
 | ---------------------- | --------------------------------------------------- | -------------- |
 | Project Initialization | Repository structure created, basic setup completed | April 12, 2025 |
 | Memory Bank Creation   | Documentation structure established                 | April 12, 2025 |
+| Storybook Setup        | Configured Storybook for component development      | April 25, 2025 |
+| First UI Component     | Created Text component with documentation           | April 25, 2025 |
 
 ## Upcoming Milestones
 

@@ -31,6 +31,14 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 As this is the project initialization phase, the following foundational elements have been established:
 
+1. **UI Component Development**
+
+   - Set up Storybook for Vue 3 component development and documentation
+   - Created Storybook configuration with proper font integration
+   - Implemented a test Text component with the required structure (Text.vue and index.ts)
+   - Added Storybook stories to showcase different Text component variants
+   - Connected project fonts (Rubik) to Storybook for consistent styling
+
 1. **Project Repository Structure**
 
    - Created separate directories for frontend and backend

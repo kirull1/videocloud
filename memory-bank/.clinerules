@@ -26,7 +26,10 @@ This file captures important patterns, preferences, and project intelligence tha
   - kebab-case for file names
   - UPPER_SNAKE_CASE for constants
 - **Import Order**: Imports should be organized in groups: external libraries, internal modules, types, assets.
-- **Component Structure**: Vue components follow the script-template-style structure with script setup.
+- **Component Structure**: Vue components follow the script-template-style structure with script setup. Each component should have:
+  - ComponentName.vue - The component implementation
+  - index.ts - Re-export file for clean imports
+  - ComponentName.stories.ts - Storybook documentation
 - **Linting and Formatting**: ESLint and Prettier are used to enforce code style. Run `pnpm run style` to format code.
 
 ## Development Workflow
@@ -35,10 +38,11 @@ This file captures important patterns, preferences, and project intelligence tha
   - Feature branches should be created from main
   - Branch naming: feature/feature-name, fix/issue-name, etc.
   - Commits should be atomic and follow conventional commits format
-- **Testing Requirements**: 
+- **Testing Requirements**:
   - New features require unit tests
   - Critical components require E2E tests
   - Backend endpoints require integration tests
+  - UI components require Storybook stories
 - **Code Review Process**: 
   - All PRs require at least one reviewer
   - CI checks must pass before merging
@@ -79,6 +83,7 @@ This file captures important patterns, preferences, and project intelligence tha
 - **Testing**: Jest for unit tests, Playwright for E2E tests.
 - **Linting**: ESLint with Prettier integration.
 - **Build Process**: Vite for frontend, NestJS CLI for backend.
+- **Component Development**: Storybook for UI component development and documentation.
 - **Database Migrations**: TypeORM migrations for schema changes.
 
 ## Critical Implementation Paths

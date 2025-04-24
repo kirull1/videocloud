@@ -151,6 +151,10 @@ VideoCloud follows a modern, microservices-oriented architecture that separates 
    - Composition over inheritance
    - Slot-based content distribution
    - Prop validation and typing
+   - Standard component structure:
+     - ComponentName.vue (component code)
+     - index.ts (re-export)
+     - ComponentName.stories.ts (Storybook documentation)
 
 3. **Container/Presenter Pattern**
 
@@ -231,7 +235,8 @@ App
     ├── VideoCard
     ├── CommentSection
     ├── Pagination
-    └── Notifications
+    ├── Notifications
+    └── Text
 ```
 
 ### Backend Module Structure
