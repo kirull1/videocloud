@@ -1,44 +1,31 @@
-# Stage 1: Build the application
 FROM node:22.14.0-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
-# Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.8.1 --activate
 
-# Copy package.json and other configuration files
-COPY package.json pnpm-lock.yaml* ./
-COPY tsconfig*.json ./
+COPY frontend/package.json frontend/pnpm-lock.yaml* ./
+COPY frontend/tsconfig*.json ./
 COPY tsconfig.base.json ../
-COPY vite.config.ts ./
-COPY env.d.ts ./
-COPY index.html ./
+COPY frontend/vite.config.ts ./
+COPY frontend/env.d.ts ./
+COPY frontend/index.html ./
 
-# Install dependencies
 RUN pnpm install --force
 
-# Copy source code
-COPY src/ ./src/
-COPY public/ ./public/
+COPY frontend/src/ ./src/
+COPY frontend/public/ ./public/
 
-# Build the application
 RUN pnpm run build-only
 
-# Stage 2: Serve the application with Nginx
 FROM nginx:stable-alpine
 
-# Copy built assets from the build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY devops/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
 EXPOSE 80
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD wget -qO- http://localhost/ || exit 1
 
-# Start Nginx server
 CMD ["nginx", "-g", "daemon off;"]
