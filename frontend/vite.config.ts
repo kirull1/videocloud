@@ -18,4 +18,5 @@ export default defineConfig({
       '@shared': fileURLToPath(new URL('./src/shared', import.meta.url)),
     },
   },
+  publicDir: fileURLToPath(new URL('./static', import.meta.url)),
 })

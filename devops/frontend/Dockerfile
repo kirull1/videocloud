@@ -15,6 +15,7 @@ RUN pnpm install --force
 
 COPY frontend/src/ ./src/
 COPY frontend/public/ ./public/
+COPY frontend/static/ ./static/
 
 RUN pnpm run build-only
 
