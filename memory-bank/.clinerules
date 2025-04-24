@@ -30,6 +30,9 @@ This file captures important patterns, preferences, and project intelligence tha
   - ComponentName.vue - The component implementation
   - index.ts - Re-export file for clean imports
   - ComponentName.stories.ts - Storybook documentation
+  - ComponentName.spec.ts - Playwright screenshot tests
+  - README.md - Component documentation
+  - __screenshots__/ - Directory for screenshot references
 - **Linting and Formatting**: ESLint and Prettier are used to enforce code style. Run `pnpm run style` to format code.
 
 ## Development Workflow
@@ -43,6 +46,8 @@ This file captures important patterns, preferences, and project intelligence tha
   - Critical components require E2E tests
   - Backend endpoints require integration tests
   - UI components require Storybook stories
+  - UI components require screenshot tests for mobile and desktop viewports
+  - Screenshot tests should be run using the automated script: `pnpm run test:screenshots:all`
 - **Code Review Process**: 
   - All PRs require at least one reviewer
   - CI checks must pass before merging

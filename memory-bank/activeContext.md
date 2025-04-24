@@ -38,6 +38,10 @@ As this is the project initialization phase, the following foundational elements
    - Implemented a test Text component with the required structure (Text.vue and index.ts)
    - Added Storybook stories to showcase different Text component variants
    - Connected project fonts (Rubik) to Storybook for consistent styling
+   - Added screenshot testing with Playwright for the Text component
+   - Configured tests to capture both mobile and desktop screenshots
+   - Set up component-specific screenshot storage next to the component
+   - Created documentation for running and updating screenshot tests
 
 1. **Project Repository Structure**
 

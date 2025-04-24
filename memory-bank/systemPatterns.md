@@ -155,6 +155,9 @@ VideoCloud follows a modern, microservices-oriented architecture that separates 
      - ComponentName.vue (component code)
      - index.ts (re-export)
      - ComponentName.stories.ts (Storybook documentation)
+     - ComponentName.spec.ts (Playwright screenshot tests)
+     - README.md (Component documentation)
+     - __screenshots__/ (Screenshot reference directory)
 
 3. **Container/Presenter Pattern**
 

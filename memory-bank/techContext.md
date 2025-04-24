@@ -14,7 +14,7 @@
 | Vite       | 6.x     | Build tool and dev server      |
 | Storybook  | 8.6.x   | Component development & docs   |
 | Vitest     | -       | Unit testing framework         |
-| Playwright | -       | End-to-end testing             |
+| Playwright | -       | E2E & screenshot testing       |
 | ESLint     | -       | Code linting                   |
 | Prettier   | -       | Code formatting                |
 
@@ -155,6 +155,21 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
    ```bash
    pnpm run build-storybook
    ```
+
+8. **Run screenshot tests** (requires Storybook to be running):
+   ```bash
+   pnpm run test:screenshots
+   ```
+
+9. **Run screenshot tests with automatic Storybook startup**:
+   ```bash
+   pnpm run test:screenshots:all
+   ```
+
+10. **Update screenshot references**:
+    ```bash
+    pnpm run test:screenshots:update
+    ```
 
 ### Backend Setup
 
