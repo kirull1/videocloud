@@ -1,0 +1,41 @@
+:root {
+  /* Base colors */
+  --video-bg: #F7FAFD;           /* Main background */
+  --panel-bg: #E6F0FB;           /* Panel/card background */
+  --primary: #41A4FF;            /* Primary brand color */
+  --secondary: #9067E6;          /* Secondary brand color */
+  --hover-bg: #EAF9F7;           /* Hover state background */
+  --text-primary: #1A2233;       /* Primary text color */
+  --text-secondary: #67748B;     /* Secondary text color */
+  --success: #8FF6E9;            /* Success state */
+  --error: #FF677B;              /* Error state */
+  
+  /* Video platform specific */
+  --player-bg: #000000;          /* Video player background */
+  --player-controls: #FFFFFF;    /* Player controls */
+  --progress-bar: #41A4FF;       /* Video progress bar */
+  --buffer-bar: rgba(65, 164, 255, 0.4); /* Buffer indicator */
+  --shadow: rgba(26, 34, 51, 0.1); /* Shadow for cards and elements */
+  --overlay: rgba(26, 34, 51, 0.7); /* Overlay for modals and dialogs */
+}
+
+[data-theme="dark"] {
+  /* Base colors */
+  --video-bg: #161B23;           /* Main background */
+  --panel-bg: #232C3A;           /* Panel/card background */
+  --primary: #43ADEB;            /* Primary brand color */
+  --secondary: #A993FF;          /* Secondary brand color */
+  --hover-bg: #223144;           /* Hover state background */
+  --text-primary: #F8FBFF;       /* Primary text color */
+  --text-secondary: #A1B1C9;     /* Secondary text color */
+  --success: #5CF6DF;            /* Success state */
+  --error: #FF748E;              /* Error state */
+  
+  /* Video platform specific */
+  --player-bg: #0A0D12;          /* Video player background */
+  --player-controls: #FFFFFF;    /* Player controls */
+  --progress-bar: #43ADEB;       /* Video progress bar */
+  --buffer-bar: rgba(67, 173, 235, 0.4); /* Buffer indicator */
+  --shadow: rgba(0, 0, 0, 0.3);  /* Shadow for cards and elements */
+  --overlay: rgba(10, 13, 18, 0.8); /* Overlay for modals and dialogs */
+}

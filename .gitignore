@@ -79,3 +79,8 @@ backend/node_modules
 backend/dist
 backend/build
 backend/coverage
+
+missing/node_modules
+missing/dist
+missing/dist-ssr
+missing/coverage

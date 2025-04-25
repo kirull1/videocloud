@@ -54,6 +54,12 @@ This file captures important patterns, preferences, and project intelligence tha
     2. Screenshot tests (.spec.ts)
     3. Unit tests (.test.ts)
   - All dependencies in package.json files must use exact versions (no ^ or ~ prefixes) to ensure reproducibility
+  - Use the root-level .gitignore file for all services in the monorepo to maintain consistency
+  - The missing service uses npm instead of pnpm for dependency management and builds
+  - The missing service build process skips TypeScript type checking to avoid compatibility issues
+  - The 404 page supports multiple error codes (404, 403, 500, 503) with appropriate messages
+  - The 404 page design includes decorative elements (curved lines, triangles) and follows the minimalist style
+  - Styles should be kept in separate CSS files for better organization and maintainability
 - **Code Review Process**: 
   - All PRs require at least one reviewer
   - CI checks must pass before merging

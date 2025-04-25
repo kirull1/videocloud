@@ -66,6 +66,12 @@ VideoCloud follows a modern, microservices-oriented architecture that separates 
    - Adaptive streaming delivery
    - Geographic routing
 
+7. **Missing Content Layer**
+   - Static 404 page generator
+   - Consistent error page styling
+   - Fallback for non-existent content
+   - Integration with web servers and CDNs
+
 ## Key Technical Decisions
 
 ### Frontend Framework: Vue.js with Nuxt
@@ -145,7 +151,28 @@ VideoCloud follows a modern, microservices-oriented architecture that separates 
    - Clear boundaries between layers with unidirectional dependencies
    - Improved maintainability and scalability
 
-2. **Component Pattern**
+2. **Color System**
+
+   - Light and dark theme support via CSS variables
+   - Primary palette:
+     - `--video-bg`: Main background (#F7FAFD / #161B23)
+     - `--panel-bg`: Panel/card background (#E6F0FB / #232C3A)
+     - `--primary`: Primary brand color (#41A4FF / #43ADEB)
+     - `--secondary`: Secondary brand color (#9067E6 / #A993FF)
+     - `--hover-bg`: Hover state background (#EAF9F7 / #223144)
+     - `--text-primary`: Primary text color (#1A2233 / #F8FBFF)
+     - `--text-secondary`: Secondary text color (#67748B / #A1B1C9)
+     - `--success`: Success state (#8FF6E9 / #5CF6DF)
+     - `--error`: Error state (#FF677B / #FF748E)
+   - Video-specific colors:
+     - `--player-bg`: Video player background
+     - `--player-controls`: Player controls
+     - `--progress-bar`: Video progress bar
+     - `--buffer-bar`: Buffer indicator
+     - `--shadow`: Shadow for cards and elements
+     - `--overlay`: Overlay for modals and dialogs
+
+3. **Component Pattern**
 
    - Reusable UI components with clear interfaces
    - Composition over inheritance
@@ -167,21 +194,21 @@ VideoCloud follows a modern, microservices-oriented architecture that separates 
      4. Create unit tests (ComponentName.test.ts) to verify component functionality
      5. This sequence is mandatory for all new components
 
-3. **Container/Presenter Pattern**
+4. **Container/Presenter Pattern**
 
    - Separation of data fetching from presentation
    - Smart containers connected to state
    - Dumb presenters focused on rendering
    - Improved testability and reusability
 
-4. **Observer Pattern (via MobX)**
+5. **Observer Pattern (via MobX)**
 
    - Observable state
    - Automatic tracking of dependencies
    - Reactive updates to the UI
    - Decoupled state from components
 
-5. **Module Pattern**
+6. **Module Pattern**
    - Encapsulated functionality
    - Clear public interfaces
    - Private implementation details

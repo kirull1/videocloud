@@ -238,6 +238,7 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
 2. **Access services**:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:3001
+   - Missing Page Dev: http://localhost:5173
    - PostgreSQL: localhost:5432
    - Redis: localhost:6379
 
