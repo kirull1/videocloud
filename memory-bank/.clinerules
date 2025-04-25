@@ -53,6 +53,7 @@ This file captures important patterns, preferences, and project intelligence tha
     1. Storybook stories (.stories.ts)
     2. Screenshot tests (.spec.ts)
     3. Unit tests (.test.ts)
+  - All dependencies in package.json files must use exact versions (no ^ or ~ prefixes) to ensure reproducibility
 - **Code Review Process**: 
   - All PRs require at least one reviewer
   - CI checks must pass before merging

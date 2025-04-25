@@ -44,6 +44,7 @@ As this is the project initialization phase, the following foundational elements
    - Added unit tests with Vitest for the Text component
    - Established standard that components should NOT have README.md files
    - Defined mandatory component development workflow requiring Storybook stories, screenshot tests, and unit tests for all new components
+   - Fixed all dependencies in package.json files to use exact versions (no ^ or ~ prefixes) for better reproducibility
 
 1. **Project Repository Structure**
 

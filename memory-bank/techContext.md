@@ -286,6 +286,15 @@ For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima
 
 ## Dependencies
 
+### Dependency Versioning
+
+All dependencies in the project use exact versions (no ^ or ~ prefixes) to ensure reproducibility and stability across environments. This approach:
+
+- Prevents unexpected updates that could introduce bugs
+- Ensures consistent builds across different environments
+- Makes dependency updates explicit and intentional
+- Improves project stability and reliability
+
 ### Frontend Dependencies
 
 Key dependencies for the frontend include:
