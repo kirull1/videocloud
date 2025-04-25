@@ -4,7 +4,7 @@
 
 **Project Phase**: Initial Development (Pre-Alpha)
 **Last Updated**: April 25, 2025
-**Overall Progress**: 8%
+**Overall Progress**: 9%
 
 ## What Works
 
@@ -55,7 +55,8 @@
 - ✅ Implemented screenshot testing with Playwright
 - ✅ Set up component-specific screenshot storage
 - ✅ Added mobile and desktop viewport testing
-- ✅ Created documentation for component testing
+- ✅ Added unit tests for components with Vitest
+- ✅ Established standard that components should NOT have README.md files
 
 ### Backend
 
@@ -243,6 +244,9 @@
 | Storybook Setup        | Configured Storybook for component development      | April 25, 2025 |
 | First UI Component     | Created Text component with documentation           | April 25, 2025 |
 | Screenshot Testing     | Implemented Playwright screenshot testing           | April 25, 2025 |
+| Unit Testing          | Added Vitest unit tests for components              | April 25, 2025 |
+| Component Standards    | Established component structure standards           | April 25, 2025 |
+| Component Workflow     | Defined mandatory component development workflow    | April 25, 2025 |
 
 ## Upcoming Milestones
 

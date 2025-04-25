@@ -156,8 +156,16 @@ VideoCloud follows a modern, microservices-oriented architecture that separates 
      - index.ts (re-export)
      - ComponentName.stories.ts (Storybook documentation)
      - ComponentName.spec.ts (Playwright screenshot tests)
-     - README.md (Component documentation)
+     - ComponentName.test.ts (Unit tests with Vitest)
      - __screenshots__/ (Screenshot reference directory)
+     - NOTE: Do NOT create README.md files for components
+   
+   - Component Development Workflow:
+     1. Create the component (ComponentName.vue) and its re-export (index.ts)
+     2. Create Storybook stories (ComponentName.stories.ts) to document and visualize all component variants
+     3. Create screenshot tests (ComponentName.spec.ts) for both mobile and desktop viewports
+     4. Create unit tests (ComponentName.test.ts) to verify component functionality
+     5. This sequence is mandatory for all new components
 
 3. **Container/Presenter Pattern**
 

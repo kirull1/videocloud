@@ -41,7 +41,9 @@ As this is the project initialization phase, the following foundational elements
    - Added screenshot testing with Playwright for the Text component
    - Configured tests to capture both mobile and desktop screenshots
    - Set up component-specific screenshot storage next to the component
-   - Created documentation for running and updating screenshot tests
+   - Added unit tests with Vitest for the Text component
+   - Established standard that components should NOT have README.md files
+   - Defined mandatory component development workflow requiring Storybook stories, screenshot tests, and unit tests for all new components
 
 1. **Project Repository Structure**
 

@@ -31,8 +31,9 @@ This file captures important patterns, preferences, and project intelligence tha
   - index.ts - Re-export file for clean imports
   - ComponentName.stories.ts - Storybook documentation
   - ComponentName.spec.ts - Playwright screenshot tests
-  - README.md - Component documentation
+  - ComponentName.test.ts - Unit tests with Vitest
   - __screenshots__/ - Directory for screenshot references
+  - NOTE: Do NOT create README.md files for components
 - **Linting and Formatting**: ESLint and Prettier are used to enforce code style. Run `pnpm run style` to format code.
 
 ## Development Workflow
@@ -48,6 +49,10 @@ This file captures important patterns, preferences, and project intelligence tha
   - UI components require Storybook stories
   - UI components require screenshot tests for mobile and desktop viewports
   - Screenshot tests should be run using the automated script: `pnpm run test:screenshots:all`
+  - After creating a new component, you MUST create:
+    1. Storybook stories (.stories.ts)
+    2. Screenshot tests (.spec.ts)
+    3. Unit tests (.test.ts)
 - **Code Review Process**: 
   - All PRs require at least one reviewer
   - CI checks must pass before merging
