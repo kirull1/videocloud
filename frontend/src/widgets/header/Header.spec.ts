@@ -19,21 +19,20 @@ if (!fs.existsSync(screenshotsDir)) {
 
 const viewports = {
   mobile: { width: 375, height: 667 },
+  tablet: { width: 768, height: 1024 },
   desktop: { width: 1280, height: 800 }
 };
 
 
 const variants = [
   'default',
-  'small',
-  'large',
-  'bold',
-  'primary',
-  'secondary',
-  'error'
+  'logged-in',
+  'logged-in-with-avatar',
+  'search-loading',
+  'custom-logo'
 ];
 
-test.describe('Text Component Screenshots', () => {
+test.describe('Header Component Screenshots', () => {
   test.beforeAll(async ({ browser }) => {
     console.log('Checking if Storybook is running...');
     const page = await browser.newPage();
@@ -52,14 +51,14 @@ test.describe('Text Component Screenshots', () => {
     const [viewportName, viewportSize] = viewport;
 
     for (const variant of variants) {
-      test(`Text component - ${variant} variant - ${viewportName} view`, async ({ page }) => {
+      test(`Header component - ${variant} variant - ${viewportName} view`, async ({ page }) => {
         await page.setViewportSize(viewportSize);
-        const storyUrl = `${storybookUrl}/iframe.html?id=shared-ui-text--${variant.toLowerCase()}&viewMode=story`;
+        const storyUrl = `${storybookUrl}/iframe.html?id=widgets-header--${variant.toLowerCase()}&viewMode=story`;
         console.log(`Navigating to: ${storyUrl}`);
         await page.goto(storyUrl, { waitUntil: 'networkidle' });
-        await page.waitForSelector('.text', { timeout: 30000 });
+        await page.waitForSelector('.header', { timeout: 30000 });
         await page.waitForTimeout(1000);
-        const screenshotPath = path.join(screenshotsDir, `text-${variant.toLowerCase()}-${viewportName}.png`);
+        const screenshotPath = path.join(screenshotsDir, `header-${variant.toLowerCase()}-${viewportName}.png`);
         console.log(`Taking screenshot: ${screenshotPath}`);
         
         await page.screenshot({

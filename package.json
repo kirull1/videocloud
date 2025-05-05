@@ -19,6 +19,7 @@
     "frontend:test": "pnpm --filter frontend run test",
     "frontend:lint": "pnpm --filter frontend run lint",
     "frontend:release": "cd devops/frontend && ./docker-release.sh",
+    "frontend:storybook": "pnpm --filter frontend run storybook",
     "backend:dev": "pnpm --filter backend run start:dev",
     "backend:build": "pnpm --filter backend run build",
     "backend:test": "pnpm --filter backend run test",

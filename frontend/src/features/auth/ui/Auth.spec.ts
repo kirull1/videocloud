@@ -24,16 +24,12 @@ const viewports = {
 
 
 const variants = [
-  'default',
-  'small',
-  'large',
-  'bold',
-  'primary',
-  'secondary',
-  'error'
+  'logged-out',
+  'logged-in',
+  'logged-in-with-avatar'
 ];
 
-test.describe('Text Component Screenshots', () => {
+test.describe('Auth Component Screenshots', () => {
   test.beforeAll(async ({ browser }) => {
     console.log('Checking if Storybook is running...');
     const page = await browser.newPage();
@@ -52,14 +48,14 @@ test.describe('Text Component Screenshots', () => {
     const [viewportName, viewportSize] = viewport;
 
     for (const variant of variants) {
-      test(`Text component - ${variant} variant - ${viewportName} view`, async ({ page }) => {
+      test(`Auth component - ${variant} variant - ${viewportName} view`, async ({ page }) => {
         await page.setViewportSize(viewportSize);
-        const storyUrl = `${storybookUrl}/iframe.html?id=shared-ui-text--${variant.toLowerCase()}&viewMode=story`;
+        const storyUrl = `${storybookUrl}/iframe.html?id=features-auth--${variant.toLowerCase()}&viewMode=story`;
         console.log(`Navigating to: ${storyUrl}`);
         await page.goto(storyUrl, { waitUntil: 'networkidle' });
-        await page.waitForSelector('.text', { timeout: 30000 });
+        await page.waitForSelector('.auth', { timeout: 30000 });
         await page.waitForTimeout(1000);
-        const screenshotPath = path.join(screenshotsDir, `text-${variant.toLowerCase()}-${viewportName}.png`);
+        const screenshotPath = path.join(screenshotsDir, `auth-${variant.toLowerCase()}-${viewportName}.png`);
         console.log(`Taking screenshot: ${screenshotPath}`);
         
         await page.screenshot({

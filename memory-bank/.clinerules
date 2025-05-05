@@ -35,6 +35,7 @@ This file captures important patterns, preferences, and project intelligence tha
   - __screenshots__/ - Directory for screenshot references
   - NOTE: Do NOT create README.md files for components
 - **Linting and Formatting**: ESLint and Prettier are used to enforce code style. Run `pnpm run style` to format code.
+- **Code Comments**: Keep comments minimal and focused on "why" rather than "what". Avoid excessive comments that simply restate what the code is doing. Self-documenting code is preferred over heavily commented code.
 
 ## Development Workflow
 

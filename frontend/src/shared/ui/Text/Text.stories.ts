@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import Text from './Text.vue';
 
-// More on how to set up stories at: https://storybook.js.org/docs/vue3/writing-stories/introduction
+
 const meta = {
   title: 'Shared/UI/Text',
   component: Text,
@@ -26,7 +26,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// More on writing stories with args: https://storybook.js.org/docs/vue3/writing-stories/args
+
 export const Default: Story = {
   args: {
     content: 'This is a default text',
