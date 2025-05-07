@@ -4,7 +4,7 @@
 
 **Project Phase**: Initial Development (Pre-Alpha)
 **Last Updated**: May 6, 2025
-**Overall Progress**: 21%
+**Overall Progress**: 24%
 
 ## What Works
 
@@ -74,6 +74,10 @@
 - ✅ Implemented responsive grid layout with configurable columns for different screen sizes
 - ✅ Added loading state with skeleton placeholders
 - ✅ Included empty state with customizable message
+- ✅ Created VideoUpload feature for uploading videos to the platform
+- ✅ Implemented drag-and-drop file selection with validation
+- ✅ Added metadata input fields for title, description, and privacy settings
+- ✅ Included upload progress tracking and error handling
 
 ### Backend
 
@@ -277,6 +281,7 @@
 | Video Player          | Created VideoPlayer component with HTML5 video      | May 6, 2025    |
 | Video Card            | Created VideoCard component for video previews      | May 6, 2025    |
 | Video Grid            | Created VideoGrid widget for organizing videos      | May 7, 2025    |
+| Video Upload          | Created VideoUpload feature for uploading videos    | May 7, 2025    |
 
 ## Upcoming Milestones
 
