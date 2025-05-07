@@ -35,7 +35,7 @@ This file captures important patterns, preferences, and project intelligence tha
   - __screenshots__/ - Directory for screenshot references
   - NOTE: Do NOT create README.md files for components
 - **Linting and Formatting**: ESLint and Prettier are used to enforce code style. Run `pnpm run style` to format code.
-- **Code Comments**: Keep comments minimal and focused on "why" rather than "what". Avoid excessive comments that simply restate what the code is doing. Self-documenting code is preferred over heavily commented code.
+- **Code Comments**: Code comments are strictly prohibited. The project follows a self-documenting code approach where variable names, function names, and code structure should be clear enough to understand without comments. All code should be written to be self-explanatory. If code requires explanation, it should be refactored to be more clear rather than adding comments.
 
 ## Development Workflow
 
