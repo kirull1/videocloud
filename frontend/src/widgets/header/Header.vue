@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import Search from '@/features/search';
 import Auth from '@/features/auth';
-import Text from '@/shared/ui/Text';
+import Logo from '@/shared/ui/Logo';
 
 defineProps({
   isAuthenticated: {
@@ -43,7 +43,7 @@ const handleLogout = () => {
     <div class="header__container">
       <div class="header__logo">
         <a href="/" class="header__logo-link">
-          <Text content="VideoCloud" />
+          <Logo size="medium" />
         </a>
       </div>
       
@@ -71,18 +71,20 @@ const handleLogout = () => {
 <style scoped>
 .header {
   width: 100%;
-  height: 64px;
+  height: 56px;
   background-color: var(--video-bg);
   border-bottom: 1px solid var(--panel-bg);
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .header__container {
-  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
   height: 100%;
-  padding: 0 16px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -90,55 +92,80 @@ const handleLogout = () => {
 
 .header__logo {
   flex: 0 0 auto;
-  margin-right: 24px;
+  margin-right: 32px;
+  display: flex;
+  align-items: center;
 }
 
 .header__logo-link {
-  display: block;
+  display: flex;
   text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
 }
 
-.header__logo-image {
-  height: 32px;
-  width: auto;
+.header__logo-link:hover {
+  opacity: 0.9;
 }
 
 .header__search {
   flex: 1 1 auto;
   display: flex;
   justify-content: center;
-  max-width: 800px;
+  max-width: 640px;
   width: 100%;
 }
 
 .header__auth {
   flex: 0 0 auto;
-  margin-left: 24px;
+  margin-left: 32px;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .header__container {
+    padding: 0 16px;
+  }
+  
+  .header__logo {
+    margin-right: 24px;
+  }
+  
+  .header__auth {
+    margin-left: 24px;
+  }
 }
 
 @media (max-width: 768px) {
-  .header {
-    height: 56px;
-  }
-  
-  .header__logo-image {
-    height: 28px;
-  }
-  
   .header__container {
     padding: 0 12px;
   }
   
   .header__logo {
-    margin-right: 12px;
+    margin-right: 16px;
   }
   
   .header__auth {
-    margin-left: 12px;
+    margin-left: 16px;
+  }
+  
+  .header__search {
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header__search {
+    max-width: none;
   }
 }
 
 @media (max-width: 480px) {
+  .header__container {
+    padding: 0 8px;
+  }
+  
   .header__logo {
     margin-right: 8px;
   }

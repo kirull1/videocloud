@@ -1,5 +1,172 @@
 # VideoCloud System Patterns
 
+## Architecture Overview
+
+### Frontend Architecture
+- Vue 3 with Composition API
+- Feature-Sliced Design methodology
+- Component-based architecture
+- Responsive design implementation
+- CSS modules for styling
+
+### Backend Architecture
+- NestJS framework
+- TypeORM for database operations
+- JWT-based authentication
+- RESTful API design
+- Modular architecture
+
+## Database Schema
+
+### Users Table
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  isEmailVerified BOOLEAN DEFAULT false,
+  avatarUrl VARCHAR(255),
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## Authentication System
+
+### JWT Implementation
+- Stateless authentication using JWT
+- Secure password hashing with bcrypt
+- Token-based session management
+- Protected route implementation
+
+### User Validation
+- Email format validation
+- Password strength requirements
+- Username uniqueness check
+- Input sanitization
+
+## Avatar System
+
+### Implementation
+- DiceBear API integration for generated avatars
+- Custom avatar upload support
+- Fallback mechanism for missing avatars
+- Consistent avatar generation across the platform
+
+### Avatar Generation
+```typescript
+export const generateAvatarUrl = (username: string, size = 32): string => {
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(username)}&size=${size}`;
+};
+```
+
+## Frontend Components
+
+### Auth Component
+- Responsive design
+- User menu with dropdown
+- Avatar display
+- Authentication state management
+
+### User Menu
+- Profile link
+- Settings link
+- Logout functionality
+- Avatar display
+
+## State Management
+
+### Authentication State
+- User session management
+- Token storage and refresh
+- Authentication status tracking
+- Error handling
+
+## Error Handling
+
+### Frontend
+- Form validation errors
+- API error handling
+- User feedback
+- Loading states
+
+### Backend
+- Input validation
+- Database error handling
+- Authentication errors
+- API error responses
+
+## Security Measures
+
+### Authentication
+- Secure password hashing
+- JWT token validation
+- Protected routes
+- Input sanitization
+
+### Data Protection
+- Environment variables
+- Secure headers
+- CORS configuration
+- Rate limiting
+
+## Testing Strategy
+
+### Frontend Testing
+- Component unit tests
+- Integration tests
+- E2E tests
+- Visual regression tests
+
+### Backend Testing
+- Unit tests
+- Integration tests
+- API tests
+- Database tests
+
+## Development Workflow
+
+### Code Organization
+- Feature-based structure
+- Shared components
+- Utility functions
+- Type definitions
+
+### Version Control
+- Git workflow
+- Branch strategy
+- Commit conventions
+- Code review process
+
+## Deployment Strategy
+
+### Frontend
+- Static file hosting
+- CDN integration
+- Build optimization
+- Environment configuration
+
+### Backend
+- Container deployment
+- Database migrations
+- Environment setup
+- Monitoring setup
+
+## Monitoring and Logging
+
+### Application Monitoring
+- Error tracking
+- Performance monitoring
+- User analytics
+- System health checks
+
+### Logging
+- Error logging
+- Access logging
+- Audit logging
+- Debug logging
+
 ## System Architecture
 
 VideoCloud follows a modern, microservices-oriented architecture that separates concerns while maintaining cohesive functionality. The system is designed with scalability, maintainability, and performance as key architectural drivers.

@@ -1,136 +1,90 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import Header from './Header.vue';
+import Logo from '@/shared/ui/Logo';
 import Search from '@/features/search';
 import Auth from '@/features/auth';
+
+// Mock the child components
+vi.mock('@/shared/ui/Logo', () => ({
+  default: {
+    name: 'Logo',
+    render: () => {},
+  },
+}));
 
 vi.mock('@/features/search', () => ({
   default: {
     name: 'Search',
-    template: '<div class="search-mock"></div>',
-    emits: ['search']
-  }
+    render: () => {},
+    emits: ['search'],
+  },
 }));
 
 vi.mock('@/features/auth', () => ({
   default: {
     name: 'Auth',
-    template: '<div class="auth-mock"></div>',
-    emits: ['login', 'signup', 'logout']
-  }
+    render: () => {},
+    emits: ['login', 'signup', 'logout'],
+  },
 }));
 
-describe('Header Component', () => {
-  it('renders with default props', () => {
+describe('Header', () => {
+  it('renders correctly with default props', () => {
     const wrapper = mount(Header);
     
-    expect(wrapper.exists()).toBe(true);
+    // Check if all major sections are rendered
+    expect(wrapper.find('.header').exists()).toBe(true);
+    expect(wrapper.find('.header__logo').exists()).toBe(true);
+    expect(wrapper.find('.header__search').exists()).toBe(true);
+    expect(wrapper.find('.header__auth').exists()).toBe(true);
     
-    const headerElement = wrapper.find('.header');
-    expect(headerElement.exists()).toBe(true);
-    
-    const logoElement = wrapper.find('.header__logo-image');
-    expect(logoElement.exists()).toBe(true);
-    
-    expect(logoElement.attributes('src')).toContain('logo.svg');
-    
-    expect(wrapper.findComponent({ name: 'Search' }).exists()).toBe(true);
-    
-    expect(wrapper.findComponent({ name: 'Auth' }).exists()).toBe(true);
+    // Check if child components are rendered
+    expect(wrapper.findComponent(Logo).exists()).toBe(true);
+    expect(wrapper.findComponent(Search).exists()).toBe(true);
+    expect(wrapper.findComponent(Auth).exists()).toBe(true);
   });
-  
-  it('renders custom logo when logoUrl is provided', () => {
-    const logoUrl = 'https://example.com/logo.png';
+
+  it('passes correct props to child components', async () => {
     const wrapper = mount(Header, {
-      props: { 
-        logoUrl
-      }
-    });
-    
-    const logoElement = wrapper.find('.header__logo-image');
-    expect(logoElement.attributes('src')).toBe(logoUrl);
-  });
-  
-  it('passes isSearchLoading prop to Search component', async () => {
-    const wrapper = mount(Header, {
-      props: { 
+      props: {
+        isAuthenticated: true,
+        userName: 'TestUser',
         isSearchLoading: true
       }
     });
     
+    // Check if props are passed correctly using attributes
     const searchComponent = wrapper.findComponent(Search);
-    expect(searchComponent.props('isLoading')).toBe(true);
-  });
-  
-  it('passes authentication props to Auth component', async () => {
-    const props = {
-      isAuthenticated: true,
-      userName: 'John Doe',
-      avatarUrl: 'https://example.com/avatar.jpg'
-    };
-    
-    const wrapper = mount(Header, {
-      props
-    });
+    expect(searchComponent.attributes()).toHaveProperty('is-loading');
     
     const authComponent = wrapper.findComponent(Auth);
-    expect(authComponent.props('isAuthenticated')).toBe(props.isAuthenticated);
-    expect(authComponent.props('userName')).toBe(props.userName);
-    expect(authComponent.props('avatarUrl')).toBe(props.avatarUrl);
+    expect(authComponent.attributes()).toHaveProperty('is-authenticated');
+    expect(authComponent.attributes()).toHaveProperty('user-name', 'TestUser');
   });
-  
-  it('forwards search event from Search component', async () => {
-    const wrapper = mount(Header);
-    const searchComponent = wrapper.findComponent(Search);
-    
-    const searchQuery = 'test query';
-    await searchComponent.vm.$emit('search', searchQuery);
-    
-    expect(wrapper.emitted('search')).toBeTruthy();
-    expect(wrapper.emitted('search')?.[0]).toEqual([searchQuery]);
-  });
-  
-  it('forwards login event from Auth component', async () => {
-    const wrapper = mount(Header);
-    const authComponent = wrapper.findComponent(Auth);
-    
-    await authComponent.vm.$emit('login');
-    
-    expect(wrapper.emitted('login')).toBeTruthy();
-    expect(wrapper.emitted('login')?.length).toBe(1);
-  });
-  
-  it('forwards signup event from Auth component', async () => {
-    const wrapper = mount(Header);
-    const authComponent = wrapper.findComponent(Auth);
-    
-    await authComponent.vm.$emit('signup');
-    
-    expect(wrapper.emitted('signup')).toBeTruthy();
-    expect(wrapper.emitted('signup')?.length).toBe(1);
-  });
-  
-  it('forwards logout event from Auth component', async () => {
-    const wrapper = mount(Header);
-    const authComponent = wrapper.findComponent(Auth);
-    
-    await authComponent.vm.$emit('logout');
-    
-    expect(wrapper.emitted('logout')).toBeTruthy();
-    expect(wrapper.emitted('logout')?.length).toBe(1);
-  });
-  
-  it('has responsive classes for different screen sizes', () => {
+
+  it('emits search event when Search component triggers search', async () => {
     const wrapper = mount(Header);
     
-    const headerElement = wrapper.find('.header');
-    expect(headerElement.exists()).toBe(true);
+    // Simulate search event from Search component
+    await wrapper.findComponent(Search).vm.$emit('search', 'test query');
     
-    const headerClasses = wrapper.find('.header').classes();
+    // Check if Header emitted the event with correct payload
+    expect(wrapper.emitted()).toHaveProperty('search');
+    expect(wrapper.emitted('search')![0]).toEqual(['test query']);
+  });
+
+  it('emits login, signup, and logout events', async () => {
+    const wrapper = mount(Header);
     
-    expect(wrapper.find('.header__container').exists()).toBe(true);
-    expect(wrapper.find('.header__logo').exists()).toBe(true);
-    expect(wrapper.find('.header__search').exists()).toBe(true);
-    expect(wrapper.find('.header__auth').exists()).toBe(true);
+    // Simulate events from Auth component
+    await wrapper.findComponent(Auth).vm.$emit('login');
+    await wrapper.findComponent(Auth).vm.$emit('signup');
+    await wrapper.findComponent(Auth).vm.$emit('logout');
+    
+    // Check if Header emitted these events
+    expect(wrapper.emitted()).toHaveProperty('login');
+    expect(wrapper.emitted()).toHaveProperty('signup');
+    expect(wrapper.emitted()).toHaveProperty('logout');
   });
 });

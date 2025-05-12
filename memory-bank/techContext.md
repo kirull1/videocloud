@@ -1,418 +1,222 @@
 # VideoCloud Technical Context
 
-## Technologies Used
+## Technology Stack
 
-### Frontend Technologies
+### Frontend
+- Vue 3 with Composition API
+- TypeScript
+- CSS Modules
+- Vite
+- Vitest for testing
+- Playwright for E2E testing
 
-| Technology | Version | Purpose                        |
-| ---------- | ------- | ------------------------------ |
-| Vue.js     | 3.x     | Core UI framework              |
-| Nuxt.js    | 3.x     | Vue meta-framework for SSR/SSG |
-| TypeScript | 5.x     | Type-safe JavaScript           |
-| MobX       | 6.x     | State management               |
-| SCSS       | -       | Enhanced styling               |
-| Vite       | 6.x     | Build tool and dev server      |
-| Storybook  | 8.6.x   | Component development & docs   |
-| Vitest     | -       | Unit testing framework         |
-| Playwright | -       | E2E & screenshot testing       |
-| ESLint     | -       | Code linting                   |
-| Prettier   | -       | Code formatting                |
+### Backend
+- NestJS
+- TypeScript
+- TypeORM
+- PostgreSQL
+- JWT for authentication
+- bcrypt for password hashing
 
-### Backend Technologies
+### Development Tools
+- pnpm for package management
+- ESLint for linting
+- Prettier for code formatting
+- Git for version control
+- Docker for containerization
 
-| Technology      | Version | Purpose                       |
-| --------------- | ------- | ----------------------------- |
-| NestJS          | 10.x    | Backend framework             |
-| TypeScript      | 5.x     | Type-safe JavaScript          |
-| TypeORM         | 0.3.x   | ORM for database interactions |
-| PostgreSQL      | 15.x    | Relational database           |
-| Jest            | 29.x    | Testing framework             |
-| Swagger/OpenAPI | 3.0     | API documentation             |
-| Passport        | -       | Authentication                |
-| JWT             | -       | Token-based auth              |
-| pnpm            | 10.8.1  | Package manager               |
-| Node.js         | 22.14.0 | JavaScript runtime            |
+## Development Environment
 
-### Infrastructure & DevOps
+### Required Software
+- Node.js 22.14.0
+- pnpm 10.8.1
+- PostgreSQL 16
+- Docker (optional)
 
-| Technology     | Purpose                     |
-| -------------- | --------------------------- |
-| Docker         | Containerization            |
-| GitHub Actions | CI/CD pipeline              |
-| AWS S3         | Video storage               |
-| AWS CloudFront | CDN for video delivery      |
-| AWS RDS        | Managed PostgreSQL          |
-| Redis          | Caching and session storage |
-| Prometheus     | Monitoring                  |
-| Grafana        | Metrics visualization       |
-| ELK Stack      | Logging and analysis        |
+### Environment Variables
+```env
+# Database
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=videocloud
 
-### Video Processing
+# JWT
+JWT_SECRET=your-super-secret-key-here
+JWT_EXPIRATION=1d
 
-| Technology              | Purpose                              |
-| ----------------------- | ------------------------------------ |
-| FFmpeg                  | Video transcoding                    |
-| HLS                     | HTTP Live Streaming                  |
-| DASH                    | Dynamic Adaptive Streaming over HTTP |
-| WebRTC                  | Real-time communication              |
-| Media Source Extensions | Adaptive streaming in browser        |
-
-## Development Setup
-
-### Prerequisites
-
-- **Node.js**: Version 22.14.0
-- **pnpm**: Version 7.33.6
-- **PostgreSQL**: Version 15.x
-- **Docker**: Latest version (for containerized development)
-- **Git**: Latest version
-- **IDE**: VSCode recommended with extensions:
-  - Vue Language Features (Volar)
-  - TypeScript Vue Plugin (Volar)
-  - ESLint
-  - Prettier
-  - GitLens
-  - REST Client
-
-### Node.js and pnpm Setup
-
-```bash
-# Install nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-source ~/.bashrc  # or ~/.zshrc for macOS
-
-# Use correct Node.js version (from .nvmrc file with version 22.14.0)
-nvm use
-
-# Install pnpm
-npm install -g pnpm@10.8.1
+# CORS
+CORS_ORIGIN=http://localhost:5173
 ```
 
-### Platform-Specific Docker Setup
+## Project Structure
 
-#### macOS
+### Frontend
+```
+frontend/
+├── src/
+│   ├── features/
+│   │   ├── auth/
+│   │   │   ├── api/
+│   │   │   ├── ui/
+│   │   │   └── model/
+│   │   └── ...
+│   ├── shared/
+│   │   ├── lib/
+│   │   ├── ui/
+│   │   └── api/
+│   └── app/
+└── ...
+```
 
-For macOS, especially on Apple Silicon (ARM) machines, we recommend using Colima instead of Docker Desktop:
-
-- **Colima**: Provides a container runtime for macOS
-  - Install via Homebrew: `brew install colima docker docker-compose`
-  - For Intel Macs: `colima start`
-  - For Apple Silicon (ARM) Macs: `colima start --arch aarch64 --vm-type=vz --vz-rosetta --cpu 6 --memory 8`
-
-#### Linux
-
-- **Docker and Docker Compose**: Install via package manager
-  - Ubuntu/Debian: `sudo apt install docker.io docker-compose`
-  - Enable service: `sudo systemctl enable --now docker`
-  - Add user to docker group: `sudo usermod -aG docker $USER`
-
-### Frontend Setup
-
-1. **Clone the repository**:
-
-   ```bash
-   git clone https://github.com/kirull1/videocloud.git
-   cd videocloud/frontend
-   ```
-
-2. **Install dependencies**:
-
-   ```bash
-   pnpm install
-   ```
-
-3. **Start development server**:
-
-   ```bash
-   pnpm run dev
-   ```
-
-4. **Run tests**:
-
-   ```bash
-   # Unit tests
-   pnpm run test
-
-   # E2E tests
-   pnpm run test:e2e
-
-   # Coverage
-   pnpm run test:coverage
-   ```
-
-5. **Run Storybook**:
-
-   ```bash
-   pnpm run storybook
-   ```
-
-6. **Build for production**:
-   ```bash
-   pnpm run build
-   ```
-
-7. **Build Storybook for production**:
-   ```bash
-   pnpm run build-storybook
-   ```
-
-8. **Run unit tests**:
-   ```bash
-   pnpm run test:unit
-   ```
-
-9. **Run screenshot tests** (requires Storybook to be running):
-   ```bash
-   pnpm run test:screenshots
-   ```
-
-10. **Run screenshot tests with automatic Storybook startup**:
-    ```bash
-    pnpm run test:screenshots:all
-    ```
-
-11. **Update screenshot references**:
-    ```bash
-    pnpm run test:screenshots:update
-    ```
-
-### Backend Setup
-
-1. **Navigate to backend directory**:
-
-   ```bash
-   cd videocloud/backend
-   ```
-
-2. **Install dependencies**:
-
-   ```bash
-   pnpm install
-   ```
-
-3. **Configure environment**:
-   Create a `.env` file with the following variables:
-
-   ```
-   DATABASE_HOST=localhost
-   DATABASE_PORT=5432
-   DATABASE_USER=postgres
-   DATABASE_PASSWORD=postgres
-   DATABASE_NAME=videocloud
-   JWT_SECRET=your-secret-key
-   ```
-
-4. **Run database migrations**:
-
-   ```bash
-   pnpm run typeorm migration:run
-   ```
-
-5. **Start development server**:
-
-   ```bash
-   pnpm run start:dev
-   ```
-
-6. **Run tests**:
-
-   ```bash
-   # Unit tests
-   pnpm run test
-
-   # E2E tests
-   pnpm run test:e2e
-
-   # Coverage
-   pnpm run test:cov
-   ```
-
-### Docker Setup (Optional)
-
-1. **Build and run with Docker Compose**:
-
-   ```bash
-   docker-compose up -d
-   ```
-
-2. **Access services**:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:3001
-   - Missing Page Dev: http://localhost:5173
-   - PostgreSQL: localhost:5432
-   - Redis: localhost:6379
-
-## Technical Constraints
-
-### Performance Requirements
-
-- **Video Playback**: Buffer-free playback on connections as low as 1.5 Mbps
-- **Page Load**: Initial page load under 2 seconds (95th percentile)
-- **API Response**: 95% of API requests complete under 200ms
-- **Transcoding**: Support for processing at least 100 hours of video per day
-- **Concurrent Users**: Support for at least 10,000 concurrent users
-
-### Scalability Requirements
-
-- **Storage**: Efficiently handle petabytes of video data
-- **Traffic**: Support for millions of video views per day
-- **Users**: Scale to millions of registered users
-- **Global Access**: Content delivery optimized for global audience
-
-### Security Requirements
-
-- **Authentication**: Secure user authentication with JWT
-- **Authorization**: Role-based access control
-- **Content Protection**: DRM for premium content
-- **Data Protection**: Encryption for sensitive user data
-- **API Security**: Rate limiting, CORS, and input validation
-
-### Compliance Requirements
-
-- **GDPR**: Compliance with European data protection regulations
-- **CCPA**: Compliance with California Consumer Privacy Act
-- **Accessibility**: WCAG 2.1 AA compliance
-- **Content Moderation**: Tools for flagging inappropriate content
-
-### Browser Support
-
-- **Desktop**:
-  - Chrome (last 2 versions)
-  - Firefox (last 2 versions)
-  - Safari (last 2 versions)
-  - Edge (last 2 versions)
-- **Mobile**:
-  - iOS Safari (last 2 versions)
-  - Android Chrome (last 2 versions)
+### Backend
+```
+backend/
+├── src/
+│   ├── auth/
+│   │   ├── dto/
+│   │   ├── guards/
+│   │   └── strategies/
+│   ├── users/
+│   │   ├── dto/
+│   │   └── entities/
+│   ├── config/
+│   └── migrations/
+└── ...
+```
 
 ## Dependencies
 
-### Dependency Versioning
-
-All dependencies in the project use exact versions (no ^ or ~ prefixes) to ensure reproducibility and stability across environments. This approach:
-
-- Prevents unexpected updates that could introduce bugs
-- Ensures consistent builds across different environments
-- Makes dependency updates explicit and intentional
-- Improves project stability and reliability
-
 ### Frontend Dependencies
-
-Key dependencies for the frontend include:
-
-- **@nuxt/ui**: UI component library for Nuxt
-- **@vueuse/core**: Collection of Vue composition utilities
-- **mobx**: State management library
-- **mobx-vue-lite**: MobX bindings for Vue
-- **axios**: HTTP client for API requests
-- **vue-router**: Routing library (included in Nuxt)
-- **video.js**: Video player framework
-- **chart.js**: Charting library for analytics
-- **date-fns**: Date utility library
-- **lodash-es**: Utility library
-- **zod**: Schema validation
-- **storybook**: Component development environment
-- **@storybook/vue3**: Vue 3 integration for Storybook
-- **@storybook/addon-essentials**: Core Storybook addons
-- **@storybook/addon-links**: Navigation between stories
-- **@storybook/vue3-vite**: Vite builder for Storybook
+```json
+{
+  "dependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.0",
+    "pinia": "^2.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0",
+    "@playwright/test": "^1.40.0"
+  }
+}
+```
 
 ### Backend Dependencies
+```json
+{
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/jwt": "^10.0.0",
+    "@nestjs/passport": "^10.0.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "bcrypt": "^5.1.0",
+    "pg": "^8.11.0",
+    "typeorm": "^0.3.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.0.0",
+    "@nestjs/testing": "^10.0.0",
+    "@types/jest": "^29.5.0",
+    "jest": "^29.5.0"
+  }
+}
+```
 
-Key dependencies for the backend include:
+## API Endpoints
 
-- **@nestjs/core**: Core NestJS framework
-- **@nestjs/typeorm**: TypeORM integration for NestJS
-- **@nestjs/passport**: Authentication for NestJS
-- **@nestjs/swagger**: OpenAPI documentation
-- **typeorm**: ORM for database interactions
-- **pg**: PostgreSQL client
-- **passport**: Authentication middleware
-- **passport-jwt**: JWT strategy for Passport
-- **class-validator**: Validation library
-- **class-transformer**: Object transformation
-- **nestjs-redis**: Redis integration
-- **winston**: Logging library
-- **ffmpeg**: Video processing (via child_process)
+### Authentication
+- POST /auth/register - Register new user
+- POST /auth/login - Login user
+- POST /auth/logout - Logout user
+- GET /auth/me - Get current user
 
-### DevOps Dependencies
+### Users
+- GET /users/:id - Get user by ID
+- PATCH /users/:id - Update user
+- DELETE /users/:id - Delete user
 
-- **Docker**: Containerization
-- **docker-compose**: Multi-container Docker applications
-- **GitHub Actions**: CI/CD workflows
-- **AWS SDK**: Interaction with AWS services
-- **terraform**: Infrastructure as code (for production)
+## Database Schema
 
-## Development Workflow
+### Users Table
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  isEmailVerified BOOLEAN DEFAULT false,
+  avatarUrl VARCHAR(255),
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-1. **Feature Planning**:
+## Testing
 
-   - Requirements gathering
-   - Technical specification
-   - Task breakdown in issue tracker
+### Frontend Testing
+- Unit tests with Vitest
+- Component tests with Vue Test Utils
+- E2E tests with Playwright
+- Visual regression tests
 
-2. **Development**:
+### Backend Testing
+- Unit tests with Jest
+- Integration tests
+- API tests
+- Database tests
 
-   - Branch creation from main (`feature/feature-name`)
-   - Implementation with TDD approach
-   - Self-review and local testing
+## Deployment
 
-3. **Code Review**:
+### Frontend Deployment
+- Static file hosting
+- CDN integration
+- Build optimization
+- Environment configuration
 
-   - Pull request creation
-   - Automated CI checks
-   - Peer code review
-   - Addressing feedback
+### Backend Deployment
+- Container deployment
+- Database migrations
+- Environment setup
+- Monitoring setup
 
-4. **Testing**:
+## Security
 
-   - Unit tests
-   - Integration tests
-   - E2E tests
-   - Manual QA
+### Authentication
+- JWT-based authentication
+- Password hashing with bcrypt
+- Protected routes
+- Input validation
 
-5. **Deployment**:
+### Data Protection
+- Environment variables
+- Secure headers
+- CORS configuration
+- Rate limiting
 
-   - Merge to main branch
-   - Automated deployment to staging
-   - Verification in staging environment
-   - Promotion to production
+## Monitoring
 
-6. **Monitoring**:
-   - Performance monitoring
-   - Error tracking
-   - User feedback collection
-   - Iterative improvements
+### Application Monitoring
+- Error tracking
+- Performance monitoring
+- User analytics
+- System health checks
 
-## Environment Configuration
+### Logging
+- Error logging
+- Access logging
+- Audit logging
+- Debug logging
 
-### Development Environment
-
-- Local development setup
-- Local PostgreSQL database
-- Mock services for third-party integrations
-- Hot reloading for rapid development
-
-### Staging Environment
-
-- Cloud-hosted environment
-- Isolated database with production-like data
-- Integration with test versions of third-party services
-- Automated deployments from main branch
-
-### Production Environment
-
-- High-availability cloud setup
-- Database clusters with replication
-- CDN integration for content delivery
-- Auto-scaling based on load
-- Regular backups and disaster recovery
-
-## Monitoring and Observability
-
-- **Application Metrics**: Response times, error rates, request counts
-- **Business Metrics**: User registrations, video uploads, engagement
-- **Infrastructure Metrics**: CPU, memory, disk usage, network
-- **Logging**: Centralized logging with structured format
-- **Alerting**: Automated alerts for critical issues
-- **Dashboards**: Real-time visibility into system health
+## Notes
+- Authentication system is now implemented with proper validation and error handling
+- Avatar generation system is in place with fallback mechanism
+- Next focus should be on user profile management and email verification
+- Need to implement proper testing for all new features
+- Need to add proper documentation for all new features
+- Need to implement proper security measures for all new features
+- Need to add proper logging system for all new features
