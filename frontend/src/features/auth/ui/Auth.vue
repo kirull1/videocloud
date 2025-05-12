@@ -1,65 +1,47 @@
 <script setup lang="ts">
-defineProps({
-  isAuthenticated: {
-    type: Boolean,
-    default: false
-  },
-  userName: {
-    type: String,
-    default: ''
-  },
-});
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { authApi } from '../api/authApi'
+import { generateAvatarUrl } from '@/shared/lib/avatar'
 
-const emit = defineEmits(['login', 'signup', 'logout']);
+const router = useRouter()
+const isMenuOpen = ref(false)
+const isAuthenticated = computed(() => authApi.isAuthenticated())
+const username = ref('User') // TODO: Get from store
+const userAvatar = ref(generateAvatarUrl('User')) // Default avatar for non-authenticated state
 
-const handleLogin = () => {
-  emit('login');
-};
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
+}
 
-const handleSignup = () => {
-  emit('signup');
-};
+const handleLogout = async () => {
+  await authApi.logout()
+  router.push('/auth/login')
+}
 
-const handleLogout = () => {
-  emit('logout');
-};
+// Update avatar when user logs in
+const updateAvatar = (username: string) => {
+  userAvatar.value = generateAvatarUrl(username)
+}
 </script>
 
 <template>
   <div class="auth">
-    <template v-if="isAuthenticated">
-      <div class="auth__user">
-        <div class="auth__avatar">
-          <span>{{ userName.charAt(0).toUpperCase() }}</span>
-        </div>
-        <span class="auth__name">{{ userName }}</span>
-        <button class="auth__button auth__button--logout" @click="handleLogout">
-          <svg
-            class="auth__icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21"
-                  y1="12"
-                  x2="9"
-                  y2="12" />
-          </svg>
-        </button>
+    <div v-if="!isAuthenticated" class="auth-buttons">
+      <router-link to="/auth/login" class="auth-button login">Sign In</router-link>
+      <router-link to="/auth/register" class="auth-button register">Sign Up</router-link>
+    </div>
+    <div v-else class="user-menu">
+      <button class="user-button" @click="toggleMenu">
+        <img :src="userAvatar" alt="User avatar" class="avatar" />
+        <span class="username">{{ username }}</span>
+      </button>
+      <div v-if="isMenuOpen" class="menu">
+        <router-link to="/profile" class="menu-item">Profile</router-link>
+        <router-link to="/settings" class="menu-item">Settings</router-link>
+        <button class="menu-item logout" @click="handleLogout">Logout</button>
       </div>
-    </template>
-    <template v-else>
-      <div class="auth__buttons">
-        <button class="auth__button auth__button--login" @click="handleLogin">Log in</button>
-        <button class="auth__button auth__button--signup" @click="handleSignup">Sign up</button>
-      </div>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -69,96 +51,97 @@ const handleLogout = () => {
   align-items: center;
 }
 
-.auth__buttons {
+.auth-buttons {
   display: flex;
-  gap: 8px;
+  gap: 1rem;
 }
 
-.auth__button {
-  padding: 8px 16px;
+.auth-button {
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  font-family: 'Rubik', sans-serif;
-  font-size: 14px;
+  text-decoration: none;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
+  transition: background-color 0.2s;
 }
 
-.auth__button--login {
-  background-color: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--panel-bg);
+.login {
+  color: #007bff;
+  border: 1px solid #007bff;
 }
 
-.auth__button--login:hover {
-  background-color: var(--panel-bg);
-}
-
-.auth__button--signup {
-  background-color: var(--primary);
+.login:hover {
+  background-color: #007bff;
   color: white;
 }
 
-.auth__button--signup:hover {
-  background-color: #3b96eb;
+.register {
+  background-color: #007bff;
+  color: white;
 }
 
-.auth__user {
+.register:hover {
+  background-color: #0056b3;
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-button {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
 }
 
-.auth__avatar {
+.avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: var(--panel-bg);
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-primary);
+}
+
+.username {
   font-weight: 500;
 }
 
-.auth__name {
-  font-size: 14px;
-  color: var(--text-primary);
-  font-weight: 500;
+.menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
 }
 
-.auth__button--logout {
-  background-color: transparent;
-  padding: 4px;
-  color: var(--text-secondary);
+.menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: #333;
+  transition: background-color 0.2s;
 }
 
-.auth__button--logout:hover {
-  color: var(--text-primary);
+.menu-item:hover {
+  background-color: #f8f9fa;
 }
 
-.auth__icon {
-  width: 20px;
-  height: 20px;
+.logout {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #dc3545;
 }
 
-@media (max-width: 768px) {
-  .auth__name {
-    display: none;
-  }
-  
-  .auth__button {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 480px) {
-  .auth__button--login {
-    display: none;
-  }
+.logout:hover {
+  background-color: #dc3545;
+  color: white;
 }
 </style>

@@ -1,10 +1,29 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './modules/auth/auth.module';
+import databaseConfig from './config/database.config';
+import jwtConfig from './config/jwt.config';
+import { DataSourceOptions } from 'typeorm';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [databaseConfig, jwtConfig],
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): DataSourceOptions => {
+        const config = configService.get<DataSourceOptions>('database');
+        if (!config) {
+          throw new Error('Database configuration not found');
+        }
+        return config;
+      },
+    }),
+    AuthModule,
+  ],
 })
 export class AppModule {}
