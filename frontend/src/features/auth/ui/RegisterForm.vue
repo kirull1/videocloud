@@ -48,10 +48,16 @@
       <span v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</span>
     </div>
 
-    <div v-if="error" class="form-error">{{ error }}</div>
+    <transition name="fade">
+      <div v-if="error" class="form-error">
+        <span class="error-icon">!</span>
+        {{ error }}
+      </div>
+    </transition>
 
-    <button type="submit" :disabled="isLoading">
-      {{ isLoading ? 'Creating account...' : 'Create Account' }}
+    <button type="submit" :disabled="isLoading" class="submit-button">
+      <span v-if="isLoading" class="spinner"/>
+      <span>{{ isLoading ? 'Creating account...' : 'Create Account' }}</span>
     </button>
 
     <div class="form-footer">
@@ -194,9 +200,28 @@ input.error {
   color: #dc3545;
   margin-bottom: 1rem;
   text-align: center;
+  background-color: #f8d7da;
+  padding: 0.75rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-button {
+.error-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+.submit-button {
   width: 100%;
   padding: 0.75rem;
   background-color: #007bff;
@@ -206,15 +231,46 @@ button {
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-button:hover {
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.submit-button:hover {
   background-color: #0056b3;
 }
 
-button:disabled {
-  background-color: #ccc;
+.submit-button:disabled {
+  background-color: #6c757d;
   cursor: not-allowed;
+}
+
+/* Animations */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 .form-footer {

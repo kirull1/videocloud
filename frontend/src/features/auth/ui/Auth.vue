@@ -35,11 +35,13 @@ const handleLogout = async () => {
         <img :src="userAvatar" alt="User avatar" class="avatar" />
         <span class="username">{{ username }}</span>
       </button>
-      <div v-if="isMenuOpen" class="menu">
-        <router-link to="/profile" class="menu-item">Profile</router-link>
-        <router-link to="/settings" class="menu-item">Settings</router-link>
-        <button class="menu-item logout" @click="handleLogout">Logout</button>
-      </div>
+      <transition name="menu-fade">
+        <div v-if="isMenuOpen" class="menu">
+          <router-link to="/profile" class="menu-item">Profile</router-link>
+          <router-link to="/settings" class="menu-item">Settings</router-link>
+          <button class="menu-item logout" @click="handleLogout">Logout</button>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -142,5 +144,17 @@ const handleLogout = async () => {
 .logout:hover {
   background-color: #dc3545;
   color: white;
+}
+
+/* Menu animation */
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.menu-fade-enter-from,
+.menu-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

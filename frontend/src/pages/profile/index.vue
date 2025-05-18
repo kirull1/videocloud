@@ -161,16 +161,24 @@ const getAvatarUrl = computed(() => {
   <div class="profile-page">
     <h1>User Profile</h1>
     
-    <div v-if="isLoading && !profile" class="loading">Loading profile...</div>
+    <div v-if="isLoading && !profile" class="loading">
+      <div class="loading-spinner"/>
+      <p>Loading profile...</p>
+    </div>
     
-    <div v-else-if="error && !profile.id" class="error">
-      {{ error }}
+    <div v-else-if="error && !profile" class="error">
+      <div class="error-icon">!</div>
+      <p>{{ error }}</p>
+      <button class="retry-btn" @click="userStore.fetchUserProfile()">Retry</button>
     </div>
     
     <div v-else-if="profile" class="profile-container">
-      <div v-if="successMessage" class="success-message">
-        {{ successMessage }}
-      </div>
+      <transition name="fade">
+        <div v-if="successMessage" class="success-message">
+          <span class="success-icon">✓</span>
+          {{ successMessage }}
+        </div>
+      </transition>
       
       <div class="avatar-section">
         <div class="avatar-container">
@@ -255,9 +263,11 @@ const getAvatarUrl = computed(() => {
         <div v-if="isChangingPassword" class="password-change">
           <h3>Change Password</h3>
           
-          <div v-if="passwordError" class="error-message">
-            {{ passwordError }}
-          </div>
+          <transition name="fade">
+            <div v-if="passwordError" class="error-message">
+              {{ passwordError }}
+            </div>
+          </transition>
           
           <div class="form-group">
             <label for="current-password">Current Password:</label>
@@ -313,13 +323,60 @@ h1 {
   text-align: center;
 }
 
-.loading, .error {
+.loading {
   text-align: center;
   padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 123, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #007bff;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .error {
+  text-align: center;
+  padding: 2rem;
   color: #dc3545;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.error-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #dc3545;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.retry-btn {
+  margin-top: 1rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .success-message {
@@ -328,6 +385,24 @@ h1 {
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.success-icon {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+/* Animations */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .profile-container {
