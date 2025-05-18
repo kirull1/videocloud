@@ -41,6 +41,7 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { authApi } from '../api/authApi';
+import { userStore } from '../model/userStore';
 
 const router = useRouter();
 
@@ -87,7 +88,13 @@ const handleSubmit = async () => {
 
     const { accessToken } = await authApi.login(form);
     localStorage.setItem('token', accessToken);
-    router.push('/');
+    
+    // Initialize user store to fetch user data
+    await userStore.fetchUserProfile();
+    
+    // Redirect to home page or the original intended destination
+    const redirectPath = router.currentRoute.value.query.redirect as string || '/';
+    router.push(redirectPath);
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'An error occurred';
   } finally {

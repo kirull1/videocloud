@@ -64,6 +64,7 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { authApi } from '../api/authApi';
+import { userStore } from '../model/userStore';
 
 const router = useRouter();
 
@@ -141,6 +142,10 @@ const handleSubmit = async () => {
     });
 
     localStorage.setItem('token', accessToken);
+    
+    // Initialize user store to fetch user data
+    await userStore.fetchUserProfile();
+    
     router.push('/');
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'An error occurred';

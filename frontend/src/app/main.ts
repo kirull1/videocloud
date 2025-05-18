@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import { appConfig } from '../shared/config/app.config'
 import { createLogger } from '../shared/lib/logger'
+import { userStore } from '../features/auth/model/userStore'
 
 const logger = createLogger('App')
 
@@ -15,5 +16,8 @@ const app = createApp(App)
 app.use(router)
 
 app.mount('#app')
+
+// Initialize user store if user is authenticated
+userStore.init()
 
 logger.info('Application mounted')

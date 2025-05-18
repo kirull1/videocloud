@@ -1,27 +1,26 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { authApi } from '../api/authApi'
-import { generateAvatarUrl } from '@/shared/lib/avatar'
+import { userStore } from '../model/userStore'
 
 const router = useRouter()
 const isMenuOpen = ref(false)
-const isAuthenticated = computed(() => authApi.isAuthenticated())
-const username = ref('User') // TODO: Get from store
-const userAvatar = ref(generateAvatarUrl('User')) // Default avatar for non-authenticated state
+const isAuthenticated = computed(() => userStore.isAuthenticated.value)
+const username = computed(() => userStore.username.value)
+const userAvatar = computed(() => userStore.avatarUrl.value)
+
+onMounted(() => {
+  userStore.init()
+})
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
 }
 
 const handleLogout = async () => {
-  await authApi.logout()
+  await userStore.logout()
   router.push('/auth/login')
-}
-
-// Update avatar when user logs in
-const updateAvatar = (username: string) => {
-  userAvatar.value = generateAvatarUrl(username)
+  isMenuOpen.value = false
 }
 </script>
 

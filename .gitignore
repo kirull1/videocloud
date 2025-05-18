@@ -79,6 +79,7 @@ backend/node_modules
 backend/dist
 backend/build
 backend/coverage
+backend/uploads
 
 missing/node_modules
 missing/dist
