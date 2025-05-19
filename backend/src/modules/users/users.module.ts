@@ -10,7 +10,7 @@ import { S3Module } from '../../shared/services/s3.module';
   imports: [
     TypeOrmModule.forFeature([User]),
     MulterModule.register({
-      dest: './uploads',
+      // Don't specify dest to use memory storage by default
     }),
     S3Module,
   ],

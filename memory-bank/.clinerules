@@ -73,6 +73,11 @@ This file captures important patterns, preferences, and project intelligence tha
 - **Authentication**: JWT-based authentication with refresh tokens.
 - **Storage Strategy**: AWS S3 for video storage with CloudFront for CDN.
 - **Database Access**: TypeORM repositories with query builders for complex queries.
+- **File Upload Handling**: 
+  - Use memory storage for file uploads in NestJS (not disk storage)
+  - Use FormData for file uploads in frontend
+  - Don't set Content-Type header when using FormData in frontend
+  - Validate file buffer exists and is not empty in backend
 
 ## User Preferences
 
@@ -87,6 +92,11 @@ This file captures important patterns, preferences, and project intelligence tha
 - **Real-time Features**: WebSockets implementation needs careful consideration for scaling.
 - **State Synchronization**: Keeping UI state in sync with backend changes.
 - **Large File Uploads**: Handling video uploads requires chunked uploading and progress tracking.
+- **File Upload Issues**: 
+  - Memory vs. disk storage in NestJS
+  - FormData handling in frontend
+  - Content-Type headers with FormData
+  - Buffer validation in backend
 
 ## Project Evolution
 
@@ -103,12 +113,25 @@ This file captures important patterns, preferences, and project intelligence tha
 - **Build Process**: Vite for frontend, NestJS CLI for backend.
 - **Component Development**: Storybook for UI component development and documentation.
 - **Database Migrations**: TypeORM migrations for schema changes.
+- **File Upload**: 
+  - Multer with memory storage for backend file handling
+  - FormData for frontend file uploads
+  - AWS SDK for S3 integration
 
 ## Critical Implementation Paths
 
 - **Authentication Flow**: User registration → Email verification → Login → JWT issuance
 - **Video Upload Flow**: File selection → Chunked upload → Backend validation → Processing queue → Transcoding → Storage → Availability
 - **Video Playback Flow**: Request → Authorization check → CDN delivery → Adaptive streaming → Analytics tracking
+- **Avatar Upload Flow**: 
+  1. User selects avatar image in profile page
+  2. Frontend validates file type and size
+  3. FormData created with file (no Content-Type header)
+  4. API receives file via FileInterceptor with memory storage
+  5. Backend validates file buffer exists and is not empty
+  6. S3Service uploads file to S3 bucket with public-read ACL
+  7. Public URL generated and stored in user profile
+  8. Frontend displays new avatar
 
 ## Known Limitations
 
@@ -116,5 +139,25 @@ This file captures important patterns, preferences, and project intelligence tha
 - **Scalability**: Initial implementation may have limitations for very high traffic.
 - **Browser Support**: Targeting modern browsers only (last 2 versions).
 - **Mobile Experience**: Responsive design but no native mobile apps in initial version.
+- **File Upload**: 
+  - Maximum file size for avatars: 2MB
+  - Allowed file types for avatars: jpg, jpeg, png, gif, webp
+  - No chunked upload support for large files yet
+
+## File Upload Gotchas
+
+- **NestJS FileInterceptor**: 
+  - Must use memory storage for cloud storage integration
+  - Disk storage creates files on disk that need to be read again
+  - Memory storage keeps file in buffer for direct upload to S3
+- **Frontend FormData**: 
+  - Don't set Content-Type header when using FormData
+  - Let the browser set the correct multipart/form-data with boundary
+  - Append file with original name: `formData.append('avatar', file, file.name)`
+- **S3 Upload**: 
+  - Use PutObjectCommand from @aws-sdk/client-s3
+  - Set ACL to 'public-read' for publicly accessible files
+  - Generate unique filenames to prevent overwrites
+  - Store full URL in database for easy access
 
 This file will be updated as new patterns and insights are discovered throughout the development process.

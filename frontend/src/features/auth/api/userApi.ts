@@ -110,34 +110,51 @@ export const userApi = {
       throw new Error('Not authenticated');
     }
     
+    // Create a new FormData instance
     const formData = new FormData();
-    formData.append('avatar', file);
+    
+    // Append the file with its original name
+    formData.append('avatar', file, file.name);
     
     console.log('Uploading avatar to:', `${API_URL}/avatar`);
-    console.log('Token:', token.substring(0, 10) + '...');
+    console.log('File details:', {
+      name: file.name,
+      type: file.type,
+      size: file.size + ' bytes'
+    });
     
     try {
+      // Make the request with the correct headers
+      // Important: Do NOT set Content-Type header when using FormData
       const response = await fetch(`${API_URL}/avatar`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`
+          // Let the browser set the Content-Type header with boundary
         },
         body: formData,
       });
   
+      // Handle non-OK responses
       if (!response.ok) {
+        // Try to get response as text first
         const errorText = await response.text();
         console.error('Avatar upload failed:', response.status, errorText);
         
+        // Try to parse as JSON if possible
         try {
           const error = JSON.parse(errorText);
           throw new Error(error.message || 'Failed to upload avatar');
         } catch (e) {
+          // If parsing fails, use the raw text
           throw new Error(`Failed to upload avatar: ${response.status} ${errorText}`);
         }
       }
   
-      return response.json();
+      // Parse successful response
+      const result = await response.json();
+      console.log('Avatar upload successful:', result);
+      return result;
     } catch (error) {
       console.error('Avatar upload error:', error);
       throw error;

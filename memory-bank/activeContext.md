@@ -9,6 +9,7 @@ The VideoCloud project is currently in the initial development phase, focusing o
    - JWT-based authentication
    - Database schema and migrations
    - Avatar generation system
+   - Custom avatar upload functionality
 
 2. **Frontend Development**
    - Authentication UI components
@@ -17,6 +18,14 @@ The VideoCloud project is currently in the initial development phase, focusing o
    - Responsive design implementation
 
 ## Recent Changes
+
+### Avatar Upload Fix
+- Fixed issue with avatar uploads where empty files (0 bytes) were being sent to S3
+- Updated the FileInterceptor configuration to use memory storage instead of disk storage
+- Added more detailed logging for file uploads
+- Added validation to ensure the buffer exists and is not empty
+- Updated the frontend code to correctly handle file uploads
+- Created test scripts to verify avatar upload functionality
 
 ### User Profile Management
 - Implemented user profile management backend with RESTful endpoints
@@ -39,6 +48,7 @@ The VideoCloud project is currently in the initial development phase, focusing o
 - Added unit tests for avatar generation utility
 - Implemented E2E tests for authentication flow
 - Created comprehensive test coverage for user profile features
+- Created test scripts for direct API testing of avatar uploads
 
 ### Previous Changes
 - Added `isEmailVerified` column to users table
@@ -82,9 +92,10 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ### Avatar System
 - Using DiceBear API for generated avatars
-- Supporting custom avatar uploads
+- Supporting custom avatar uploads with S3 storage
 - Implementing fallback mechanism
 - Ensuring consistent avatar generation
+- Using memory storage for file uploads instead of disk storage
 
 ### Frontend Architecture
 - Using Vue 3 with Composition API
@@ -115,7 +126,7 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Notes
 - User profile management system is now fully implemented with proper validation and error handling
-- Custom avatar upload functionality is in place with fallback to generated avatars
+- Custom avatar upload functionality is now fixed and working correctly
 - Frontend has been enhanced with animations, better loading states, and improved error handling
 - Unit and E2E tests have been added for authentication and profile features
 - Next focus should be on video management features

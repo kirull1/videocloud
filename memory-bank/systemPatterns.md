@@ -50,9 +50,10 @@ CREATE TABLE users (
 
 ### Implementation
 - DiceBear API integration for generated avatars
-- Custom avatar upload support
+- Custom avatar upload support with S3 storage
 - Fallback mechanism for missing avatars
 - Consistent avatar generation across the platform
+- Memory storage for file uploads (not disk storage)
 
 ### Avatar Generation
 ```typescript
@@ -60,6 +61,71 @@ export const generateAvatarUrl = (username: string, size = 32): string => {
   return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(username)}&size=${size}`;
 };
 ```
+
+### Avatar Upload
+```typescript
+// Backend: S3Service
+async uploadAvatar(file: UploadedFile, userId: string): Promise<string> {
+  const uniqueFilename = this.generateUniqueFilename(file.originalname);
+  const key = `${this.avatarFolder}${userId}/${uniqueFilename}`;
+
+  try {
+    await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        // Make avatars publicly accessible
+        ACL: 'public-read',
+      }),
+    );
+
+    this.logger.log(`Avatar uploaded successfully: ${key}`);
+    return key;
+  } catch (error) {
+    const s3Error = error as S3Error;
+    this.logger.error(`Failed to upload avatar: ${s3Error.message}`, s3Error.stack);
+    throw new Error(`Failed to upload avatar: ${s3Error.message}`);
+  }
+}
+
+// Frontend: userApi
+async uploadAvatar(file: File): Promise<AvatarResponse> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Not authenticated');
+  }
+  
+  // Create a new FormData instance
+  const formData = new FormData();
+  
+  // Append the file with its original name
+  formData.append('avatar', file, file.name);
+  
+  // Make the request with the correct headers
+  // Important: Do NOT set Content-Type header when using FormData
+  const response = await fetch(`${API_URL}/avatar`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+      // Let the browser set the Content-Type header with boundary
+    },
+    body: formData,
+  });
+
+  // Handle response...
+}
+```
+
+### File Upload Handling
+- Use memory storage for file uploads in NestJS
+- Properly configure FileInterceptor without disk storage
+- Validate file buffer exists and is not empty
+- Use FormData for file uploads in frontend
+- Don't set Content-Type header when using FormData
+- Append file with original name to FormData
 
 ## Frontend Components
 
@@ -307,6 +373,18 @@ VideoCloud follows a modern, microservices-oriented architecture that separates 
 - Specialized optimization for video transcoding
 - Failure isolation for system stability
 
+### File Upload: Memory Storage
+
+**Decision**: Use memory storage for file uploads instead of disk storage.
+
+**Rationale**:
+
+- Simplifies file handling in serverless environments
+- Avoids file system permissions issues
+- Allows direct streaming to cloud storage
+- Reduces disk I/O operations
+- Prevents issues with temporary file cleanup
+
 ## Design Patterns in Use
 
 ### Frontend Patterns
@@ -503,6 +581,16 @@ AppModule
    - Notification sent to video owner
    - Comment feed updated in real-time
    - Moderation queue updated if needed
+
+5. **Avatar Upload Flow**
+   - User selects avatar image
+   - Frontend validates file type and size
+   - FormData created with file
+   - API receives file via FileInterceptor
+   - File stored in memory (not on disk)
+   - S3Service uploads file to S3 bucket
+   - Public URL generated and stored in user profile
+   - Frontend displays new avatar
 
 ## Communication Patterns
 

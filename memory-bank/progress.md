@@ -3,8 +3,8 @@
 ## Current Status
 
 **Project Phase**: Initial Development (Pre-Alpha)
-**Last Updated**: May 18, 2025
-**Overall Progress**: 35%
+**Last Updated**: May 19, 2025
+**Overall Progress**: 36%
 
 ## Completed Features
 
@@ -49,6 +49,13 @@
 - [x] Unit tests for avatar generation
 - [x] E2E tests for authentication flow
 - [x] Component tests for auth components
+- [x] API tests for avatar upload
+
+### File Storage
+- [x] S3 integration for avatar storage
+- [x] File upload handling
+- [x] Public URL generation
+- [x] File deletion
 
 ## What Works
 
@@ -130,6 +137,7 @@
 - ✅ Implemented drag-and-drop file selection with validation
 - ✅ Added metadata input fields for title, description, and privacy settings
 - ✅ Included upload progress tracking and error handling
+- ✅ Fixed avatar upload functionality in the frontend
 
 ### Backend
 
@@ -144,6 +152,8 @@
 - ✅ Password hashing with bcrypt implemented
 - ✅ JWT guard for route protection added
 - ✅ Current user decorator created
+- ✅ S3 integration for file storage
+- ✅ Fixed avatar upload functionality in the backend
 
 ### Development Environment
 
@@ -318,19 +328,20 @@
 
 ## Recent Milestones
 
-| Milestone              | Description                                         | Date           |
-| ---------------------- | --------------------------------------------------- | -------------- |
-| User Profile Management | Implemented complete user profile functionality    | May 18, 2025   |
-| State Management       | Created user store for centralized state management | May 18, 2025   |
-| Frontend Enhancements  | Added animations, loading states, and error handling| May 18, 2025   |
-| Testing Implementation | Added unit and E2E tests for auth features          | May 18, 2025   |
-| Video Player          | Created VideoPlayer component with HTML5 video      | May 6, 2025    |
-| Video Card            | Created VideoCard component for video previews      | May 6, 2025    |
-| Video Grid            | Created VideoGrid widget for organizing videos      | May 7, 2025    |
-| Video Upload          | Created VideoUpload feature for uploading videos    | May 7, 2025    |
-| Header Component      | Created responsive Header with Search and Auth      | May 5, 2025    |
-| Feature Components    | Implemented Search and Auth feature components      | May 5, 2025    |
-| Storybook Config      | Enhanced Storybook to display full-width components | May 5, 2025    |
+| Milestone                | Description                                           | Date           |
+| ------------------------ | ----------------------------------------------------- | -------------- |
+| Avatar Upload Fix        | Fixed issue with avatar uploads to S3                 | May 19, 2025   |
+| User Profile Management  | Implemented complete user profile functionality       | May 18, 2025   |
+| State Management         | Created user store for centralized state management   | May 18, 2025   |
+| Frontend Enhancements    | Added animations, loading states, and error handling  | May 18, 2025   |
+| Testing Implementation   | Added unit and E2E tests for auth features            | May 18, 2025   |
+| Video Player             | Created VideoPlayer component with HTML5 video        | May 6, 2025    |
+| Video Card               | Created VideoCard component for video previews        | May 6, 2025    |
+| Video Grid               | Created VideoGrid widget for organizing videos        | May 7, 2025    |
+| Video Upload             | Created VideoUpload feature for uploading videos      | May 7, 2025    |
+| Header Component         | Created responsive Header with Search and Auth        | May 5, 2025    |
+| Feature Components       | Implemented Search and Auth feature components        | May 5, 2025    |
+| Storybook Config         | Enhanced Storybook to display full-width components   | May 5, 2025    |
 
 ## Upcoming Milestones
 
@@ -346,9 +357,9 @@
 | Metric                     | Status | Target | Progress |
 | -------------------------- | ------ | ------ | -------- |
 | Core Features Implemented  | 2/10   | 10/10  | 20%      |
-| Test Coverage              | 25%    | 80%    | 31%      |
+| Test Coverage              | 26%    | 80%    | 32%      |
 | Known Bugs                 | 0      | 0      | 100%     |
-| Documentation Completeness | 35%    | 100%   | 35%      |
+| Documentation Completeness | 36%    | 100%   | 36%      |
 
 ## Notes and Observations
 
@@ -356,6 +367,7 @@
 - Team is currently working on finalizing the technical architecture
 - Initial development velocity is expected to be slow as we set up infrastructure
 - Expect acceleration once core components are in place
+- Avatar upload functionality has been fixed and is now working correctly
 
 ## In Progress
 
@@ -443,6 +455,7 @@
 - Created password change functionality
 - Implemented email verification request system
 - Added profile editing capabilities
+- Fixed avatar upload functionality
 
 ### Frontend Improvements
 - Created user store for centralized state management
@@ -450,11 +463,13 @@
 - Implemented loading states with spinners
 - Enhanced error handling with descriptive messages
 - Improved form validation and feedback
+- Fixed file upload handling in the frontend
 
 ### Testing
 - Added unit tests for avatar generation
 - Implemented E2E tests for authentication flow
 - Created component tests for auth components
+- Added test scripts for avatar upload
 
 ## Current Focus
 
@@ -492,7 +507,7 @@
 
 ## Notes
 - User profile management system is now fully implemented with proper validation and error handling
-- Custom avatar upload functionality is in place with fallback to generated avatars
+- Custom avatar upload functionality is now fixed and working correctly
 - Frontend has been enhanced with animations, better loading states, and improved error handling
 - Unit and E2E tests have been added for authentication and profile features
 - Next focus should be on video management features

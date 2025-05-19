@@ -7,6 +7,7 @@ const profile = computed(() => userStore.user.value)
 const isLoading = computed(() => userStore.isLoading.value)
 const error = ref('')
 const successMessage = ref('')
+const isProcessing = ref(false) // Use this instead of isLoading which is computed
 
 // Form state
 const isEditMode = ref(false)
@@ -24,6 +25,7 @@ const passwordError = ref('')
 const isUploadingAvatar = ref(false)
 const avatarFile = ref<File | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const uploadProgress = ref(0)
 
 onMounted(async () => {
   try {
@@ -39,7 +41,7 @@ onMounted(async () => {
 
 const toggleEditMode = () => {
   isEditMode.value = !isEditMode.value
-  if (isEditMode.value) {
+  if (isEditMode.value && profile.value) {
     editedUsername.value = profile.value.username
     editedEmail.value = profile.value.email
   }
@@ -84,7 +86,7 @@ const changePassword = async () => {
       return
     }
     
-    isLoading.value = true
+    isProcessing.value = true
     await userApi.changePassword({
       currentPassword: currentPassword.value,
       newPassword: newPassword.value,
@@ -99,12 +101,14 @@ const changePassword = async () => {
   } catch (err) {
     passwordError.value = err instanceof Error ? err.message : 'Failed to change password'
   } finally {
-    isLoading.value = false
+    isProcessing.value = false
   }
 }
 
 const triggerFileInput = () => {
   if (fileInputRef.value) {
+    // Reset the file input to ensure onChange fires even if the same file is selected
+    fileInputRef.value.value = ''
     fileInputRef.value.click()
   }
 }
@@ -112,7 +116,22 @@ const triggerFileInput = () => {
 const handleFileChange = (event: Event) => {
   const input = event.target as HTMLInputElement
   if (input.files && input.files.length > 0) {
-    avatarFile.value = input.files[0]
+    const file = input.files[0]
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      error.value = 'Please select an image file'
+      return
+    }
+    
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024 // 2MB
+    if (file.size > maxSize) {
+      error.value = 'Image size should be less than 2MB'
+      return
+    }
+    
+    avatarFile.value = file
     uploadAvatar()
   }
 }
@@ -124,17 +143,35 @@ const uploadAvatar = async () => {
     error.value = ''
     successMessage.value = ''
     isUploadingAvatar.value = true
+    uploadProgress.value = 10 // Start progress
+    
+    console.log('Uploading avatar:', avatarFile.value.name, avatarFile.value.type, avatarFile.value.size)
+    
+    // Simulate progress (in a real app, you might use XMLHttpRequest with progress events)
+    const progressInterval = setInterval(() => {
+      if (uploadProgress.value < 90) {
+        uploadProgress.value += 10
+      }
+    }, 200)
     
     await userStore.updateAvatar(avatarFile.value)
+    
+    clearInterval(progressInterval)
+    uploadProgress.value = 100
+    
     successMessage.value = 'Avatar uploaded successfully'
   } catch (err) {
+    console.error('Avatar upload error:', err)
     error.value = err instanceof Error ? err.message : 'Failed to upload avatar'
   } finally {
-    isUploadingAvatar.value = false
-    avatarFile.value = null
-    if (fileInputRef.value) {
-      fileInputRef.value.value = ''
-    }
+    setTimeout(() => {
+      isUploadingAvatar.value = false
+      uploadProgress.value = 0
+      avatarFile.value = null
+      if (fileInputRef.value) {
+        fileInputRef.value.value = ''
+      }
+    }, 500) // Keep progress visible briefly
   }
 }
 
@@ -180,11 +217,24 @@ const getAvatarUrl = computed(() => {
         </div>
       </transition>
       
+      <transition name="fade">
+        <div v-if="error" class="error-message">
+          <span class="error-icon">!</span>
+          {{ error }}
+        </div>
+      </transition>
+      
       <div class="avatar-section">
         <div class="avatar-container">
+          <div v-if="isUploadingAvatar" class="avatar-overlay">
+            <div class="progress-container">
+              <div class="progress-bar" :style="{ width: `${uploadProgress}%` }"/>
+            </div>
+            <div class="upload-text">Uploading...</div>
+          </div>
           <img :src="getAvatarUrl" alt="User avatar" class="avatar" />
-          <button class="change-avatar-btn" @click="triggerFileInput">
-            Change Avatar
+          <button class="change-avatar-btn" :disabled="isUploadingAvatar" @click="triggerFileInput">
+            {{ isUploadingAvatar ? 'Uploading...' : 'Change Avatar' }}
           </button>
           <input
             ref="fileInputRef"
@@ -210,7 +260,7 @@ const getAvatarUrl = computed(() => {
             <button 
               v-else 
               class="verify-email-btn"
-              :disabled="isLoading"
+              :disabled="isLoading || isProcessing"
               @click="requestEmailVerification"
             >
               Verify Email
@@ -253,7 +303,7 @@ const getAvatarUrl = computed(() => {
           </div>
           
           <div class="actions">
-            <button class="save-btn" :disabled="isLoading" @click="saveProfile">
+            <button class="save-btn" :disabled="isLoading || isProcessing" @click="saveProfile">
               Save Changes
             </button>
             <button class="cancel-btn" @click="toggleEditMode">Cancel</button>
@@ -300,7 +350,7 @@ const getAvatarUrl = computed(() => {
           </div>
           
           <div class="actions">
-            <button class="save-btn" :disabled="isLoading" @click="changePassword">
+            <button class="save-btn" :disabled="isLoading || isProcessing" @click="changePassword">
               Update Password
             </button>
             <button class="cancel-btn" @click="togglePasswordChange">Cancel</button>
@@ -356,17 +406,17 @@ h1 {
 }
 
 .error-icon {
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background-color: #dc3545;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-right: 0.5rem;
 }
 
 .retry-btn {
@@ -382,6 +432,16 @@ h1 {
 .success-message {
   background-color: #d4edda;
   color: #155724;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 4px;
@@ -420,6 +480,8 @@ h1 {
   position: relative;
   width: 128px;
   height: 128px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .avatar {
@@ -428,6 +490,42 @@ h1 {
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #f0f0f0;
+}
+
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  border-radius: 50%;
+}
+
+.progress-container {
+  width: 80%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+}
+
+.upload-text {
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .change-avatar-btn {
@@ -443,6 +541,7 @@ h1 {
   font-size: 0.8rem;
   opacity: 0;
   transition: opacity 0.3s;
+  z-index: 1;
 }
 
 .avatar-container:hover .change-avatar-btn {
@@ -504,6 +603,11 @@ button {
   border: none;
 }
 
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .edit-btn, .save-btn {
   background-color: #007bff;
   color: white;
@@ -547,14 +651,6 @@ label {
   margin-top: 2rem;
   padding-top: 2rem;
   border-top: 1px solid #dee2e6;
-}
-
-.error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
 }
 
 @media (max-width: 768px) {
