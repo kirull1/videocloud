@@ -1,3 +1,5 @@
+import { appConfig } from '@/shared/config/app.config';
+
 interface ProfileResponse {
   id: string;
   email: string;
@@ -27,7 +29,7 @@ interface AvatarResponse {
   avatarUrl: string;
 }
 
-const API_URL = '/api/users';
+const API_URL = `${appConfig.apiUrl}/users`;
 
 export const userApi = {
   async getProfile(): Promise<ProfileResponse> {
@@ -111,20 +113,35 @@ export const userApi = {
     const formData = new FormData();
     formData.append('avatar', file);
     
-    const response = await fetch(`${API_URL}/avatar`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to upload avatar');
+    console.log('Uploading avatar to:', `${API_URL}/avatar`);
+    console.log('Token:', token.substring(0, 10) + '...');
+    
+    try {
+      const response = await fetch(`${API_URL}/avatar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Avatar upload failed:', response.status, errorText);
+        
+        try {
+          const error = JSON.parse(errorText);
+          throw new Error(error.message || 'Failed to upload avatar');
+        } catch (e) {
+          throw new Error(`Failed to upload avatar: ${response.status} ${errorText}`);
+        }
+      }
+  
+      return response.json();
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      throw error;
     }
-
-    return response.json();
   },
 
   async requestEmailVerification(): Promise<MessageResponse> {

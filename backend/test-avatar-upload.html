@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            display: none;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+        img.preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Avatar Upload Test</h1>
+    
+    <div class="form-group">
+        <label for="token">JWT Token:</label>
+        <input type="text" id="token" placeholder="Enter your JWT token">
+    </div>
+    
+    <div class="form-group">
+        <label for="avatar">Select Avatar Image:</label>
+        <input type="file" id="avatar" accept="image/*">
+    </div>
+    
+    <button id="upload-btn">Upload Avatar</button>
+    
+    <div class="result" id="result">
+        <h3>Result:</h3>
+        <pre id="result-data"></pre>
+        <div id="error-message" class="error"></div>
+        <div id="success-message" class="success"></div>
+        <img id="avatar-preview" class="preview" alt="Avatar Preview">
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load token from localStorage if available
+            const savedToken = localStorage.getItem('avatarTestToken');
+            if (savedToken) {
+                document.getElementById('token').value = savedToken;
+            }
+            
+            document.getElementById('upload-btn').addEventListener('click', uploadAvatar);
+            
+            async function uploadAvatar() {
+                const token = document.getElementById('token').value.trim();
+                const fileInput = document.getElementById('avatar');
+                const resultDiv = document.getElementById('result');
+                const resultData = document.getElementById('result-data');
+                const errorMessage = document.getElementById('error-message');
+                const successMessage = document.getElementById('success-message');
+                const avatarPreview = document.getElementById('avatar-preview');
+                
+                // Save token to localStorage
+                localStorage.setItem('avatarTestToken', token);
+                
+                // Reset previous results
+                resultDiv.style.display = 'none';
+                resultData.textContent = '';
+                errorMessage.textContent = '';
+                successMessage.textContent = '';
+                avatarPreview.style.display = 'none';
+                
+                if (!token) {
+                    errorMessage.textContent = 'Please enter a JWT token';
+                    resultDiv.style.display = 'block';
+                    return;
+                }
+                
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    errorMessage.textContent = 'Please select an image file';
+                    resultDiv.style.display = 'block';
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                if (!file.type.startsWith('image/')) {
+                    errorMessage.textContent = 'Please select an image file';
+                    resultDiv.style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('avatar', file);
+                    
+                    console.log('Uploading avatar...');
+                    console.log('Token:', token.substring(0, 10) + '...' + token.substring(token.length - 10));
+                    
+                    const response = await fetch('http://localhost:3001/api/users/avatar', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    resultData.textContent = JSON.stringify(data, null, 2);
+                    resultDiv.style.display = 'block';
+                    
+                    if (response.ok) {
+                        successMessage.textContent = 'Avatar uploaded successfully!';
+                        
+                        if (data.avatarUrl) {
+                            avatarPreview.src = data.avatarUrl;
+                            avatarPreview.style.display = 'block';
+                        }
+                    } else {
+                        errorMessage.textContent = `Error: ${data.message || 'Unknown error'}`;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    errorMessage.textContent = `Error: ${error.message}`;
+                    resultDiv.style.display = 'block';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -9,6 +9,7 @@ export class VideoResponseDto {
   status!: VideoStatus;
   visibility!: VideoVisibility;
   thumbnailUrl?: string;
+  videoUrl?: string | null;
   duration?: number;
   views!: number;
   createdAt!: Date;

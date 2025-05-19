@@ -7,6 +7,7 @@ import { Category } from '../../entities/category.entity';
 import { Tag } from '../../entities/tag.entity';
 import { VideosController } from './videos.controller';
 import { VideosService } from './videos.service';
+import { S3Module } from '../../shared/services/s3.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { VideosService } from './videos.service';
     MulterModule.register({
       dest: './uploads/videos',
     }),
+    S3Module,
   ],
   controllers: [VideosController],
   providers: [VideosService],

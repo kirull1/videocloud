@@ -12,12 +12,14 @@ import * as crypto from 'crypto';
 import { User } from '../../entities/user.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { S3Service } from '../../shared/services/s3.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly s3Service: S3Service,
   ) {}
 
   async getProfile(userId: string): Promise<Omit<User, 'password'>> {
@@ -79,7 +81,7 @@ export class UsersService {
 
   async uploadAvatar(
     userId: string,
-    file: { originalname: string },
+    file: { originalname: string; buffer: Buffer; mimetype: string; size: number },
   ): Promise<{ avatarUrl: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
@@ -87,9 +89,23 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // In a real application, you would upload the file to a storage service
-    // and get a URL back. For now, we'll simulate this with a placeholder URL.
-    const avatarUrl = `https://storage.example.com/avatars/${userId}/${file.originalname}`;
+    // Delete old avatar if it exists and is stored in S3
+    if (user.avatarUrl && user.avatarUrl.includes('storage.yandexcloud.net')) {
+      try {
+        // Extract the key from the URL
+        const key = user.avatarUrl.split('storage.yandexcloud.net/')[1];
+        await this.s3Service.deleteFile(key);
+      } catch (error) {
+        // Log error but continue with upload
+        console.error('Error deleting old avatar:', error);
+      }
+    }
+
+    // Upload new avatar to S3
+    const key = await this.s3Service.uploadAvatar(file, userId);
+
+    // Get the public URL for the avatar
+    const avatarUrl = this.s3Service.getPublicUrl(key);
 
     // Update user with new avatar URL
     user.avatarUrl = avatarUrl;

@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import * as fs from 'fs';
 import * as path from 'path';
-import { promisify } from 'util';
 import { Video, VideoStatus, VideoVisibility } from '../../entities/video.entity';
 import { User } from '../../entities/user.entity';
 import { Category } from '../../entities/category.entity';
 import { Tag } from '../../entities/tag.entity';
+import { S3Service } from '../../shared/services/s3.service';
 import {
   CreateVideoDto,
   UpdateVideoDto,
@@ -16,14 +15,8 @@ import {
   PaginatedVideosResponseDto,
 } from './dto';
 
-const unlinkAsync = promisify(fs.unlink);
-const mkdirAsync = promisify(fs.mkdir);
-
 @Injectable()
 export class VideosService {
-  private readonly uploadDir = 'uploads/videos';
-  private readonly thumbnailDir = 'uploads/thumbnails';
-
   constructor(
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
@@ -33,19 +26,8 @@ export class VideosService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
-  ) {
-    // Ensure upload directories exist
-    this.ensureDirectoriesExist();
-  }
-
-  private async ensureDirectoriesExist(): Promise<void> {
-    try {
-      await mkdirAsync(this.uploadDir, { recursive: true });
-      await mkdirAsync(this.thumbnailDir, { recursive: true });
-    } catch (error) {
-      console.error('Error creating upload directories:', error);
-    }
-  }
+    private readonly s3Service: S3Service,
+  ) {}
 
   async createVideo(
     userId: string,
@@ -54,6 +36,7 @@ export class VideosService {
       originalname: string;
       buffer: Buffer;
       size: number;
+      mimetype: string;
     },
   ): Promise<VideoResponseDto> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -61,11 +44,6 @@ export class VideosService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    // Generate a unique filename
-    const fileExtension = path.extname(file.originalname);
-    const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExtension}`;
-    const filePath = path.join(this.uploadDir, filename);
 
     // Find category if provided
     let category: Category | undefined = undefined;
@@ -95,24 +73,29 @@ export class VideosService {
       tags.push(...foundTags);
     }
 
+    // Upload video to S3
+    const s3Key = await this.s3Service.uploadVideo(file, userId);
+
+    // Generate a thumbnail URL (in a real app, you would generate a thumbnail from the video)
+    const thumbnailUrl = `https://picsum.photos/seed/${Date.now()}/640/360`;
+
     // Create video entity
     const video = this.videoRepository.create({
-      ...createVideoDto,
-      filename,
+      title: createVideoDto.title,
+      description: createVideoDto.description,
+      filePath: s3Key,
       fileSize: file.size,
+      thumbnailUrl,
       userId,
       status: VideoStatus.PROCESSING, // Will be processed asynchronously
       visibility: createVideoDto.visibility || VideoVisibility.PRIVATE,
+      isPublic: createVideoDto.visibility === VideoVisibility.PUBLIC,
       category,
       tags,
     });
 
     // Save video to database
     const savedVideo = await this.videoRepository.save(video);
-
-    // Move uploaded file to final location
-    // In a real application, this would be handled by a file storage service
-    fs.writeFileSync(filePath, file.buffer);
 
     // In a real application, we would trigger video processing here
     // For now, we'll just simulate it by setting the status to READY after a delay
@@ -150,9 +133,9 @@ export class VideosService {
     const params: any = {};
 
     if (!currentUserId) {
-      whereClause = `WHERE v.visibility = 'public' AND v.status = 'ready'`;
+      whereClause = `WHERE v.is_public = true AND v.status = 'ready'`;
     } else {
-      whereClause = `WHERE (v.user_id = '${currentUserId}' OR (v.visibility = 'public' AND v.status = 'ready'))`;
+      whereClause = `WHERE (v.user_id = '${currentUserId}' OR (v.is_public = true AND v.status = 'ready'))`;
     }
 
     if (search) {
@@ -168,11 +151,11 @@ export class VideosService {
     }
 
     if (categoryId) {
-      whereClause += ` AND v.categoryId = '${categoryId}'`;
+      whereClause += ` AND v.category_id = '${categoryId}'`;
     }
 
     if (tagId) {
-      whereClause += ` AND EXISTS (SELECT 1 FROM video_tags vt WHERE vt.videoId = v.id AND vt.tagId = '${tagId}')`;
+      whereClause += ` AND EXISTS (SELECT 1 FROM video_tags vt WHERE vt.video_id = v.id AND vt.tag_id = '${tagId}')`;
     }
 
     // Count query
@@ -186,18 +169,18 @@ export class VideosService {
     const dataQuery = `
       SELECT
         v.id, v.title, v.description, v.status, v.visibility,
-        v.filename, v.duration, v.thumbnail_url as "thumbnailUrl",
-        v.file_size as "fileSize", v.views, v.metadata,
-        v.user_id as "userId", v.categoryId, v.createdAt, v.updatedAt,
-        u.id as "user_id", u.username, u.avatarUrl as "userAvatarUrl",
+        v.file_path as "filePath", v.duration, v.thumbnail_path as "thumbnailUrl",
+        v.file_size as "fileSize", v.views, v.is_public as "isPublic",
+        v.user_id as "userId", v.category_id as "categoryId", v.created_at as "createdAt", v.updated_at as "updatedAt",
+        u.id as "user_id", u.username, u.avatar_url as "userAvatarUrl",
         c.id as "category_id", c.name as "category_name", c.slug as "category_slug",
-        c.description as "category_description", c.iconUrl as "category_iconUrl",
+        c.description as "category_description", c.icon_url as "category_iconUrl",
         c.order as "category_order"
       FROM videos v
       LEFT JOIN users u ON u.id = v.user_id
-      LEFT JOIN categories c ON c.id = v.categoryId
+      LEFT JOIN categories c ON c.id = v.category_id
       ${whereClause}
-      ORDER BY v.${sortBy} ${sortOrder}
+      ORDER BY v.${sortBy === 'createdAt' ? 'created_at' : sortBy} ${sortOrder}
       LIMIT ${limit} OFFSET ${skip}
     `;
 
@@ -208,42 +191,55 @@ export class VideosService {
     const videos = await this.videoRepository.query(dataQuery);
 
     // Map results to DTOs
-    const items = videos.map((video: any) => {
-      // Map category if exists
-      let category: any = undefined;
-      if (video.category_id) {
-        category = {
-          id: video.category_id,
-          name: video.category_name,
-          slug: video.category_slug,
-          description: video.category_description,
-          iconUrl: video.category_iconUrl,
-          order: video.category_order,
-          createdAt: video.category_createdAt,
-          updatedAt: video.category_updatedAt,
-        };
-      }
+    const items = await Promise.all(
+      videos.map(async (video: any) => {
+        // Map category if exists
+        let category: any = undefined;
+        if (video.category_id) {
+          category = {
+            id: video.category_id,
+            name: video.category_name,
+            slug: video.category_slug,
+            description: video.category_description,
+            iconUrl: video.category_iconUrl,
+            order: video.category_order,
+            createdAt: video.category_createdAt,
+            updatedAt: video.category_updatedAt,
+          };
+        }
 
-      // Create response DTO
-      return {
-        id: video.id,
-        title: video.title,
-        description: video.description,
-        status: video.status,
-        visibility: video.visibility,
-        thumbnailUrl: video.thumbnailUrl,
-        duration: video.duration,
-        views: video.views,
-        createdAt: video.createdAt,
-        updatedAt: video.updatedAt,
-        userId: video.userId,
-        username: video.username,
-        userAvatarUrl: video.userAvatarUrl,
-        categoryId: video.categoryId,
-        category,
-        tags: [], // We'll handle tags separately if needed
-      };
-    });
+        // Generate signed URL for video if it exists
+        let videoUrl: string | null = null;
+        if (video.filePath) {
+          try {
+            videoUrl = await this.s3Service.getSignedUrl(video.filePath);
+          } catch (error) {
+            console.error(`Failed to generate signed URL for video ${video.id}:`, error);
+          }
+        }
+
+        // Create response DTO
+        return {
+          id: video.id,
+          title: video.title,
+          description: video.description,
+          status: video.status,
+          visibility: video.visibility,
+          thumbnailUrl: video.thumbnailUrl,
+          videoUrl,
+          duration: video.duration,
+          views: video.views,
+          createdAt: video.createdAt,
+          updatedAt: video.updatedAt,
+          userId: video.userId,
+          username: video.username,
+          userAvatarUrl: video.userAvatarUrl,
+          categoryId: video.categoryId,
+          category,
+          tags: [], // We'll handle tags separately if needed
+        };
+      }),
+    );
 
     return {
       items,
@@ -265,7 +261,7 @@ export class VideosService {
     }
 
     // Check if user has permission to view this video
-    if (video.visibility !== VideoVisibility.PUBLIC && video.userId !== currentUserId) {
+    if (!video.isPublic && video.userId !== currentUserId) {
       throw new ForbiddenException('You do not have permission to view this video');
     }
 
@@ -275,7 +271,20 @@ export class VideosService {
       video.views += 1;
     }
 
-    return this.mapVideoToResponseDto(video, video.user);
+    // Generate signed URL for video if it exists
+    let videoUrl: string | null = null;
+    if (video.filePath) {
+      try {
+        videoUrl = await this.s3Service.getSignedUrl(video.filePath);
+      } catch (error) {
+        console.error(`Failed to generate signed URL for video ${video.id}:`, error);
+      }
+    }
+
+    const responseDto = this.mapVideoToResponseDto(video, video.user);
+    responseDto.videoUrl = videoUrl;
+
+    return responseDto;
   }
 
   async update(
@@ -335,11 +344,29 @@ export class VideosService {
       delete updateVideoDto.tagIds;
     }
 
+    // Update isPublic based on visibility
+    if (updateVideoDto.visibility) {
+      video.isPublic = updateVideoDto.visibility === VideoVisibility.PUBLIC;
+    }
+
     // Update video
     Object.assign(video, updateVideoDto);
     const updatedVideo = await this.videoRepository.save(video);
 
-    return this.mapVideoToResponseDto(updatedVideo, video.user);
+    // Generate signed URL for video if it exists
+    let videoUrl: string | null = null;
+    if (updatedVideo.filePath) {
+      try {
+        videoUrl = await this.s3Service.getSignedUrl(updatedVideo.filePath);
+      } catch (error) {
+        console.error(`Failed to generate signed URL for video ${updatedVideo.id}:`, error);
+      }
+    }
+
+    const responseDto = this.mapVideoToResponseDto(updatedVideo, video.user);
+    responseDto.videoUrl = videoUrl;
+
+    return responseDto;
   }
 
   async remove(id: string, currentUserId: string): Promise<void> {
@@ -356,18 +383,19 @@ export class VideosService {
       throw new ForbiddenException('You do not have permission to delete this video');
     }
 
-    // Delete video file
+    // Delete video file from S3
     try {
-      const filePath = path.join(this.uploadDir, video.filename);
-      await unlinkAsync(filePath);
+      if (video.filePath) {
+        await this.s3Service.deleteFile(video.filePath);
+      }
 
-      // Delete thumbnail if exists
-      if (video.thumbnailUrl) {
-        const thumbnailPath = path.join(this.thumbnailDir, path.basename(video.thumbnailUrl));
-        await unlinkAsync(thumbnailPath);
+      // Delete thumbnail if it's stored in S3
+      if (video.thumbnailUrl && video.thumbnailUrl.includes('storage.yandexcloud.net')) {
+        const thumbnailKey = video.thumbnailUrl.split('storage.yandexcloud.net/')[1];
+        await this.s3Service.deleteFile(thumbnailKey);
       }
     } catch (error) {
-      console.error('Error deleting video files:', error);
+      console.error('Error deleting video files from S3:', error);
     }
 
     // Delete video from database
@@ -382,6 +410,7 @@ export class VideosService {
       status: video.status,
       visibility: video.visibility,
       thumbnailUrl: video.thumbnailUrl,
+      videoUrl: null, // Will be set separately if needed
       duration: video.duration,
       views: video.views,
       createdAt: video.createdAt,

@@ -41,7 +41,7 @@ export class UsersController {
         fileSize: 1024 * 1024 * 2, // 2MB
       },
       fileFilter: (req, file, callback) => {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
           return callback(new BadRequestException('Only image files are allowed'), false);
         }
         callback(null, true);
@@ -52,7 +52,13 @@ export class UsersController {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    return await this.usersService.uploadAvatar(user.id, file);
+
+    return await this.usersService.uploadAvatar(user.id, {
+      originalname: file.originalname,
+      buffer: file.buffer,
+      mimetype: file.mimetype,
+      size: file.size,
+    });
   }
 
   @UseGuards(JwtAuthGuard)

@@ -52,13 +52,13 @@ export class Video {
   })
   visibility!: VideoVisibility;
 
-  @Column({ name: 'filename' })
-  filename!: string;
+  @Column({ name: 'file_path', nullable: true })
+  filePath?: string;
 
   @Column({ name: 'duration', nullable: true })
   duration?: number;
 
-  @Column({ name: 'thumbnail_url', nullable: true })
+  @Column({ name: 'thumbnail_path', nullable: true })
   thumbnailUrl?: string;
 
   @Column({ name: 'file_size', nullable: true })
@@ -67,8 +67,8 @@ export class Video {
   @Column({ name: 'views', default: 0 })
   views!: number;
 
-  @Column({ name: 'metadata', type: 'jsonb', nullable: true })
-  metadata?: Record<string, any>;
+  @Column({ name: 'is_public', default: true })
+  isPublic!: boolean;
 
   @Column({ name: 'user_id' })
   userId!: string;
@@ -77,30 +77,30 @@ export class Video {
   @JoinColumn({ name: 'user_id' })
   user!: User;
 
-  @Column({ name: 'categoryId', nullable: true })
+  @Column({ name: 'category_id', nullable: true })
   categoryId?: string;
 
   @ManyToOne(() => Category, (category) => category.videos, { nullable: true })
-  @JoinColumn({ name: 'categoryId' })
+  @JoinColumn({ name: 'category_id' })
   category?: Category;
 
   @ManyToMany(() => Tag, (tag) => tag.videos)
   @JoinTable({
     name: 'video_tags',
     joinColumn: {
-      name: 'videoId',
+      name: 'video_id',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
-      name: 'tagId',
+      name: 'tag_id',
       referencedColumnName: 'id',
     },
   })
   tags!: Tag[];
 
-  @CreateDateColumn({ name: 'createdAt' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updatedAt' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 }

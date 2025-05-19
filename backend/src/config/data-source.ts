@@ -11,6 +11,7 @@ import { CreateCategoriesTable1716042100000 } from '../migrations/1716042100000-
 import { CreateTagsAndVideoTagsTables1716042200000 } from '../migrations/1716042200000-CreateTagsAndVideoTagsTables';
 import { SeedCategoriesAndTags1716042300000 } from '../migrations/1716042300000-SeedCategoriesAndTags';
 import { RenameColumnsToSnakeCase1716042400000 } from '../migrations/1716042400000-RenameColumnsToSnakeCase';
+import { AddFilePathToVideos1716043000000 } from '../migrations/1716043000000-AddFilePathToVideos';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -29,6 +30,7 @@ export const AppDataSource = new DataSource({
     CreateTagsAndVideoTagsTables1716042200000,
     SeedCategoriesAndTags1716042300000,
     RenameColumnsToSnakeCase1716042400000,
+    AddFilePathToVideos1716043000000,
   ],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',

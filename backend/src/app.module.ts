@@ -6,15 +6,17 @@ import { UsersModule } from './modules/users/users.module';
 import { VideosModule } from './modules/videos/videos.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { TagsModule } from './modules/tags/tags.module';
+import { S3Module } from './shared/services/s3.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
+import s3Config from './config/s3.config';
 import { DataSourceOptions } from 'typeorm';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, jwtConfig],
+      load: [databaseConfig, jwtConfig, s3Config],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -32,6 +34,7 @@ import { DataSourceOptions } from 'typeorm';
     VideosModule,
     CategoriesModule,
     TagsModule,
+    S3Module,
   ],
 })
 export class AppModule {}

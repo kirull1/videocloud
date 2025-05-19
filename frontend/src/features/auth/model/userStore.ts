@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { userApi } from '../api/userApi'
 import { authApi } from '../api/authApi'
-import { generateAvatarUrl } from '@/shared/lib/avatar'
+import { getAvatarUrl } from '@/shared/lib/avatar'
 
 interface UserProfile {
   id: string
@@ -22,10 +22,7 @@ const error = ref<string | null>(null)
 const isAuthenticated = computed(() => authApi.isAuthenticated())
 const username = computed(() => user.value?.username || 'User')
 const avatarUrl = computed(() => {
-  if (user.value?.avatarUrl) {
-    return user.value.avatarUrl
-  }
-  return generateAvatarUrl(username.value)
+  return getAvatarUrl(user.value?.avatarUrl, username.value)
 })
 
 // Actions
