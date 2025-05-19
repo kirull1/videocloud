@@ -4,29 +4,26 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
 } from 'typeorm';
-import { Exclude } from 'class-transformer';
+import { Video } from './video.entity';
 
-@Entity('users')
-export class User {
+@Entity('tags')
+export class Tag {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column({ unique: true })
-  email!: string;
+  name!: string;
 
   @Column({ unique: true })
-  username!: string;
+  slug!: string;
 
-  @Exclude()
-  @Column()
-  password!: string;
+  @Column({ name: 'usageCount', default: 0 })
+  usageCount!: number;
 
-  @Column({ name: 'isEmailVerified', default: false })
-  isEmailVerified!: boolean;
-
-  @Column({ name: 'avatarUrl', nullable: true })
-  avatarUrl?: string;
+  @ManyToMany(() => Video, (video) => video.tags)
+  videos!: Video[];
 
   @CreateDateColumn({ name: 'createdAt' })
   createdAt!: Date;

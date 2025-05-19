@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onUnmounted, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { videoStore } from '@/entities/video';
+import { VideoVisibility } from '@/entities/video';
+import { categoryStore } from '@/entities/category';
+import { tagStore } from '@/entities/tag';
 
 export interface UploadMetadata {
   title: string;
   description: string;
   isPrivate: boolean;
+  categoryId?: string;
+  tagIds: string[];
 }
 
 export interface UploadedFile {
@@ -14,6 +21,8 @@ export interface UploadedFile {
   error?: string;
   metadata: UploadMetadata;
 }
+
+const router = useRouter();
 
 const props = defineProps({
   maxFileSize: {
@@ -50,7 +59,28 @@ const selectedFile = ref<File | null>(null);
 const metadata = ref<UploadMetadata>({
   title: '',
   description: '',
-  isPrivate: false
+  isPrivate: false,
+  categoryId: undefined,
+  tagIds: []
+});
+
+// Use the video store for upload state
+const uploading = computed(() => videoStore.uploadProgress.value.status === 'uploading' ||
+                            videoStore.uploadProgress.value.status === 'processing');
+const uploadProgress = computed(() => videoStore.uploadProgress.value.progress);
+const error = computed(() => videoStore.error.value);
+
+// Fetch categories and tags when component is mounted
+onMounted(async () => {
+  await Promise.all([
+    categoryStore.fetchCategories(),
+    tagStore.fetchTags()
+  ]);
+});
+
+// Reset upload progress when component is unmounted
+onUnmounted(() => {
+  videoStore.resetUploadProgress();
 });
 
 const isFileTooLarge = computed(() => {
@@ -139,12 +169,40 @@ const triggerFileInput = () => {
   fileInputRef.value?.click();
 };
 
-const handleUploadStart = () => {
-  if (isFileValid.value) {
-    emit('uploadStart', {
-      file: selectedFile.value,
-      metadata: { ...metadata.value }
-    });
+const handleUploadStart = async () => {
+  if (isFileValid.value && selectedFile.value) {
+    try {
+      // Map component's isPrivate to VideoVisibility enum
+      const visibility = metadata.value.isPrivate
+        ? VideoVisibility.PRIVATE
+        : VideoVisibility.PUBLIC;
+      
+      // Upload the video using the video store
+      const uploadedVideo = await videoStore.uploadVideo({
+        title: metadata.value.title,
+        description: metadata.value.description,
+        visibility,
+        file: selectedFile.value,
+        categoryId: metadata.value.categoryId,
+        tagIds: metadata.value.tagIds
+      });
+      
+      // Emit the upload event for parent components
+      emit('uploadStart', {
+        file: selectedFile.value,
+        metadata: { ...metadata.value }
+      });
+      
+      // If upload is successful, redirect to the video page
+      if (uploadedVideo) {
+        setTimeout(() => {
+          router.push(`/videos/${uploadedVideo.id}`);
+        }, 1000);
+      }
+    } catch (err) {
+      // Error is already handled by the store
+      console.error('Upload failed:', err);
+    }
   }
 };
 
@@ -153,7 +211,9 @@ const handleCancel = () => {
   metadata.value = {
     title: '',
     description: '',
-    isPrivate: false
+    isPrivate: false,
+    categoryId: undefined,
+    tagIds: []
   };
   if (fileInputRef.value) {
     fileInputRef.value.value = '';
@@ -277,22 +337,63 @@ watch(() => metadata.value, updateMetadata, { deep: true });
             <span class="video-upload__checkbox-text">Private video</span>
           </label>
         </div>
+
+        <div class="video-upload__form-group">
+          <label for="video-category" class="video-upload__label">Category</label>
+          <select
+            id="video-category"
+            v-model="metadata.categoryId"
+            class="video-upload__select"
+            :disabled="uploading"
+          >
+            <option value="">Select a category</option>
+            <option
+              v-for="category in categoryStore.categories.value"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="video-upload__form-group">
+          <label class="video-upload__label">Tags</label>
+          <div class="video-upload__tags">
+            <div
+              v-for="tag in tagStore.tags.value"
+              :key="tag.id"
+              class="video-upload__tag"
+              :class="{ 'video-upload__tag--selected': metadata.tagIds.includes(tag.id) }"
+              @click="() => {
+                if (metadata.tagIds.includes(tag.id)) {
+                  metadata.tagIds = metadata.tagIds.filter(id => id !== tag.id);
+                } else {
+                  metadata.tagIds.push(tag.id);
+                }
+              }"
+            >
+              {{ tag.name }}
+            </div>
+          </div>
+        </div>
       </div>
       
       <div v-if="uploading" class="video-upload__progress">
         <div class="video-upload__progress-bar">
-          <div 
+          <div
             class="video-upload__progress-fill"
             :style="{ width: `${uploadProgress}%` }"
           />
         </div>
         <div class="video-upload__progress-text">
-          Uploading... {{ uploadProgress }}%
+          {{ videoStore.uploadProgress.value.status === 'processing' ? 'Processing...' : `Uploading... ${uploadProgress}%` }}
         </div>
       </div>
       
       <div v-if="error" class="video-upload__error">
-        {{ error }}
+        <div class="video-upload__error-icon">!</div>
+        <span>{{ error }}</span>
       </div>
       
       <div class="video-upload__actions">
@@ -427,7 +528,8 @@ watch(() => metadata.value, updateMetadata, { deep: true });
 }
 
 .video-upload__input,
-.video-upload__textarea {
+.video-upload__textarea,
+.video-upload__select {
   padding: 12px;
   border: 1px solid var(--text-secondary, #67748B);
   border-radius: 4px;
@@ -438,7 +540,8 @@ watch(() => metadata.value, updateMetadata, { deep: true });
 }
 
 .video-upload__input:focus,
-.video-upload__textarea:focus {
+.video-upload__textarea:focus,
+.video-upload__select:focus {
   outline: none;
   border-color: var(--primary, #41A4FF);
 }
@@ -459,6 +562,39 @@ watch(() => metadata.value, updateMetadata, { deep: true });
 .video-upload__checkbox-text {
   font-size: 14px;
   color: var(--text-primary, #1A2233);
+}
+
+.video-upload__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.video-upload__tag {
+  padding: 6px 12px;
+  border-radius: 16px;
+  background-color: var(--panel-bg, #E6F0FB);
+  color: var(--text-secondary, #67748B);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.video-upload__tag:hover {
+  border-color: var(--primary, #41A4FF);
+  color: var(--primary, #41A4FF);
+}
+
+.video-upload__tag--selected {
+  background-color: var(--primary, #41A4FF);
+  color: white;
+}
+
+.video-upload__tag--selected:hover {
+  background-color: var(--secondary, #9067E6);
+  color: white;
 }
 
 .video-upload__progress {
@@ -486,9 +622,27 @@ watch(() => metadata.value, updateMetadata, { deep: true });
 }
 
 .video-upload__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--error, #FF677B);
   font-size: 14px;
   margin: 8px 0;
+  padding: 8px 12px;
+  background-color: rgba(255, 103, 123, 0.1);
+  border-radius: 4px;
+}
+
+.video-upload__error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--error, #FF677B);
+  color: white;
+  font-weight: bold;
 }
 
 .video-upload__actions {

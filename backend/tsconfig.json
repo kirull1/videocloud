@@ -2,7 +2,7 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "module": "commonjs",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "outDir": "./dist",
@@ -10,6 +10,12 @@
     "incremental": true,
     "strictBindCallApply": false,
     "noImplicitAny": false,
+    "sourceMap": true,
+    "declaration": true,
+    "removeComments": true,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmit": false,
     "paths": {
       "@app/*": ["src/*"],
       "@modules/*": ["src/modules/*"],
@@ -27,5 +33,7 @@
       "@decorators/*": ["src/decorators/*"],
       "@strategies/*": ["src/strategies/*"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -3,6 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { VideosModule } from './modules/videos/videos.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { TagsModule } from './modules/tags/tags.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import { DataSourceOptions } from 'typeorm';
@@ -26,6 +29,9 @@ import { DataSourceOptions } from 'typeorm';
     }),
     AuthModule,
     UsersModule,
+    VideosModule,
+    CategoriesModule,
+    TagsModule,
   ],
 })
 export class AppModule {}

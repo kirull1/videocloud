@@ -98,6 +98,9 @@ importers:
       typeorm:
         specifier: 0.3.20
         version: 0.3.20(pg@8.11.3)(ts-node@10.9.2(@swc/core@1.10.7)(@types/node@22.10.7)(typescript@5.7.3))
+      typeorm-naming-strategies:
+        specifier: ^4.1.0
+        version: 4.1.0(typeorm@0.3.20(pg@8.11.3)(ts-node@10.9.2(@swc/core@1.10.7)(@types/node@22.10.7)(typescript@5.7.3)))
     devDependencies:
       '@eslint/eslintrc':
         specifier: 3.2.0
@@ -5712,6 +5715,11 @@ packages:
 
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
+
+  typeorm-naming-strategies@4.1.0:
+    resolution: {integrity: sha512-vPekJXzZOTZrdDvTl1YoM+w+sUIfQHG4kZTpbFYoTsufyv9NIBRe4Q+PdzhEAFA2std3D9LZHEb1EjE9zhRpiQ==}
+    peerDependencies:
+      typeorm: ^0.2.0 || ^0.3.0
 
   typeorm@0.3.20:
     resolution: {integrity: sha512-sJ0T08dV5eoZroaq9uPKBoNcGslHBR4E4y+EBHs//SiGbblGe7IeduP/IH4ddCcj0qp3PHwDwGnuvqEAnKlq/Q==}
@@ -12470,6 +12478,10 @@ snapshots:
       reflect.getprototypeof: 1.0.10
 
   typedarray@0.0.6: {}
+
+  typeorm-naming-strategies@4.1.0(typeorm@0.3.20(pg@8.11.3)(ts-node@10.9.2(@swc/core@1.10.7)(@types/node@22.10.7)(typescript@5.7.3))):
+    dependencies:
+      typeorm: 0.3.20(pg@8.11.3)(ts-node@10.9.2(@swc/core@1.10.7)(@types/node@22.10.7)(typescript@5.7.3))
 
   typeorm@0.3.20(pg@8.11.3)(ts-node@10.9.2(@swc/core@1.10.7)(@types/node@22.10.7)(typescript@5.7.3)):
     dependencies:

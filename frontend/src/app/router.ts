@@ -25,6 +25,11 @@ const router = createRouter({
       component: () => import('@/pages/profile/index.vue'),
       meta: { requiresAuth: true }
     },
+    {
+      path: '/videos/:id',
+      name: 'video',
+      component: () => import('@/pages/videos/[id].vue')
+    },
   ],
 })
 
