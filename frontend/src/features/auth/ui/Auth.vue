@@ -31,6 +31,25 @@ const handleLogout = async () => {
       <router-link to="/auth/register" class="auth-button register">Sign Up</router-link>
     </div>
     <div v-else class="user-menu">
+      <router-link to="/videos/upload" class="upload-button">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="20"
+             height="20"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12"
+                y1="3"
+                x2="12"
+                y2="15"/>
+        </svg>
+        <span>Upload</span>
+      </router-link>
       <button class="user-button" @click="toggleMenu">
         <img :src="userAvatar" alt="User avatar" class="avatar" />
         <span class="username">{{ username }}</span>
@@ -38,6 +57,7 @@ const handleLogout = async () => {
       <transition name="menu-fade">
         <div v-if="isMenuOpen" class="menu">
           <router-link to="/profile" class="menu-item">Profile</router-link>
+          <router-link to="/videos/upload" class="menu-item">Upload Video</router-link>
           <router-link to="/settings" class="menu-item">Settings</router-link>
           <button class="menu-item logout" @click="handleLogout">Logout</button>
         </div>
@@ -86,6 +106,31 @@ const handleLogout = async () => {
 
 .user-menu {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.upload-button:hover {
+  background-color: #218838;
+}
+
+.upload-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .user-button {
@@ -117,6 +162,7 @@ const handleLogout = async () => {
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   min-width: 150px;
+  z-index: 100;
 }
 
 .menu-item {
@@ -156,5 +202,19 @@ const handleLogout = async () => {
 .menu-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+@media (max-width: 768px) {
+  .username {
+    display: none;
+  }
+  
+  .upload-button span {
+    display: none;
+  }
+  
+  .upload-button {
+    padding: 0.5rem;
+  }
 }
 </style>

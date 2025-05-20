@@ -80,31 +80,19 @@ export class VideosService {
     const thumbnailUrl = `https://picsum.photos/seed/${Date.now()}/640/360`;
 
     // Create video entity
-    const video = this.videoRepository.create({
-      title: createVideoDto.title,
-      description: createVideoDto.description,
-      filePath: s3Key,
-      fileSize: file.size,
-      thumbnailUrl,
-      userId,
-      status: VideoStatus.PROCESSING, // Will be processed asynchronously
-      visibility: createVideoDto.visibility || VideoVisibility.PRIVATE,
-      isPublic: createVideoDto.visibility === VideoVisibility.PUBLIC,
-      category,
-      tags,
-    });
+    const video = new Video();
+    video.title = createVideoDto.title;
+    video.description = createVideoDto.description;
+    video.filePath = s3Key;
+    video.thumbnailUrl = thumbnailUrl;
+    video.userId = userId;
+    // Set isPublic based on visibility
+    video.isPublic = createVideoDto.visibility === VideoVisibility.PUBLIC;
+    video.category = category;
+    video.tags = tags;
 
     // Save video to database
     const savedVideo = await this.videoRepository.save(video);
-
-    // In a real application, we would trigger video processing here
-    // For now, we'll just simulate it by setting the status to READY after a delay
-    setTimeout(() => {
-      void this.videoRepository.update(savedVideo.id, {
-        status: VideoStatus.READY,
-        // In a real application, we would also set duration, generate thumbnails, etc.
-      });
-    }, 5000);
 
     return this.mapVideoToResponseDto(savedVideo, user);
   }
@@ -133,21 +121,13 @@ export class VideosService {
     const params: any = {};
 
     if (!currentUserId) {
-      whereClause = `WHERE v.is_public = true AND v.status = 'ready'`;
+      whereClause = `WHERE v.is_public = true`;
     } else {
-      whereClause = `WHERE (v.user_id = '${currentUserId}' OR (v.is_public = true AND v.status = 'ready'))`;
+      whereClause = `WHERE (v.user_id = '${currentUserId}' OR v.is_public = true)`;
     }
 
     if (search) {
       whereClause += ` AND (v.title ILIKE '%${search}%' OR v.description ILIKE '%${search}%')`;
-    }
-
-    if (status && currentUserId) {
-      whereClause += ` AND (v.user_id = '${currentUserId}' AND v.status = '${status}')`;
-    }
-
-    if (visibility && currentUserId) {
-      whereClause += ` AND (v.user_id = '${currentUserId}' AND v.visibility = '${visibility}')`;
     }
 
     if (categoryId) {
@@ -168,9 +148,9 @@ export class VideosService {
     // Data query
     const dataQuery = `
       SELECT
-        v.id, v.title, v.description, v.status, v.visibility,
+        v.id, v.title, v.description,
         v.file_path as "filePath", v.duration, v.thumbnail_path as "thumbnailUrl",
-        v.file_size as "fileSize", v.views, v.is_public as "isPublic",
+        v.views, v.is_public as "isPublic",
         v.user_id as "userId", v.category_id as "categoryId", v.created_at as "createdAt", v.updated_at as "updatedAt",
         u.id as "user_id", u.username, u.avatar_url as "userAvatarUrl",
         c.id as "category_id", c.name as "category_name", c.slug as "category_slug",
@@ -218,13 +198,18 @@ export class VideosService {
           }
         }
 
+        // Determine status based on isPublic
+        const status = video.isPublic ? VideoStatus.READY : VideoStatus.PROCESSING;
+        // Determine visibility based on isPublic
+        const visibility = video.isPublic ? VideoVisibility.PUBLIC : VideoVisibility.PRIVATE;
+
         // Create response DTO
         return {
           id: video.id,
           title: video.title,
           description: video.description,
-          status: video.status,
-          visibility: video.visibility,
+          status,
+          visibility,
           thumbnailUrl: video.thumbnailUrl,
           videoUrl,
           duration: video.duration,
@@ -265,8 +250,8 @@ export class VideosService {
       throw new ForbiddenException('You do not have permission to view this video');
     }
 
-    // Increment view count if video is ready and not viewed by the owner
-    if (video.status === VideoStatus.READY && video.userId !== currentUserId) {
+    // Increment view count if not viewed by the owner
+    if (video.userId !== currentUserId) {
       await this.videoRepository.increment({ id }, 'views', 1);
       video.views += 1;
     }
@@ -347,6 +332,7 @@ export class VideosService {
     // Update isPublic based on visibility
     if (updateVideoDto.visibility) {
       video.isPublic = updateVideoDto.visibility === VideoVisibility.PUBLIC;
+      delete updateVideoDto.visibility;
     }
 
     // Update video
@@ -403,12 +389,17 @@ export class VideosService {
   }
 
   private mapVideoToResponseDto(video: Video, user: User): VideoResponseDto {
+    // Determine status based on isPublic
+    const status = video.isPublic ? VideoStatus.READY : VideoStatus.PROCESSING;
+    // Determine visibility based on isPublic
+    const visibility = video.isPublic ? VideoVisibility.PUBLIC : VideoVisibility.PRIVATE;
+
     return {
       id: video.id,
       title: video.title,
       description: video.description,
-      status: video.status,
-      visibility: video.visibility,
+      status,
+      visibility,
       thumbnailUrl: video.thumbnailUrl,
       videoUrl: null, // Will be set separately if needed
       duration: video.duration,

@@ -13,18 +13,6 @@ import { User } from './user.entity';
 import { Category } from './category.entity';
 import { Tag } from './tag.entity';
 
-export enum VideoStatus {
-  PROCESSING = 'processing',
-  READY = 'ready',
-  FAILED = 'failed',
-}
-
-export enum VideoVisibility {
-  PUBLIC = 'public',
-  UNLISTED = 'unlisted',
-  PRIVATE = 'private',
-}
-
 @Entity('videos')
 export class Video {
   @PrimaryGeneratedColumn('uuid')
@@ -36,33 +24,14 @@ export class Video {
   @Column({ name: 'description', type: 'text', nullable: true })
   description?: string;
 
-  @Column({
-    name: 'status',
-    type: 'enum',
-    enum: VideoStatus,
-    default: VideoStatus.PROCESSING,
-  })
-  status!: VideoStatus;
-
-  @Column({
-    name: 'visibility',
-    type: 'enum',
-    enum: VideoVisibility,
-    default: VideoVisibility.PRIVATE,
-  })
-  visibility!: VideoVisibility;
-
   @Column({ name: 'file_path', nullable: true })
   filePath?: string;
-
-  @Column({ name: 'duration', nullable: true })
-  duration?: number;
 
   @Column({ name: 'thumbnail_path', nullable: true })
   thumbnailUrl?: string;
 
-  @Column({ name: 'file_size', nullable: true })
-  fileSize?: number;
+  @Column({ name: 'duration', nullable: true })
+  duration?: number;
 
   @Column({ name: 'views', default: 0 })
   views!: number;
@@ -103,4 +72,17 @@ export class Video {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+}
+
+// Keep these enums for backward compatibility with existing code
+export enum VideoStatus {
+  PROCESSING = 'processing',
+  READY = 'ready',
+  FAILED = 'failed',
+}
+
+export enum VideoVisibility {
+  PUBLIC = 'public',
+  UNLISTED = 'unlisted',
+  PRIVATE = 'private',
 }

@@ -19,15 +19,15 @@ export class Tag {
   @Column({ unique: true })
   slug!: string;
 
-  @Column({ name: 'usageCount', default: 0 })
+  @Column({ name: 'usage_count', default: 0 })
   usageCount!: number;
 
   @ManyToMany(() => Video, (video) => video.tags)
   videos!: Video[];
 
-  @CreateDateColumn({ name: 'createdAt' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updatedAt' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 }

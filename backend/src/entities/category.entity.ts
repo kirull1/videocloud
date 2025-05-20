@@ -22,7 +22,7 @@ export class Category {
   @Column({ nullable: true })
   description?: string;
 
-  @Column({ name: 'iconUrl', nullable: true })
+  @Column({ name: 'icon_url', nullable: true })
   iconUrl?: string;
 
   @Column({ default: 0 })
@@ -31,9 +31,9 @@ export class Category {
   @OneToMany(() => Video, (video) => video.category)
   videos!: Video[];
 
-  @CreateDateColumn({ name: 'createdAt' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updatedAt' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 }

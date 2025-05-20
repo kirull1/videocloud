@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { appConfig } from '@config/app.config';
 import { createLogger } from '@utils/logger';
+import { json, urlencoded } from 'express';
 
 const logger = createLogger('Bootstrap');
 
@@ -17,6 +18,10 @@ async function bootstrap() {
       origin: appConfig.cors.origin,
     });
   }
+
+  // Configure body parser limits for large file uploads
+  app.use(json({ limit: '500mb' }));
+  app.use(urlencoded({ extended: true, limit: '500mb' }));
 
   // Start the server
   await app.listen(appConfig.port);
