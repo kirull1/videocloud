@@ -656,6 +656,20 @@ AppModule
 - Creates adaptive streaming variants for different network conditions
 - Handles cleanup of temporary files after processing
 
+### Adaptive Video Streaming
+- VideoPlayerService in the backend provides streaming information
+- Dedicated endpoint for retrieving streaming options
+- Support for multiple formats (MP4, HLS, DASH)
+- Quality selection (720p, 480p, 360p)
+- Enhanced VideoPlayer component with:
+  - Quality selector UI
+  - Format selection
+  - Adaptive playback based on network conditions
+  - Loading states and error handling
+- Client-side quality switching without interrupting playback
+- Remembers user's quality preferences
+- Fallback to direct video URL if streaming info is unavailable
+
 ### Video Upload Flow
 - User selects video file via drag-and-drop or file browser
 - Frontend calculates video duration using HTML5 video element

@@ -9,6 +9,7 @@ import { Tag } from '../../entities/tag.entity';
 import { S3Service } from '../../shared/services/s3.service';
 import { VideoDurationUtil } from '../../utils/video-duration.util';
 import { VideoProcessingService } from '../../shared/services/video-processing/video-processing.service';
+import { VideoPlayerService, StreamingOptions, StreamingResponse } from '../../shared/services/video-player/video-player.service';
 import {
   CreateVideoDto,
   UpdateVideoDto,
@@ -32,6 +33,7 @@ export class VideosService {
     private readonly tagRepository: Repository<Tag>,
     private readonly s3Service: S3Service,
     private readonly videoProcessingService: VideoProcessingService,
+    private readonly videoPlayerService: VideoPlayerService,
   ) {}
 
   async createVideo(
@@ -553,5 +555,47 @@ export class VideosService {
       this.logger.error(`Error processing video ${videoId}: ${error.message}`, error.stack);
       // Don't throw the error, just log it, as this is a background process
     }
+  }
+
+  /**
+   * Get streaming information for a video
+   * @param id Video ID
+   * @param currentUserId Current user ID
+   * @param options Streaming options
+   * @returns Streaming information
+   */
+  async getStreamingInfo(
+    id: string,
+    currentUserId?: string,
+    options: StreamingOptions = {},
+  ): Promise<StreamingResponse> {
+    this.logger.log(`Getting streaming info for video ${id} with options: ${JSON.stringify(options)}`);
+    
+    const video = await this.videoRepository.findOne({
+      where: { id },
+    });
+    
+    if (!video) {
+      throw new NotFoundException('Video not found');
+    }
+    
+    // Check if user has permission to view this video
+    if (!video.isPublic && video.userId !== currentUserId) {
+      throw new ForbiddenException('You do not have permission to view this video');
+    }
+    
+    // Check if video file exists
+    if (!video.filePath) {
+      throw new NotFoundException('Video file not found');
+    }
+    
+    // Get streaming information from the video player service
+    return this.videoPlayerService.getStreamingInfo(
+      id,
+      video.userId,
+      video.filePath,
+      video.duration || 0,
+      options,
+    );
   }
 }

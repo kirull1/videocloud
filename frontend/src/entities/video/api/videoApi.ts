@@ -67,6 +67,27 @@ interface UploadProgressCallback {
   (progress: number, loaded: number, total: number): void;
 }
 
+export interface StreamingQuality {
+  label: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface StreamingInfo {
+  url: string;
+  format: string;
+  mimeType: string;
+  duration: number;
+  qualities: StreamingQuality[];
+}
+
+export interface StreamingOptions {
+  format?: 'mp4' | 'hls' | 'dash';
+  quality?: 'auto' | 'high' | 'medium' | 'low';
+  startTime?: number;
+}
+
 const API_URL = '/api/videos';
 
 export const videoApi = {
@@ -299,5 +320,48 @@ export const videoApi = {
       const error = await response.json();
       throw new Error(error.message || 'Failed to delete video');
     }
+  },
+
+  async getStreamingInfo(id: string, options: StreamingOptions = {}): Promise<StreamingInfo> {
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Build query string
+    const queryParams = new URLSearchParams();
+    
+    if (options.format) {
+      queryParams.append('format', options.format);
+    }
+    
+    if (options.quality) {
+      queryParams.append('quality', options.quality);
+    }
+    
+    if (options.startTime !== undefined) {
+      queryParams.append('startTime', String(options.startTime));
+    }
+    
+    const queryString = queryParams.toString();
+    const url = queryString
+      ? `${API_URL}/${id}/streaming-info?${queryString}`
+      : `${API_URL}/${id}/streaming-info`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch streaming information');
+    }
+
+    return response.json();
   },
 };

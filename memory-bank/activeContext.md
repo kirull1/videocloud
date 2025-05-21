@@ -19,6 +19,15 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Recent Changes
 
+### Adaptive Video Streaming Implementation
+- Created a VideoPlayerService in the backend to handle adaptive streaming
+- Added a new endpoint to get streaming information for videos
+- Updated the VideoPlayer component to support adaptive streaming
+- Implemented quality selection in the video player
+- Added support for different video formats (MP4, HLS, DASH)
+- Enhanced the video player UI with quality selector and loading states
+- Added proper error handling and logging throughout the streaming pipeline
+
 ### Video Processing Pipeline Implementation
 - Created a comprehensive video processing service that handles:
   - Transcoding videos to different formats (MP4, WebM)

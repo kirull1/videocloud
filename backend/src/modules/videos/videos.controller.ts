@@ -204,4 +204,26 @@ export class VideosController {
       throw error;
     }
   }
+
+  @Get(':id/streaming-info')
+  async getStreamingInfo(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('format') format?: 'mp4' | 'hls' | 'dash',
+    @Query('quality') quality?: 'auto' | 'high' | 'medium' | 'low',
+    @CurrentUser() user?: User,
+  ) {
+    this.logger.log(`Getting streaming info for video: ${id}, format: ${format}, quality: ${quality}`);
+    
+    try {
+      const options = {
+        format: format || 'mp4',
+        quality: quality || 'auto',
+      };
+      
+      return await this.videosService.getStreamingInfo(id, user?.id, options);
+    } catch (error: any) {
+      this.logger.error(`Error getting streaming info: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
 }

@@ -185,12 +185,20 @@
   - ⬜ Storage integration
   - ⬜ Upload validation
 
-- 🔄 Video processing pipeline
+- ✅ Video processing pipeline
 
   - ✅ Transcoding service
   - ✅ Thumbnail generation
   - ✅ Quality variants creation
   - ✅ Processing status tracking
+
+- 🔄 Video playback enhancements
+
+  - ✅ Adaptive streaming support
+  - ✅ Quality selection
+  - ✅ Format selection (MP4, HLS, DASH)
+  - ⬜ Advanced playback controls
+  - ⬜ Fullscreen and PiP functionality
 
 - ⬜ Video playback
   - ⬜ Video player component
@@ -330,6 +338,7 @@
 
 | Milestone                | Description                                           | Date           |
 | ------------------------ | ----------------------------------------------------- | -------------- |
+| Adaptive Video Streaming | Implemented adaptive streaming with quality selection | May 21, 2025 |
 | Video Processing Pipeline | Implemented complete video transcoding and processing service | May 21, 2025 |
 | Server-Side Duration Fix 4 | Set execute permission on ffprobe executable to fix EACCES | May 21, 2025 |
 | Server-Side Duration Fix 3 | Replaced get-video-duration with fluent-ffmpeg for reliability | May 21, 2025 |

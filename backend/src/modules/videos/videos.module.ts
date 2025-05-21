@@ -9,6 +9,7 @@ import { VideosController } from './videos.controller';
 import { VideosService } from './videos.service';
 import { S3Module } from '../../shared/services/s3.module';
 import { VideoProcessingModule } from '../../shared/services/video-processing/video-processing.module';
+import { VideoPlayerModule } from '../../shared/services/video-player/video-player.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { VideoProcessingModule } from '../../shared/services/video-processing/vi
     }),
     S3Module,
     VideoProcessingModule,
+    VideoPlayerModule,
   ],
   controllers: [VideosController],
   providers: [VideosService],
