@@ -2,6 +2,7 @@ import { ref, computed } from 'vue';
 import { videoApi } from '../api/videoApi';
 import { VideoStatus, VideoVisibility } from './types';
 import type { Video, VideoUploadProgress } from './types';
+import type { Category } from '@/entities/category';
 
 // State
 const videos = ref<Video[]>([]);
@@ -32,6 +33,30 @@ const publicVideos = computed(() =>
   )
 );
 
+// Helper function to transform API response to Video type
+const transformVideoResponse = (videoResponse: any): Video => {
+  // Transform category if it exists
+  let category: Category | undefined = undefined;
+  if (videoResponse.category) {
+    category = {
+      id: videoResponse.category.id,
+      name: videoResponse.category.name,
+      slug: videoResponse.category.slug,
+      description: videoResponse.category.description,
+      iconUrl: videoResponse.category.iconUrl,
+      order: videoResponse.category.order || 0, // Default to 0 if not provided
+      createdAt: videoResponse.category.createdAt || videoResponse.createdAt, // Default to video createdAt
+      updatedAt: videoResponse.category.updatedAt || videoResponse.updatedAt, // Default to video updatedAt
+    };
+  }
+
+  // Return transformed video
+  return {
+    ...videoResponse,
+    category,
+  };
+};
+
 // Actions
 async function fetchVideos(params = {}) {
   try {
@@ -40,7 +65,8 @@ async function fetchVideos(params = {}) {
     
     const response = await videoApi.getVideos(params);
     
-    videos.value = response.items;
+    // Transform each video in the response
+    videos.value = response.items.map(transformVideoResponse);
     totalVideos.value = response.total;
     currentPage.value = response.page;
     totalPages.value = response.totalPages;
@@ -59,7 +85,8 @@ async function fetchVideo(id: string) {
     isLoading.value = true;
     error.value = null;
     
-    const video = await videoApi.getVideo(id);
+    const videoResponse = await videoApi.getVideo(id);
+    const video = transformVideoResponse(videoResponse);
     currentVideo.value = video;
     
     return video;
@@ -76,8 +103,11 @@ async function uploadVideo(data: {
   description?: string;
   visibility?: VideoVisibility;
   file: File;
+  categoryId?: string;
+  tagIds?: string[];
 }) {
   try {
+    // Reset upload progress
     uploadProgress.value = {
       progress: 0,
       status: 'uploading',
@@ -85,26 +115,16 @@ async function uploadVideo(data: {
     
     error.value = null;
     
-    // In a real implementation, we would use XMLHttpRequest or fetch with a progress event
-    // to track upload progress. For simplicity, we'll simulate progress here.
-    const simulateProgress = () => {
-      const interval = setInterval(() => {
-        if (uploadProgress.value.progress < 90) {
-          uploadProgress.value.progress += 10;
-        } else {
-          clearInterval(interval);
-        }
-      }, 500);
-      
-      return interval;
-    };
+    // Upload the video using the video API with progress tracking
+    const videoResponse = await videoApi.uploadVideo(data, (progress) => {
+      // Update progress state
+      uploadProgress.value.progress = progress;
+    });
     
-    const progressInterval = simulateProgress();
+    // Transform the response
+    const video = transformVideoResponse(videoResponse);
     
-    const video = await videoApi.uploadVideo(data);
-    
-    clearInterval(progressInterval);
-    
+    // Set progress to complete
     uploadProgress.value = {
       progress: 100,
       status: 'complete',
@@ -130,25 +150,28 @@ async function updateVideo(id: string, data: {
   title?: string;
   description?: string;
   visibility?: VideoVisibility;
+  categoryId?: string;
+  tagIds?: string[];
 }) {
   try {
     isLoading.value = true;
     error.value = null;
     
-    const updatedVideo = await videoApi.updateVideo(id, data);
+    const videoResponse = await videoApi.updateVideo(id, data);
+    const video = transformVideoResponse(videoResponse);
     
     // Update the video in the videos list
     const index = videos.value.findIndex(v => v.id === id);
     if (index !== -1) {
-      videos.value[index] = updatedVideo;
+      videos.value[index] = video;
     }
     
     // Update current video if it's the one being edited
     if (currentVideo.value?.id === id) {
-      currentVideo.value = updatedVideo;
+      currentVideo.value = video;
     }
     
-    return updatedVideo;
+    return video;
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to update video';
     throw err;

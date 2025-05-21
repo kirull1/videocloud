@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+
+// Get router instance
+const router = useRouter();
 
 const props = defineProps({
   id: {
@@ -86,7 +90,14 @@ const formattedDate = computed(() => {
 });
 
 const handleClick = () => {
+  // Emit the click event for backward compatibility
   emit('click', props.id);
+  
+  // Navigate to the video player page using Vue Router
+  router.push({
+    name: 'video-watch',
+    query: { id: props.id }
+  });
 };
 
 const handleChannelClick = (event: Event) => {

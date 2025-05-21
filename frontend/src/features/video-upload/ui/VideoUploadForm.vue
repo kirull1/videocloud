@@ -27,6 +27,7 @@ const isAuthenticated = computed(() => userStore.isAuthenticated.value);
 const isUploading = computed(() => videoStore.uploadProgress.value.status === 'uploading' || 
                                videoStore.uploadProgress.value.status === 'processing');
 const uploadProgress = computed(() => videoStore.uploadProgress.value.progress);
+const uploadStatus = computed(() => videoStore.uploadProgress.value.status);
 const error = computed(() => videoStore.error.value);
 const successMessage = ref('');
 
@@ -35,6 +36,49 @@ const canSubmit = computed(() =>
   !!title.value && 
   !isUploading.value
 );
+
+// Computed for estimated time remaining
+const startTime = ref(0);
+const estimatedTimeRemaining = ref('');
+const uploadSpeed = ref(0); // bytes per second
+
+// Format time remaining
+const formatTimeRemaining = (seconds: number): string => {
+  if (seconds < 60) {
+    return `${Math.round(seconds)} seconds`;
+  } else if (seconds < 3600) {
+    return `${Math.round(seconds / 60)} minutes`;
+  } else {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.round((seconds % 3600) / 60);
+    return `${hours} hours ${minutes} minutes`;
+  }
+};
+
+// Update estimated time remaining
+watch(uploadProgress, (newProgress) => {
+  if (newProgress > 0 && newProgress < 100 && videoFile.value) {
+    const currentTime = Date.now();
+    const elapsedTime = (currentTime - startTime.value) / 1000; // in seconds
+    
+    if (elapsedTime > 0) {
+      // Calculate upload speed (bytes per second)
+      const bytesUploaded = videoFile.value.size * (newProgress / 100);
+      uploadSpeed.value = bytesUploaded / elapsedTime;
+      
+      // Calculate remaining bytes
+      const remainingBytes = videoFile.value.size - bytesUploaded;
+      
+      // Calculate estimated time remaining
+      if (uploadSpeed.value > 0) {
+        const timeRemaining = remainingBytes / uploadSpeed.value;
+        estimatedTimeRemaining.value = formatTimeRemaining(timeRemaining);
+      }
+    }
+  } else if (newProgress === 100) {
+    estimatedTimeRemaining.value = '';
+  }
+});
 
 // Load categories and tags when component is mounted
 onMounted(async () => {
@@ -55,6 +99,14 @@ const formatFileSize = (bytes: number): string => {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+// Format upload speed
+const formatUploadSpeed = (): string => {
+  if (uploadSpeed.value === 0) return '';
+  
+  const mbps = uploadSpeed.value / (1024 * 1024);
+  return `${mbps.toFixed(2)} MB/s`;
 };
 
 // Methods
@@ -99,6 +151,8 @@ const resetForm = () => {
   tagsInput.value = '';
   tagIds.value = [];
   successMessage.value = '';
+  estimatedTimeRemaining.value = '';
+  uploadSpeed.value = 0;
   videoStore.resetUploadProgress();
   
   if (fileInputRef.value) {
@@ -122,6 +176,10 @@ const uploadVideo = async () => {
     videoStore.error.value = null;
     successMessage.value = '';
     
+    // Record start time for calculating upload speed
+    startTime.value = Date.now();
+    estimatedTimeRemaining.value = 'Calculating...';
+    
     // Map isPrivate to VideoVisibility enum
     const visibility = isPrivate.value ? VideoVisibility.PRIVATE : VideoVisibility.PUBLIC;
     
@@ -130,15 +188,20 @@ const uploadVideo = async () => {
       title: title.value,
       description: description.value,
       visibility,
-      file: videoFile.value
+      file: videoFile.value,
+      categoryId: categoryId.value || undefined,
+      tagIds: tagIds.value.length > 0 ? tagIds.value : undefined
     });
     
     successMessage.value = 'Video uploaded successfully! It will be processed shortly.';
     
-    // If upload is successful, redirect to the video page after a short delay
+    // If upload is successful, redirect to the video player page after a short delay
     if (uploadedVideo) {
       setTimeout(() => {
-        router.push(`/videos/${uploadedVideo.id}`);
+        router.push({
+          name: 'video-watch',
+          query: { id: uploadedVideo.id }
+        });
       }, 2000);
     }
   } catch (err) {
@@ -319,8 +382,24 @@ watch(tagsInput, processTags);
         <div class="progress-container">
           <div class="progress-bar" :style="{ width: `${uploadProgress}%` }"/>
         </div>
-        <div class="progress-text">
-          {{ videoStore.uploadProgress.value.status === 'processing' ? 'Processing...' : `${uploadProgress}% Uploaded` }}
+        <div class="progress-details">
+          <div class="progress-text">
+            <span v-if="uploadStatus === 'uploading'">
+              {{ uploadProgress }}% Uploaded
+            </span>
+            <span v-else-if="uploadStatus === 'processing'">
+              Processing...
+            </span>
+            <span v-else-if="uploadStatus === 'complete'">
+              Upload Complete!
+            </span>
+          </div>
+          <div v-if="uploadStatus === 'uploading' && uploadProgress > 0" class="upload-stats">
+            <span v-if="uploadSpeed > 0" class="upload-speed">{{ formatUploadSpeed() }}</span>
+            <span v-if="estimatedTimeRemaining" class="time-remaining">
+              {{ estimatedTimeRemaining }} remaining
+            </span>
+          </div>
         </div>
       </div>
       
@@ -631,10 +710,32 @@ textarea.form-control {
   transition: width 0.3s ease;
 }
 
+.progress-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .progress-text {
-  text-align: right;
   font-size: 0.9rem;
+  color: var(--text-primary, #1A2233);
+  font-weight: 500;
+}
+
+.upload-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
   color: var(--text-secondary, #67748B);
+}
+
+.upload-speed {
+  font-weight: 500;
+}
+
+.time-remaining {
+  font-style: italic;
 }
 
 .form-actions {
@@ -711,6 +812,15 @@ textarea.form-control {
   
   .form-actions {
     flex-direction: column;
+  }
+  
+  .progress-details {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .upload-stats {
+    margin-top: 0.25rem;
   }
 }
 </style>

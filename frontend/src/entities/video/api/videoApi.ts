@@ -61,53 +61,126 @@ interface PaginatedVideosResponse {
   totalPages: number;
 }
 
+interface UploadProgressCallback {
+  (progress: number, loaded: number, total: number): void;
+}
+
 const API_URL = '/api/videos';
 
 export const videoApi = {
-  async uploadVideo(data: CreateVideoRequest): Promise<VideoResponse> {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-    
-    const formData = new FormData();
-    formData.append('title', data.title);
-    
-    if (data.description) {
-      formData.append('description', data.description);
-    }
-    
-    if (data.visibility) {
-      formData.append('visibility', data.visibility);
-    }
-    
-    if (data.categoryId) {
-      formData.append('categoryId', data.categoryId);
-    }
-    
-    if (data.tagIds && data.tagIds.length > 0) {
-      data.tagIds.forEach((tagId, index) => {
-        formData.append(`tagIds[${index}]`, tagId);
+  async uploadVideo(
+    data: CreateVideoRequest, 
+    onProgress?: UploadProgressCallback
+  ): Promise<VideoResponse> {
+    return new Promise((resolve, reject) => {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        reject(new Error('Not authenticated'));
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('title', data.title);
+      
+      if (data.description) {
+        formData.append('description', data.description);
+      }
+      
+      if (data.visibility) {
+        formData.append('visibility', data.visibility);
+      }
+      
+      if (data.categoryId) {
+        formData.append('categoryId', data.categoryId);
+      }
+      
+      if (data.tagIds && data.tagIds.length > 0) {
+        data.tagIds.forEach((tagId, index) => {
+          formData.append(`tagIds[${index}]`, tagId);
+        });
+      }
+      
+      // Log file details before upload
+      console.log(`Uploading file: ${data.file.name}, size: ${data.file.size} bytes`);
+      
+      formData.append('file', data.file);
+      
+      // Use XMLHttpRequest to track upload progress
+      const xhr = new XMLHttpRequest();
+      
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          console.log(`Upload progress: ${percentComplete}%, ${event.loaded}/${event.total} bytes`);
+          
+          if (onProgress) {
+            onProgress(percentComplete, event.loaded, event.total);
+          }
+        } else {
+          console.log('Upload progress: Length not computable');
+        }
       });
-    }
-    
-    formData.append('file', data.file);
-    
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
+      
+      // Handle load start
+      xhr.addEventListener('loadstart', () => {
+        console.log('Upload started');
+      });
+      
+      // Handle load end
+      xhr.addEventListener('loadend', () => {
+        console.log('Upload ended');
+      });
+      
+      // Handle response
+      xhr.addEventListener('load', () => {
+        console.log(`Upload completed with status: ${xhr.status}`);
+        
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            console.log('Upload response:', response);
+            resolve(response);
+          } catch (error) {
+            console.error('Failed to parse response:', error);
+            reject(new Error('Failed to parse response'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            console.error('Upload error response:', error);
+            reject(new Error(error.message || 'Failed to upload video'));
+          } catch (e) {
+            console.error('HTTP error:', xhr.status, xhr.statusText);
+            reject(new Error(`HTTP error ${xhr.status}`));
+          }
+        }
+      });
+      
+      // Handle network errors
+      xhr.addEventListener('error', (e) => {
+        console.error('Network error occurred during upload:', e);
+        reject(new Error('Network error occurred'));
+      });
+      
+      // Handle timeout
+      xhr.addEventListener('timeout', () => {
+        console.error('Request timed out');
+        reject(new Error('Request timed out'));
+      });
+      
+      // Handle abort
+      xhr.addEventListener('abort', () => {
+        console.log('Upload aborted');
+        reject(new Error('Upload aborted'));
+      });
+      
+      // Open and send the request
+      xhr.open('POST', API_URL, true);
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.send(formData);
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to upload video');
-    }
-
-    return response.json();
   },
 
   async getVideos(params: VideoQueryParams = {}): Promise<PaginatedVideosResponse> {
