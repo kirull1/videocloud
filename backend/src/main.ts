@@ -20,8 +20,8 @@ async function bootstrap() {
   }
 
   // Configure body parser limits for large file uploads
-  app.use(json({ limit: '500mb' }));
-  app.use(urlencoded({ extended: true, limit: '500mb' }));
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   // Start the server
   await app.listen(appConfig.port);
