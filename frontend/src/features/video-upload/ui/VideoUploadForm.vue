@@ -18,6 +18,9 @@ const canvasElement = ref<HTMLCanvasElement | null>(null);
 const thumbnailBlob = ref<Blob | null>(null);
 const thumbnailUrl = ref<string | null>(null);
 const isGeneratingThumbnail = ref(false);
+const useCustomThumbnail = ref(false);
+const customThumbnailFile = ref<File | null>(null);
+const customThumbnailUrl = ref<string | null>(null);
 
 // Form data
 const title = ref('');
@@ -231,6 +234,50 @@ const handleFileChange = async (event: Event) => {
   }
 };
 
+// Handle custom thumbnail upload
+const handleCustomThumbnailChange = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0];
+    
+    // Validate file type
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validImageTypes.includes(file.type)) {
+      videoStore.error.value = 'Please select a valid image file (JPEG or PNG)';
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      videoStore.error.value = 'Thumbnail size should be less than 5MB';
+      return;
+    }
+    
+    customThumbnailFile.value = file;
+    customThumbnailUrl.value = URL.createObjectURL(file);
+    videoStore.error.value = null;
+    
+    // Automatically switch to custom thumbnail mode
+    useCustomThumbnail.value = true;
+  }
+};
+
+// Get the active thumbnail blob and URL
+const getActiveThumbnail = computed(() => {
+  if (useCustomThumbnail.value && customThumbnailFile.value) {
+    return {
+      blob: customThumbnailFile.value,
+      url: customThumbnailUrl.value
+    };
+  } else {
+    return {
+      blob: thumbnailBlob.value,
+      url: thumbnailUrl.value
+    };
+  }
+});
+
 const resetForm = () => {
   videoFile.value = null;
   title.value = '';
@@ -242,6 +289,11 @@ const resetForm = () => {
   successMessage.value = '';
   estimatedTimeRemaining.value = '';
   uploadSpeed.value = 0;
+  thumbnailBlob.value = null;
+  thumbnailUrl.value = null;
+  useCustomThumbnail.value = false;
+  customThumbnailFile.value = null;
+  customThumbnailUrl.value = null;
   videoStore.resetUploadProgress();
   
   if (fileInputRef.value) {
@@ -297,9 +349,10 @@ const uploadVideo = async () => {
     // Append the video file
     formData.append('file', videoFile.value);
     
-    // Append the thumbnail if available
-    if (thumbnailBlob.value) {
-      formData.append('thumbnail', thumbnailBlob.value, 'thumbnail.jpg');
+    // Append the active thumbnail if available
+    const activeThumbnail = getActiveThumbnail.value;
+    if (activeThumbnail.blob) {
+      formData.append('thumbnail', activeThumbnail.blob, 'thumbnail.jpg');
     }
     
     // Upload the video using the video store
@@ -310,7 +363,7 @@ const uploadVideo = async () => {
       file: videoFile.value,
       categoryId: categoryId.value || undefined,
       tagIds: tagIds.value.length > 0 ? tagIds.value : undefined,
-      thumbnail: thumbnailBlob.value || undefined
+      thumbnail: getActiveThumbnail.value.blob || undefined
     });
     
     successMessage.value = 'Video uploaded successfully! It will be processed shortly.';
@@ -426,15 +479,56 @@ watch(tagsInput, processTags);
       </div>
       
       <!-- Thumbnail Preview -->
-      <div v-if="thumbnailUrl" class="thumbnail-preview">
+      <div v-if="getActiveThumbnail.url" class="thumbnail-preview">
         <h3>Video Thumbnail</h3>
+        
+        <div class="thumbnail-options">
+          <div class="thumbnail-option">
+            <input
+              id="auto-thumbnail"
+              v-model="useCustomThumbnail"
+              type="radio"
+              name="thumbnail-type"
+              :value="false"
+              :disabled="!thumbnailUrl"
+            />
+            <label for="auto-thumbnail">Auto-generated thumbnail</label>
+          </div>
+          
+          <div class="thumbnail-option">
+            <input
+              id="custom-thumbnail"
+              v-model="useCustomThumbnail"
+              type="radio"
+              name="thumbnail-type"
+              :value="true"
+            />
+            <label for="custom-thumbnail">Custom thumbnail</label>
+          </div>
+        </div>
+        
         <div class="thumbnail-container">
-          <img :src="thumbnailUrl" alt="Video thumbnail" class="thumbnail-image" />
+          <img :src="getActiveThumbnail.url" alt="Video thumbnail" class="thumbnail-image" />
           <div v-if="isGeneratingThumbnail" class="thumbnail-loading">
             <div class="thumbnail-spinner"/>
             <span>Generating thumbnail...</span>
           </div>
         </div>
+        
+        <div v-if="useCustomThumbnail" class="custom-thumbnail-upload">
+          <label for="custom-thumbnail-input" class="custom-thumbnail-btn">
+            {{ customThumbnailUrl ? 'Change custom thumbnail' : 'Upload custom thumbnail' }}
+          </label>
+          <input
+            id="custom-thumbnail-input"
+            type="file"
+            accept="image/jpeg,image/png,image/jpg"
+            class="file-input"
+            @change="handleCustomThumbnailChange"
+          />
+          <p class="thumbnail-hint">JPEG or PNG (max 5MB)</p>
+        </div>
+        
         <p class="thumbnail-hint">This thumbnail will be used for your video</p>
       </div>
       
@@ -1020,5 +1114,47 @@ textarea.form-control {
   font-size: 0.9rem;
   color: var(--text-secondary, #67748B);
   margin-top: 0.5rem;
+}
+
+/* Custom Thumbnail Options */
+.thumbnail-options {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.thumbnail-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.thumbnail-option input[type="radio"] {
+  margin: 0;
+}
+
+.thumbnail-option label {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.custom-thumbnail-upload {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.custom-thumbnail-btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary, #41A4FF);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.custom-thumbnail-btn:hover {
+  background-color: #3490e6;
 }
 </style>
