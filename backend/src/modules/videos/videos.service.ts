@@ -38,6 +38,12 @@ export class VideosService {
       size: number;
       mimetype: string;
     },
+    thumbnailFile?: {
+      originalname: string;
+      buffer: Buffer;
+      size: number;
+      mimetype: string;
+    } | null,
   ): Promise<VideoResponseDto> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
@@ -76,8 +82,24 @@ export class VideosService {
     // Upload video to S3
     const s3Key = await this.s3Service.uploadVideo(file, userId);
 
-    // Generate a thumbnail URL (in a real app, you would generate a thumbnail from the video)
-    const thumbnailUrl = `https://picsum.photos/seed/${Date.now()}/640/360`;
+    // Handle thumbnail
+    let thumbnailUrl: string;
+    
+    if (thumbnailFile && thumbnailFile.buffer) {
+      // If a thumbnail was provided, upload it to S3
+      const thumbnailKey = await this.s3Service.uploadThumbnail(
+        thumbnailFile.buffer,
+        thumbnailFile.mimetype,
+        userId,
+        Date.now().toString() // Use timestamp as videoId since we don't have the video ID yet
+      );
+      
+      // Generate the public URL for the thumbnail
+      thumbnailUrl = this.s3Service.getPublicUrl(thumbnailKey);
+    } else {
+      // If no thumbnail was provided, use a placeholder
+      thumbnailUrl = `https://picsum.photos/seed/${Date.now()}/640/360`;
+    }
 
     // Create video entity
     const video = new Video();

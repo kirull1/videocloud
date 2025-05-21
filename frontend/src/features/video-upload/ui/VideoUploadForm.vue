@@ -13,6 +13,11 @@ const router = useRouter();
 // State
 const videoFile = ref<File | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+const videoElement = ref<HTMLVideoElement | null>(null);
+const canvasElement = ref<HTMLCanvasElement | null>(null);
+const thumbnailBlob = ref<Blob | null>(null);
+const thumbnailUrl = ref<string | null>(null);
+const isGeneratingThumbnail = ref(false);
 
 // Form data
 const title = ref('');
@@ -116,7 +121,81 @@ const triggerFileInput = () => {
   }
 };
 
-const handleFileChange = (event: Event) => {
+// Generate thumbnail from video
+const generateThumbnail = async (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    isGeneratingThumbnail.value = true;
+    
+    // Create a video element
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    video.playsInline = true;
+    
+    // Create object URL for the video file
+    const objectUrl = URL.createObjectURL(file);
+    video.src = objectUrl;
+    
+    // When video metadata is loaded
+    video.onloadedmetadata = () => {
+      // Seek to 25% of the video duration for the thumbnail
+      video.currentTime = video.duration * 0.25;
+    };
+    
+    // When the video is seeked to the desired time
+    video.onseeked = () => {
+      try {
+        // Create a canvas element
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Draw the video frame on the canvas
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert canvas to blob
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Failed to generate thumbnail'));
+            return;
+          }
+          
+          // Clean up
+          URL.revokeObjectURL(objectUrl);
+          isGeneratingThumbnail.value = false;
+          
+          // Create a thumbnail URL for preview
+          thumbnailUrl.value = URL.createObjectURL(blob);
+          
+          resolve(blob);
+        }, 'image/jpeg', 0.8);
+      } catch (error) {
+        console.error('Error generating thumbnail:', error);
+        isGeneratingThumbnail.value = false;
+        reject(error);
+      }
+    };
+    
+    // Handle errors
+    video.onerror = (error) => {
+      console.error('Error loading video:', error);
+      URL.revokeObjectURL(objectUrl);
+      isGeneratingThumbnail.value = false;
+      reject(error);
+    };
+    
+    // Start loading the video
+    video.load();
+  });
+};
+
+const handleFileChange = async (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files.length > 0) {
     const file = input.files[0];
@@ -139,6 +218,16 @@ const handleFileChange = (event: Event) => {
     // Set title to file name without extension
     title.value = file.name.split('.').slice(0, -1).join('.');
     videoStore.error.value = null;
+    
+    // Generate thumbnail
+    try {
+      thumbnailBlob.value = await generateThumbnail(file);
+    } catch (error) {
+      console.error('Failed to generate thumbnail:', error);
+      // Continue without thumbnail if generation fails
+      thumbnailBlob.value = null;
+      thumbnailUrl.value = null;
+    }
   }
 };
 
@@ -183,6 +272,36 @@ const uploadVideo = async () => {
     // Map isPrivate to VideoVisibility enum
     const visibility = isPrivate.value ? VideoVisibility.PRIVATE : VideoVisibility.PUBLIC;
     
+    // Create FormData for the upload
+    const formData = new FormData();
+    formData.append('title', title.value);
+    
+    if (description.value) {
+      formData.append('description', description.value);
+    }
+    
+    if (visibility) {
+      formData.append('visibility', visibility);
+    }
+    
+    if (categoryId.value) {
+      formData.append('categoryId', categoryId.value);
+    }
+    
+    if (tagIds.value.length > 0) {
+      tagIds.value.forEach((tagId, index) => {
+        formData.append(`tagIds[${index}]`, tagId);
+      });
+    }
+    
+    // Append the video file
+    formData.append('file', videoFile.value);
+    
+    // Append the thumbnail if available
+    if (thumbnailBlob.value) {
+      formData.append('thumbnail', thumbnailBlob.value, 'thumbnail.jpg');
+    }
+    
     // Upload the video using the video store
     const uploadedVideo = await videoStore.uploadVideo({
       title: title.value,
@@ -190,7 +309,8 @@ const uploadVideo = async () => {
       visibility,
       file: videoFile.value,
       categoryId: categoryId.value || undefined,
-      tagIds: tagIds.value.length > 0 ? tagIds.value : undefined
+      tagIds: tagIds.value.length > 0 ? tagIds.value : undefined,
+      thumbnail: thumbnailBlob.value || undefined
     });
     
     successMessage.value = 'Video uploaded successfully! It will be processed shortly.';
@@ -303,6 +423,19 @@ watch(tagsInput, processTags);
           </div>
           <button class="change-file-btn" @click.stop="triggerFileInput">Change Video</button>
         </div>
+      </div>
+      
+      <!-- Thumbnail Preview -->
+      <div v-if="thumbnailUrl" class="thumbnail-preview">
+        <h3>Video Thumbnail</h3>
+        <div class="thumbnail-container">
+          <img :src="thumbnailUrl" alt="Video thumbnail" class="thumbnail-image" />
+          <div v-if="isGeneratingThumbnail" class="thumbnail-loading">
+            <div class="thumbnail-spinner"/>
+            <span>Generating thumbnail...</span>
+          </div>
+        </div>
+        <p class="thumbnail-hint">This thumbnail will be used for your video</p>
       </div>
       
       <div class="form-fields">
@@ -822,5 +955,70 @@ textarea.form-control {
   .upload-stats {
     margin-top: 0.25rem;
   }
+}
+
+/* Thumbnail Preview */
+.thumbnail-preview {
+  margin-bottom: 2rem;
+  background-color: rgba(65, 164, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.thumbnail-preview h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: var(--text-primary, #1A2233);
+}
+
+.thumbnail-container {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail-image {
+  width: 100%;
+  display: block;
+}
+
+.thumbnail-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.thumbnail-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.thumbnail-hint {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #67748B);
+  margin-top: 0.5rem;
 }
 </style>

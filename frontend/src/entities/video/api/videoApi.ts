@@ -8,6 +8,7 @@ interface CreateVideoRequest {
   file: File;
   categoryId?: string;
   tagIds?: string[];
+  thumbnail?: Blob;
 }
 
 interface UpdateVideoRequest {
@@ -105,6 +106,12 @@ export const videoApi = {
       console.log(`Uploading file: ${data.file.name}, size: ${data.file.size} bytes`);
       
       formData.append('file', data.file);
+      
+      // Append thumbnail if available
+      if (data.thumbnail) {
+        console.log('Uploading thumbnail');
+        formData.append('thumbnail', data.thumbnail, 'thumbnail.jpg');
+      }
       
       // Use XMLHttpRequest to track upload progress
       const xhr = new XMLHttpRequest();

@@ -10,13 +10,14 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
   ParseUUIDPipe,
   BadRequestException,
   HttpStatus,
   HttpCode,
   Logger,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../../entities/user.entity';
@@ -39,53 +40,75 @@ export class VideosController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
-    FileInterceptor('file', {
-      storage: memoryStorage(), // Use memory storage to ensure buffer is available
-      limits: {
-        fileSize: 1024 * 1024 * 500, // 500MB
+    FileFieldsInterceptor(
+      [
+        { name: 'file', maxCount: 1 },
+        { name: 'thumbnail', maxCount: 1 },
+      ],
+      {
+        storage: memoryStorage(), // Use memory storage to ensure buffer is available
+        limits: {
+          fileSize: 1024 * 1024 * 500, // 500MB
+        },
+        fileFilter: (req, file, callback) => {
+          // Skip logging if file is undefined
+          if (!file) {
+            return callback(new BadRequestException('No file provided'), false);
+          }
+
+          // Log file details
+          console.log(`Received file: ${file.originalname}, size: ${file.size}, type: ${file.mimetype}`);
+
+          // Check if file is a video
+          if (file.fieldname === 'file') {
+            const acceptedMimeTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+            if (!acceptedMimeTypes.includes(file.mimetype)) {
+              return callback(new BadRequestException('Only video files are allowed'), false);
+            }
+          }
+
+          // Check if file is a thumbnail
+          if (file.fieldname === 'thumbnail') {
+            const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!acceptedMimeTypes.includes(file.mimetype)) {
+              return callback(new BadRequestException('Only JPEG or PNG thumbnails are allowed'), false);
+            }
+          }
+
+          callback(null, true);
+        },
       },
-      fileFilter: (req, file, callback) => {
-        // Check if file is a video
-        const acceptedMimeTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
-
-        // Skip logging if file is undefined
-        if (!file) {
-          return callback(new BadRequestException('No file provided'), false);
-        }
-
-        // Log file details
-        console.log(`Received file: ${file.originalname}, size: ${file.size}, type: ${file.mimetype}`);
-
-        if (!acceptedMimeTypes.includes(file.mimetype)) {
-          return callback(new BadRequestException('Only video files are allowed'), false);
-        }
-
-        callback(null, true);
-      },
-    }),
+    ),
   )
   async create(
     @CurrentUser() user: User,
     @Body() createVideoDto: CreateVideoDto,
-    @UploadedFile() file: any,
+    @UploadedFiles() files: { file?: Express.Multer.File[], thumbnail?: Express.Multer.File[] },
   ): Promise<VideoResponseDto> {
     this.logger.log(`Uploading video for user: ${user.username} (${user.id})`);
     
-    if (!file) {
+    if (!files.file || files.file.length === 0) {
       this.logger.error('No file uploaded');
       throw new BadRequestException('Video file is required');
     }
     
-    this.logger.log(`File received: ${file.originalname}, size: ${file.size}, type: ${file.mimetype}`);
-    this.logger.log(`Buffer exists: ${!!file.buffer}, Buffer length: ${file.buffer ? file.buffer.length : 'N/A'}`);
+    const videoFile = files.file[0];
+    const thumbnailFile = files.thumbnail && files.thumbnail.length > 0 ? files.thumbnail[0] : null;
+    
+    this.logger.log(`File received: ${videoFile.originalname}, size: ${videoFile.size}, type: ${videoFile.mimetype}`);
+    this.logger.log(`Buffer exists: ${!!videoFile.buffer}, Buffer length: ${videoFile.buffer ? videoFile.buffer.length : 'N/A'}`);
+    
+    if (thumbnailFile) {
+      this.logger.log(`Thumbnail received: ${thumbnailFile.originalname}, size: ${thumbnailFile.size}, type: ${thumbnailFile.mimetype}`);
+    }
     
     try {
       // Ensure we have a buffer
-      if (!file.buffer || file.buffer.length === 0) {
+      if (!videoFile.buffer || videoFile.buffer.length === 0) {
         throw new BadRequestException('Empty file or missing buffer');
       }
       
-      return await this.videosService.createVideo(user.id, createVideoDto, file);
+      return await this.videosService.createVideo(user.id, createVideoDto, videoFile, thumbnailFile);
     } catch (error: any) {
       this.logger.error(`Error uploading video: ${error.message}`, error.stack);
       throw error;
