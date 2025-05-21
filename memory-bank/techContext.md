@@ -154,6 +154,7 @@ backend/
 - GET /users/profile - Get user profile
 - PATCH /users/profile - Update user profile
 - POST /users/avatar - Upload user avatar
+- GET /users/:id/avatar - Get user avatar (redirects to actual avatar or generates default)
 - PATCH /users/password - Change user password
 - POST /users/verify-email - Request email verification
 - POST /users/verify-email/:token - Verify email
@@ -196,6 +197,13 @@ CREATE TABLE users (
 - Unique filename generation based on hash and timestamp
 - Public read access for avatar files
 - URL format: https://{bucket}.storage.yandexcloud.net/{key}
+
+### Avatar Retrieval
+- Dedicated endpoint: GET /api/users/:id/avatar
+- Redirects to actual avatar URL if user has uploaded a custom avatar
+- Generates default avatar using DiceBear API if no custom avatar exists
+- Consistent avatar display across the application
+- Frontend uses the avatar endpoint instead of directly accessing userAvatarUrl field
 
 ## Testing
 
@@ -259,6 +267,8 @@ CREATE TABLE users (
 - Custom avatar upload functionality is now fixed and working correctly
 - File uploads are now properly handled with memory storage instead of disk storage
 - S3 integration is working correctly for avatar storage
+- Avatar retrieval endpoint has been implemented for consistent avatar display
+- Frontend now uses the avatar endpoint instead of directly accessing userAvatarUrl field
 - Next focus should be on video upload and processing
 - Need to implement proper testing for all new features
 - Need to add proper documentation for all new features

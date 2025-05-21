@@ -19,6 +19,15 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Recent Changes
 
+### Avatar System Improvements
+- Created a new `/api/users/:id/avatar` endpoint in the backend to serve user avatars
+- Implemented the `getUserAvatar` method in the UsersService that:
+  - Returns the user's actual avatar if available
+  - Generates a default avatar using DiceBear API based on username if no avatar exists
+- Updated the frontend to use the new endpoint for all user avatars
+- Removed dependency on the `userAvatarUrl` field in the frontend
+- Ensured consistent avatar display across the application
+
 ### Avatar Upload Fix
 - Fixed issue with avatar uploads where empty files (0 bytes) were being sent to S3
 - Updated the FileInterceptor configuration to use memory storage instead of disk storage

@@ -592,6 +592,13 @@ AppModule
    - Public URL generated and stored in user profile
    - Frontend displays new avatar
 
+6. **Avatar Retrieval Flow**
+   - Frontend requests avatar via `/api/users/:id/avatar` endpoint
+   - Backend checks if user has a custom avatar URL
+   - If custom avatar exists, redirect to the S3 URL
+   - If no custom avatar, generate default avatar URL using DiceBear API
+   - Frontend displays the avatar consistently across the application
+
 ## Communication Patterns
 
 1. **REST API Communication**
