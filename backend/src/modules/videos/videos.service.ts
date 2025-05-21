@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import * as path from 'path';
@@ -7,6 +7,7 @@ import { User } from '../../entities/user.entity';
 import { Category } from '../../entities/category.entity';
 import { Tag } from '../../entities/tag.entity';
 import { S3Service } from '../../shared/services/s3.service';
+import { VideoDurationUtil } from '../../utils/video-duration.util';
 import {
   CreateVideoDto,
   UpdateVideoDto,
@@ -17,6 +18,8 @@ import {
 
 @Injectable()
 export class VideosService {
+  private readonly logger = new Logger(VideosService.name);
+
   constructor(
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
@@ -101,6 +104,19 @@ export class VideosService {
       thumbnailUrl = `https://picsum.photos/seed/${Date.now()}/640/360`;
     }
 
+    // Calculate video duration if not provided
+    let duration = createVideoDto.duration;
+    if (!duration && file.buffer) {
+      try {
+        this.logger.log('Calculating video duration...');
+        duration = await VideoDurationUtil.calculateDuration(file.buffer, file.mimetype);
+        this.logger.log(`Video duration calculated: ${duration} seconds`);
+      } catch (error: any) {
+        this.logger.error(`Failed to calculate video duration: ${error.message}`, error.stack);
+        // Continue without duration if calculation fails
+      }
+    }
+
     // Create video entity
     const video = new Video();
     video.title = createVideoDto.title;
@@ -108,6 +124,7 @@ export class VideosService {
     video.filePath = s3Key;
     video.thumbnailUrl = thumbnailUrl;
     video.userId = userId;
+    video.duration = duration;
     // Set isPublic based on visibility
     video.isPublic = createVideoDto.visibility === VideoVisibility.PUBLIC;
     video.category = category;

@@ -599,6 +599,57 @@ AppModule
    - If no custom avatar, generate default avatar URL using DiceBear API
    - Frontend displays the avatar consistently across the application
 
+## Video Components
+
+### VideoCard Component
+- Displays video previews in lists and grids
+- Shows video thumbnail with duration overlay in MM:SS format
+- Displays video title, channel name, views, and upload date
+- Includes channel avatar using the avatar endpoint
+- Supports visual indicators for new and watched videos
+- Implements responsive design for different screen sizes
+- Formats duration from seconds to MM:SS format
+- Handles null/undefined duration values gracefully
+- Formats view counts with K/M suffixes for large numbers
+- Calculates relative time for upload dates (e.g., "2 days ago")
+
+### Video Upload Component
+- Provides drag-and-drop interface for video file selection
+- Validates file size and type before upload
+- Extracts video metadata including duration
+- Uses HTML5 video element to calculate video duration
+- Shows calculated duration in the upload form with clock icon
+- Provides visual feedback during duration calculation with loading indicator
+- Supports category selection and tagging
+- Allows setting video visibility (public/private)
+- Shows upload progress with percentage indicator
+- Sends video duration to backend as part of upload metadata
+
+### Video Duration Calculation
+- Implements a multi-layer approach for video duration calculation:
+  - Client-side: Uses HTML5 video element for immediate user feedback
+  - Server-side: Uses `fluent-ffmpeg` with `@ffprobe-installer/ffprobe` for reliable duration extraction
+- Server calculates duration if not provided by the client
+- Handles various video formats (MP4, WebM, OGG, QuickTime)
+- Provides graceful fallback if any calculation method fails
+- Stores duration in seconds in the database
+- Formats duration as MM:SS for display in the UI
+- Uses a custom temporary directory within the project for file operations
+- Implements proper file permissions handling to avoid EACCES errors:
+  - Sets appropriate file permissions (0o666) on temporary video files
+  - Sets execute permission (0o755) on the ffprobe executable
+- Adds robust error handling and detailed logging
+- Ensures cleanup of temporary files after processing
+
+### Video Upload Flow
+- User selects video file via drag-and-drop or file browser
+- Frontend calculates video duration using HTML5 video element
+- Duration is stored in upload metadata
+- Video is uploaded to backend with duration included in FormData
+- Backend CreateVideoDto accepts duration parameter
+- Duration is stored in the database with the video
+- Video cards display the actual duration of videos
+
 ## Communication Patterns
 
 1. **REST API Communication**

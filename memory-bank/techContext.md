@@ -269,6 +269,25 @@ CREATE TABLE users (
 - S3 integration is working correctly for avatar storage
 - Avatar retrieval endpoint has been implemented for consistent avatar display
 - Frontend now uses the avatar endpoint instead of directly accessing userAvatarUrl field
+- Video duration is displayed in the bottom-right corner of video thumbnails in MM:SS format
+- Duration is calculated from the video.duration field (in seconds)
+- VideoCard component handles null/undefined duration values gracefully
+- Fixed issue where video duration was not appearing correctly by updating database values
+- Implemented automatic video duration calculation during upload using HTML5 video element
+- Added visual feedback during duration calculation with loading indicator
+- Shows calculated duration in the upload form with clock icon
+- Modified video upload process to include duration in the metadata sent to the server
+- Updated backend CreateVideoDto to accept duration parameter from frontend
+- Replaced `get-video-duration` with `fluent-ffmpeg` and `@ffprobe-installer/ffprobe` for reliable duration calculation
+- Created a utility class `VideoDurationUtil` to handle duration calculation on the server
+- Server-side duration calculation works as a fallback if client-side calculation fails
+- Implemented a dual-layer approach: client-side calculation for immediate feedback, server-side for reliability
+- Fixed permission issues by:
+  - Setting appropriate file permissions (0o666) on temporary video files
+  - Setting execute permission (0o755) on the ffprobe executable
+  - Using a custom temporary directory within the project
+- Added detailed logging for debugging duration calculation
+- Implemented robust error handling and cleanup of temporary files
 - Next focus should be on video upload and processing
 - Need to implement proper testing for all new features
 - Need to add proper documentation for all new features

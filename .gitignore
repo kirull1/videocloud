@@ -5,6 +5,7 @@
 /node_modules
 /.temp
 /.tmp
+/*/temp
 
 # Logs
 logs

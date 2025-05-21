@@ -106,6 +106,7 @@ async function uploadVideo(data: {
   categoryId?: string;
   tagIds?: string[];
   thumbnail?: Blob;
+  duration?: number;
 }) {
   try {
     // Reset upload progress

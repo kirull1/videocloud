@@ -19,6 +19,50 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Recent Changes
 
+### Server-Side Video Duration Calculation
+- Replaced `get-video-duration` with `fluent-ffmpeg` and `@ffprobe-installer/ffprobe` for reliable duration calculation
+- Created a utility class `VideoDurationUtil` to handle duration calculation
+- Updated the video upload process to calculate duration on the server
+- Implemented fallback to client-side duration if provided
+- Added proper error handling for duration calculation
+- Fixed permission issues by:
+  - Setting appropriate file permissions (0o666) on temporary video files
+  - Setting execute permission (0o755) on the ffprobe executable
+  - Using a custom temporary directory within the project
+- Added detailed logging for debugging duration calculation
+- Implemented robust error handling and cleanup of temporary files
+
+### Video Duration Calculation Enhancement
+- Added visual indicator for video duration in the upload form
+- Implemented loading state while duration is being calculated
+- Added duration display with clock icon in the file details section
+- Improved error handling for duration calculation
+- Fixed TypeScript errors related to the duration parameter
+
+### Video Duration Display Fix
+- Fixed issue with video duration not displaying correctly in video cards
+- Updated database to set correct duration values for existing videos
+- Modified VideoCard component to handle null/undefined duration values
+- Removed default duration value from Home.vue component
+- Verified that video durations now display correctly (e.g., 9:56)
+
+### Video Duration Calculation
+- Implemented automatic video duration calculation during upload
+- Added code to extract duration from video files using HTML5 video element
+- Duration is now calculated when a video is selected for upload
+- Modified VideoUpload component to include duration in upload metadata
+- Updated videoApi to include duration in the FormData sent to the server
+- Updated backend CreateVideoDto to accept duration parameter
+- This ensures accurate duration display in video cards
+
+### Video Duration Display
+- Verified that video duration is properly displayed in video cards
+- Duration is shown in the bottom-right corner of the video thumbnail
+- Format is MM:SS (e.g., 3:00)
+- Duration is calculated from the video.duration field (in seconds)
+- Added fallback to 180 seconds (3 minutes) when duration is null
+- Fixed issue where duration was not appearing due to null values
+
 ### Avatar System Improvements
 - Created a new `/api/users/:id/avatar` endpoint in the backend to serve user avatars
 - Implemented the `getUserAvatar` method in the UsersService that:

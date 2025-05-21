@@ -51,6 +51,9 @@ const props = defineProps({
 const emit = defineEmits(['click', 'channelClick']);
 
 const formattedDuration = computed(() => {
+  if (props.duration === null || props.duration === undefined) {
+    return '0:00';
+  }
   const minutes = Math.floor(props.duration / 60);
   const seconds = props.duration % 60;
   return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;

@@ -12,6 +12,7 @@ export interface UploadMetadata {
   isPrivate: boolean;
   categoryId?: string;
   tagIds: string[];
+  duration?: number;
 }
 
 export interface UploadedFile {
@@ -61,8 +62,10 @@ const metadata = ref<UploadMetadata>({
   description: '',
   isPrivate: false,
   categoryId: undefined,
-  tagIds: []
+  tagIds: [],
+  duration: undefined
 });
+const isCalculatingDuration = ref(false);
 
 // Use the video store for upload state
 const uploading = computed(() => videoStore.uploadProgress.value.status === 'uploading' ||
@@ -119,13 +122,42 @@ const allowedFileTypesDisplay = computed(() => {
   return props.allowedFileTypes.map(type => type.split('/')[1].toUpperCase()).join(', ');
 });
 
-const handleFileSelect = (event: Event) => {
+const calculateVideoDuration = (file: File): Promise<number> => {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src);
+      resolve(Math.round(video.duration));
+    };
+    
+    video.src = URL.createObjectURL(file);
+  });
+};
+
+const handleFileSelect = async (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files.length > 0) {
     selectedFile.value = input.files[0];
     
     if (selectedFile.value) {
       metadata.value.title = selectedFile.value.name.split('.').slice(0, -1).join('.');
+      
+      // Calculate video duration
+      if (selectedFile.value.type.startsWith('video/')) {
+        try {
+          isCalculatingDuration.value = true;
+          const duration = await calculateVideoDuration(selectedFile.value);
+          console.log(`Video duration: ${duration} seconds`);
+          metadata.value.duration = duration;
+        } catch (error) {
+          console.error('Failed to calculate video duration:', error);
+        } finally {
+          isCalculatingDuration.value = false;
+        }
+      }
+      
       emit('fileSelected', {
         file: selectedFile.value,
         metadata: { ...metadata.value }
@@ -148,7 +180,7 @@ const handleDragOver = (event: DragEvent) => {
   event.preventDefault();
 };
 
-const handleDrop = (event: DragEvent) => {
+const handleDrop = async (event: DragEvent) => {
   event.preventDefault();
   dragActive.value = false;
   
@@ -157,6 +189,21 @@ const handleDrop = (event: DragEvent) => {
     
     if (selectedFile.value) {
       metadata.value.title = selectedFile.value.name.split('.').slice(0, -1).join('.');
+      
+      // Calculate video duration
+      if (selectedFile.value.type.startsWith('video/')) {
+        try {
+          isCalculatingDuration.value = true;
+          const duration = await calculateVideoDuration(selectedFile.value);
+          console.log(`Video duration: ${duration} seconds`);
+          metadata.value.duration = duration;
+        } catch (error) {
+          console.error('Failed to calculate video duration:', error);
+        } finally {
+          isCalculatingDuration.value = false;
+        }
+      }
+      
       emit('fileSelected', {
         file: selectedFile.value,
         metadata: { ...metadata.value }
@@ -177,6 +224,20 @@ const handleUploadStart = async () => {
         ? VideoVisibility.PRIVATE
         : VideoVisibility.PUBLIC;
       
+      // If duration wasn't calculated yet, try to calculate it now
+      if (metadata.value.duration === undefined && selectedFile.value.type.startsWith('video/')) {
+        try {
+          isCalculatingDuration.value = true;
+          const duration = await calculateVideoDuration(selectedFile.value);
+          console.log(`Video duration calculated before upload: ${duration} seconds`);
+          metadata.value.duration = duration;
+        } catch (error) {
+          console.error('Failed to calculate video duration before upload:', error);
+        } finally {
+          isCalculatingDuration.value = false;
+        }
+      }
+      
       // Upload the video using the video store
       const uploadedVideo = await videoStore.uploadVideo({
         title: metadata.value.title,
@@ -184,7 +245,8 @@ const handleUploadStart = async () => {
         visibility,
         file: selectedFile.value,
         categoryId: metadata.value.categoryId,
-        tagIds: metadata.value.tagIds
+        tagIds: metadata.value.tagIds,
+        duration: metadata.value.duration
       });
       
       // Emit the upload event for parent components
@@ -213,7 +275,8 @@ const handleCancel = () => {
     description: '',
     isPrivate: false,
     categoryId: undefined,
-    tagIds: []
+    tagIds: [],
+    duration: undefined
   };
   if (fileInputRef.value) {
     fileInputRef.value.value = '';
@@ -290,7 +353,15 @@ watch(() => metadata.value, updateMetadata, { deep: true });
     <div v-else class="video-upload__selected">
       <div class="video-upload__file-info">
         <h3 class="video-upload__file-name">{{ selectedFile.name }}</h3>
-        <p class="video-upload__file-size">{{ formattedFileSize }}</p>
+        <div class="video-upload__file-details">
+          <p class="video-upload__file-size">{{ formattedFileSize }}</p>
+          <p v-if="isCalculatingDuration" class="video-upload__file-duration video-upload__file-duration--loading">
+            Calculating duration...
+          </p>
+          <p v-else-if="metadata.duration" class="video-upload__file-duration">
+            Duration: {{ Math.floor(metadata.duration / 60) }}:{{ (metadata.duration % 60).toString().padStart(2, '0') }}
+          </p>
+        </div>
         
         <div v-if="isFileTooLarge" class="video-upload__error">
           File is too large. Maximum size is {{ maxFileSizeFormatted }}.
@@ -502,10 +573,47 @@ watch(() => metadata.value, updateMetadata, { deep: true });
   word-break: break-word;
 }
 
-.video-upload__file-size {
+.video-upload__file-details {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.video-upload__file-size,
+.video-upload__file-duration {
   font-size: 14px;
   margin: 0;
   color: var(--text-secondary, #67748B);
+}
+
+.video-upload__file-duration {
+  display: flex;
+  align-items: center;
+}
+
+.video-upload__file-duration::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2367748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolyline points='12 6 12 12 16 14'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.video-upload__file-duration--loading {
+  color: var(--primary, #41A4FF);
+}
+
+.video-upload__file-duration--loading::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2341A4FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolyline points='12 6 12 12 16 14'%3E%3C/polyline%3E%3C/svg%3E");
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .video-upload__metadata {

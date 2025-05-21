@@ -77,7 +77,7 @@ const handleChannelClick = (channelName: string) => {
             :id="video.id"
             :title="video.title"
             :thumbnailUrl="video.thumbnailUrl || `https://picsum.photos/seed/${video.id}/640/360`"
-            :duration="video.duration || 0"
+            :duration="video.duration"
             :views="video.views"
             :uploadDate="new Date(video.createdAt)"
             :channelName="video.username"

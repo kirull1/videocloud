@@ -9,6 +9,7 @@ interface CreateVideoRequest {
   categoryId?: string;
   tagIds?: string[];
   thumbnail?: Blob;
+  duration?: number;
 }
 
 interface UpdateVideoRequest {
@@ -101,6 +102,14 @@ export const videoApi = {
           formData.append(`tagIds[${index}]`, tagId);
         });
       }
+      
+      // Add duration if available
+      if (data.duration !== undefined) {
+        formData.append('duration', data.duration.toString());
+        console.log(`Adding video duration: ${data.duration} seconds`);
+      }
+
+      console.log(data);
       
       // Log file details before upload
       console.log(`Uploading file: ${data.file.name}, size: ${data.file.size} bytes`);

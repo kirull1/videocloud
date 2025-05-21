@@ -330,6 +330,14 @@
 
 | Milestone                | Description                                           | Date           |
 | ------------------------ | ----------------------------------------------------- | -------------- |
+| Server-Side Duration Fix 4 | Set execute permission on ffprobe executable to fix EACCES | May 21, 2025 |
+| Server-Side Duration Fix 3 | Replaced get-video-duration with fluent-ffmpeg for reliability | May 21, 2025 |
+| Server-Side Duration Fix 2 | Implemented ffprobe with fallback for reliable duration | May 21, 2025 |
+| Server-Side Duration Fix | Fixed permission issues with video duration calculation | May 21, 2025 |
+| Server-Side Duration     | Added server-side video duration calculation          | May 21, 2025   |
+| Video Duration UI        | Enhanced duration calculation with visual feedback    | May 21, 2025   |
+| Video Duration Calculation | Implemented end-to-end video duration extraction    | May 21, 2025   |
+| Video Duration Display   | Fixed video duration display with actual values       | May 21, 2025   |
 | Avatar System Improvements | Created avatar endpoint and improved avatar handling | May 21, 2025   |
 | Avatar Upload Fix        | Fixed issue with avatar uploads to S3                 | May 19, 2025   |
 | User Profile Management  | Implemented complete user profile functionality       | May 18, 2025   |

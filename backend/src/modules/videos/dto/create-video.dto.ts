@@ -6,10 +6,14 @@ import {
   MaxLength,
   IsUUID,
   IsArray,
+  IsNumber,
 } from 'class-validator';
 import { VideoVisibility } from '../../../entities/video.entity';
 
 export class CreateVideoDto {
+  @IsOptional()
+  @IsNumber()
+  duration?: number;
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
