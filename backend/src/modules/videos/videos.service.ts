@@ -456,4 +456,35 @@ export class VideosService {
         : [],
     };
   }
+
+  /**
+   * Get a signed URL for streaming a video
+   */
+  async getVideoStreamUrl(id: string, currentUserId?: string): Promise<string> {
+    const video = await this.videoRepository.findOne({
+      where: { id },
+    });
+
+    if (!video) {
+      throw new NotFoundException('Video not found');
+    }
+
+    // Check if user has permission to view this video
+    if (!video.isPublic && video.userId !== currentUserId) {
+      throw new ForbiddenException('You do not have permission to view this video');
+    }
+
+    // Generate signed URL for video
+    if (!video.filePath) {
+      throw new NotFoundException('Video file not found');
+    }
+
+    try {
+      const signedUrl = await this.s3Service.getSignedUrl(video.filePath);
+      return signedUrl;
+    } catch (error: any) {
+      console.error(`Failed to generate signed URL for video ${video.id}:`, error);
+      throw new Error(`Failed to generate signed URL: ${error.message}`);
+    }
+  }
 }

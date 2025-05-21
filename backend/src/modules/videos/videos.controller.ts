@@ -16,12 +16,19 @@ import {
   HttpStatus,
   HttpCode,
   Logger,
+  NotFoundException,
+  ForbiddenException,
+  Res,
 } from '@nestjs/common';
 import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../../entities/user.entity';
 import { VideosService } from './videos.service';
+import { Response } from 'express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Video } from '../../entities/video.entity';
 import {
   CreateVideoDto,
   UpdateVideoDto,
@@ -35,7 +42,11 @@ import { memoryStorage } from 'multer';
 export class VideosController {
   private readonly logger = new Logger(VideosController.name);
 
-  constructor(private readonly videosService: VideosService) {}
+  constructor(
+    private readonly videosService: VideosService,
+    @InjectRepository(Video)
+    private readonly videoRepository: Repository<Video>
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -158,5 +169,39 @@ export class VideosController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User): Promise<void> {
     await this.videosService.remove(id, user.id);
+  }
+
+  @Get(':id/stream')
+  async streamVideo(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() response: Response,
+    @CurrentUser() user?: User,
+  ): Promise<void> {
+    this.logger.log(`Streaming video: ${id}`);
+    
+    try {
+      // Get the video
+      const video = await this.videoRepository.findOne({
+        where: { id },
+      });
+      
+      if (!video) {
+        throw new NotFoundException('Video not found');
+      }
+      
+      // Check if user has permission to view this video
+      if (!video.isPublic && video.userId !== user?.id) {
+        throw new ForbiddenException('You do not have permission to view this video');
+      }
+      
+      // Get the signed URL for the video
+      const signedUrl = await this.videosService.getVideoStreamUrl(id, user?.id);
+      
+      // Redirect to the signed URL
+      response.redirect(signedUrl);
+    } catch (error: any) {
+      this.logger.error(`Error streaming video: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 }
