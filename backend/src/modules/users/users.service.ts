@@ -188,4 +188,21 @@ export class UsersService {
     // For now, we'll just return a success message
     return { message: 'Email verified successfully' };
   }
+
+  async getUserAvatar(userId: string): Promise<{ avatarUrl: string }> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // If user has an avatar URL, return it
+    if (user.avatarUrl) {
+      return { avatarUrl: user.avatarUrl };
+    }
+
+    // Otherwise, generate a default avatar URL based on username
+    const defaultAvatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.username)}&size=100`;
+    return { avatarUrl: defaultAvatarUrl };
+  }
 }

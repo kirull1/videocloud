@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import Header from '@/widgets/header';
 import VideoCard from '@/entities/video/ui/VideoCard';
 import { videoStore, VideoVisibility, VideoStatus } from '@/entities/video';
-import type { Video } from '@/entities/video';
+import { isDev } from '@/shared/lib/isDev';
 
 const router = useRouter();
 const isLoading = ref(true);
@@ -24,6 +24,10 @@ onMounted(async () => {
       sortBy: 'createdAt',
       sortOrder: 'DESC'
     });
+
+    if (isDev()) {
+      console.log("VIDEOS: ", response.items);
+    }
     
     // Store videos
     videos.value = response.items;
@@ -77,7 +81,7 @@ const handleChannelClick = (channelName: string) => {
             :views="video.views"
             :uploadDate="new Date(video.createdAt)"
             :channelName="video.username"
-            :channelAvatarUrl="video.userAvatarUrl || `https://picsum.photos/seed/${video.username}/100/100`"
+            :channelAvatarUrl="`/api/users/${video.userId}/avatar`"
             :isNew="new Date(video.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000"
             :isWatched="false"
             @click="handleVideoClick"

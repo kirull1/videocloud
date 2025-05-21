@@ -9,7 +9,10 @@ import {
   UseInterceptors,
   BadRequestException,
   Logger,
+  Param,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -23,6 +26,15 @@ export class UsersController {
   private readonly logger = new Logger(UsersController.name);
 
   constructor(private readonly usersService: UsersService) {}
+
+  @Get(':id/avatar')
+  async getUserAvatar(@Param('id') userId: string, @Res() res: Response) {
+    this.logger.log(`Getting avatar for user: ${userId}`);
+    const { avatarUrl } = await this.usersService.getUserAvatar(userId);
+    
+    // Redirect to the avatar URL
+    return res.redirect(avatarUrl);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
