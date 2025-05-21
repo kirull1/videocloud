@@ -108,19 +108,7 @@ sudo usermod -aG docker $USER
    ```
 
 4. **Configure Environment Variables**:
-   Create a `.env` file in the backend directory:
-
-   ```bash
-   # Create backend .env file
-   cat > backend/.env << EOL
-   DATABASE_HOST=localhost
-   DATABASE_PORT=5432
-   DATABASE_USER=postgres
-   DATABASE_PASSWORD=postgres
-   DATABASE_NAME=videocloud
-   JWT_SECRET=your-secret-key
-   EOL
-   ```
+   Create a `.env` file from `.env.example` in the backend directory.
 
 5. **Start Development Servers**:
 
