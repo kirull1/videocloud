@@ -9,6 +9,8 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createHash } from 'crypto';
 import { extname } from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Define the file interface since Express.Multer is not available
 interface UploadedFile {
@@ -205,5 +207,79 @@ export class S3Service {
    */
   getPublicUrl(key: string): string {
     return `https://${this.bucket}.storage.yandexcloud.net/${key}`;
+  }
+
+  /**
+   * Get a file stream from S3
+   */
+  async getFileStream(key: string): Promise<NodeJS.ReadableStream> {
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
+
+      const response = await this.s3Client.send(command);
+      
+      if (!response.Body) {
+        throw new Error('Empty response body');
+      }
+      
+      return response.Body as NodeJS.ReadableStream;
+    } catch (error: any) {
+      this.logger.error(`Failed to get file stream: ${error.message}`, error.stack);
+      throw new Error(`Failed to get file stream: ${error.message}`);
+    }
+  }
+
+  /**
+   * Upload a file from a local path to S3
+   */
+  async uploadFile(localPath: string, s3Key: string, contentType?: string): Promise<string> {
+    try {
+      const fileContent = fs.readFileSync(localPath);
+      
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: s3Key,
+          Body: fileContent,
+          ContentType: contentType || this.getContentType(localPath),
+        }),
+      );
+
+      this.logger.log(`File uploaded successfully: ${s3Key}`);
+      return s3Key;
+    } catch (error: any) {
+      this.logger.error(`Failed to upload file: ${error.message}`, error.stack);
+      throw new Error(`Failed to upload file: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get content type based on file extension
+   */
+  private getContentType(filePath: string): string {
+    const ext = path.extname(filePath).toLowerCase();
+    
+    switch (ext) {
+      case '.jpg':
+      case '.jpeg':
+        return 'image/jpeg';
+      case '.png':
+        return 'image/png';
+      case '.gif':
+        return 'image/gif';
+      case '.mp4':
+        return 'video/mp4';
+      case '.webm':
+        return 'video/webm';
+      case '.ogg':
+        return 'video/ogg';
+      case '.mov':
+        return 'video/quicktime';
+      default:
+        return 'application/octet-stream';
+    }
   }
 }

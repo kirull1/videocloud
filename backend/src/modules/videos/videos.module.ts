@@ -8,6 +8,7 @@ import { Tag } from '../../entities/tag.entity';
 import { VideosController } from './videos.controller';
 import { VideosService } from './videos.service';
 import { S3Module } from '../../shared/services/s3.module';
+import { VideoProcessingModule } from '../../shared/services/video-processing/video-processing.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { S3Module } from '../../shared/services/s3.module';
       dest: './uploads/videos',
     }),
     S3Module,
+    VideoProcessingModule,
   ],
   controllers: [VideosController],
   providers: [VideosService],

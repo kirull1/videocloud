@@ -8,6 +8,7 @@ import { Category } from '../../entities/category.entity';
 import { Tag } from '../../entities/tag.entity';
 import { S3Service } from '../../shared/services/s3.service';
 import { VideoDurationUtil } from '../../utils/video-duration.util';
+import { VideoProcessingService } from '../../shared/services/video-processing/video-processing.service';
 import {
   CreateVideoDto,
   UpdateVideoDto,
@@ -30,6 +31,7 @@ export class VideosService {
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
     private readonly s3Service: S3Service,
+    private readonly videoProcessingService: VideoProcessingService,
   ) {}
 
   async createVideo(
@@ -132,6 +134,9 @@ export class VideosService {
 
     // Save video to database
     const savedVideo = await this.videoRepository.save(video);
+
+    // Start video processing in the background
+    this.processVideoInBackground(savedVideo.id, s3Key, userId);
 
     return this.mapVideoToResponseDto(savedVideo, user);
   }
@@ -502,6 +507,51 @@ export class VideosService {
     } catch (error: any) {
       console.error(`Failed to generate signed URL for video ${video.id}:`, error);
       throw new Error(`Failed to generate signed URL: ${error.message}`);
+    }
+  }
+
+  /**
+   * Process a video in the background after it has been uploaded
+   * This method will:
+   * 1. Create different quality variants of the video
+   * 2. Generate thumbnails at different timestamps
+   * 3. Update the video entity with the processed information
+   */
+  private async processVideoInBackground(videoId: string, s3Key: string, userId: string): Promise<void> {
+    try {
+      this.logger.log(`Starting background processing for video ${videoId}`);
+      
+      // Get the video entity
+      const video = await this.videoRepository.findOne({
+        where: { id: videoId },
+      });
+      
+      if (!video) {
+        this.logger.error(`Video ${videoId} not found for processing`);
+        return;
+      }
+      
+      // Process the video
+      const result = await this.videoProcessingService.processVideo(s3Key, userId, videoId);
+      
+      // Update the video entity with the processed information
+      video.duration = result.duration || video.duration;
+      
+      // If thumbnails were generated, update the thumbnail URL to use the first one
+      if (result.thumbnails.length > 0) {
+        video.thumbnailUrl = this.s3Service.getPublicUrl(result.thumbnails[0].path);
+      }
+      
+      // Set the video status to READY
+      video.isPublic = true;
+      
+      // Save the updated video entity
+      await this.videoRepository.save(video);
+      
+      this.logger.log(`Background processing completed for video ${videoId}`);
+    } catch (error: any) {
+      this.logger.error(`Error processing video ${videoId}: ${error.message}`, error.stack);
+      // Don't throw the error, just log it, as this is a background process
     }
   }
 }

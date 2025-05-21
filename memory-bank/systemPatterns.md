@@ -641,6 +641,21 @@ AppModule
 - Adds robust error handling and detailed logging
 - Ensures cleanup of temporary files after processing
 
+### Video Processing Pipeline
+- Comprehensive video processing service that handles:
+  - Transcoding videos to different formats (MP4, WebM)
+  - Creating different quality variants (720p, 480p, 360p)
+  - Generating thumbnails at strategic points in the video
+  - Updating video status as it progresses through the pipeline
+- Background processing triggered after initial upload
+- Uses fluent-ffmpeg for reliable video processing
+- Implements proper error handling and logging
+- Processes videos asynchronously to avoid blocking the main thread
+- Updates video entity with processed information
+- Generates multiple thumbnails and selects the best one
+- Creates adaptive streaming variants for different network conditions
+- Handles cleanup of temporary files after processing
+
 ### Video Upload Flow
 - User selects video file via drag-and-drop or file browser
 - Frontend calculates video duration using HTML5 video element
@@ -649,6 +664,8 @@ AppModule
 - Backend CreateVideoDto accepts duration parameter
 - Duration is stored in the database with the video
 - Video cards display the actual duration of videos
+- After upload, video processing pipeline is triggered in the background
+- Video status is updated as processing progresses
 
 ## Communication Patterns
 
