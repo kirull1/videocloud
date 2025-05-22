@@ -56,9 +56,9 @@ const handleLogout = async () => {
       </button>
       <transition name="menu-fade">
         <div v-if="isMenuOpen" class="menu">
-          <router-link to="/profile" class="menu-item">Profile</router-link>
-          <router-link to="/videos/upload" class="menu-item">Upload Video</router-link>
-          <router-link to="/settings" class="menu-item">Settings</router-link>
+          <router-link to="/profile" class="menu-item" @click="toggleMenu">Profile</router-link>
+          <router-link to="/videos/upload" class="menu-item" @click="toggleMenu">Upload Video</router-link>
+          <router-link to="/settings" class="menu-item" @click="toggleMenu">Settings</router-link>
           <button class="menu-item logout" @click="handleLogout">Logout</button>
         </div>
       </transition>

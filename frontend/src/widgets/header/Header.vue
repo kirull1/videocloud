@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Search from '@/features/search';
 import Auth from '@/features/auth';
@@ -25,7 +24,6 @@ defineProps({
 const emit = defineEmits(['login', 'signup', 'logout']);
 
 const handleSearch = (query: string) => {
-  // Navigate to search page with query parameter
   router.push({
     path: '/search',
     query: { q: query }

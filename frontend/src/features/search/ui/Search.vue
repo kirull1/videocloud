@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 defineProps({
   placeholder: {
     type: String,
@@ -12,9 +13,19 @@ defineProps({
 
 const emit = defineEmits(['search']);
 
+// Reference to the input element
+const searchInput = ref<HTMLInputElement | null>(null);
+
 const handleSearch = (event: Event) => {
   const target = event.target as HTMLInputElement;
   emit('search', target.value);
+};
+
+// Handle search button click
+const handleSearchButtonClick = () => {
+  if (searchInput.value) {
+    emit('search', searchInput.value.value);
+  }
 };
 </script>
 
@@ -22,12 +33,17 @@ const handleSearch = (event: Event) => {
   <div class="search">
     <div class="search__container">
       <input
+        ref="searchInput"
         type="text"
         class="search__input"
         :placeholder="placeholder"
         @keyup.enter="handleSearch"
       />
-      <button class="search__button" :class="{ 'search__button--loading': isLoading }">
+      <button
+        class="search__button"
+        :class="{ 'search__button--loading': isLoading }"
+        @click="handleSearchButtonClick"
+      >
         <svg
           v-if="!isLoading"
           class="search__icon"
