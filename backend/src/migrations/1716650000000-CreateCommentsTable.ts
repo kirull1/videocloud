@@ -18,40 +18,40 @@ export class CreateCommentsTable1716650000000 implements MigrationInterface {
             type: 'text',
           },
           {
-            name: 'parentId',
+            name: 'parent_id',
             type: 'uuid',
             isNullable: true,
           },
           {
-            name: 'userId',
+            name: 'user_id',
             type: 'uuid',
           },
           {
-            name: 'videoId',
+            name: 'video_id',
             type: 'uuid',
           },
           {
-            name: 'likesCount',
+            name: 'likes_count',
             type: 'int',
             default: 0,
           },
           {
-            name: 'dislikesCount',
+            name: 'dislikes_count',
             type: 'int',
             default: 0,
           },
           {
-            name: 'repliesCount',
+            name: 'replies_count',
             type: 'int',
             default: 0,
           },
           {
-            name: 'createdAt',
+            name: 'created_at',
             type: 'timestamp',
             default: 'now()',
           },
           {
-            name: 'updatedAt',
+            name: 'updated_at',
             type: 'timestamp',
             default: 'now()',
           },
@@ -60,66 +60,56 @@ export class CreateCommentsTable1716650000000 implements MigrationInterface {
       true,
     );
 
-    // Add foreign key for userId
+    // Add foreign key for user_id
     await queryRunner.createForeignKey(
       'comments',
       new TableForeignKey({
-        columnNames: ['userId'],
+        columnNames: ['user_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'users',
         onDelete: 'CASCADE',
+        name: 'FK_comments_user_id',
       }),
     );
 
-    // Add foreign key for videoId
+    // Add foreign key for video_id
     await queryRunner.createForeignKey(
       'comments',
       new TableForeignKey({
-        columnNames: ['videoId'],
+        columnNames: ['video_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'videos',
         onDelete: 'CASCADE',
+        name: 'FK_comments_video_id',
       }),
     );
 
-    // Add foreign key for parentId (self-referencing)
+    // Add foreign key for parent_id (self-referencing)
     await queryRunner.createForeignKey(
       'comments',
       new TableForeignKey({
-        columnNames: ['parentId'],
+        columnNames: ['parent_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'comments',
         onDelete: 'CASCADE',
+        name: 'FK_comments_parent_id',
       }),
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    const table = await queryRunner.getTable('comments');
+    // Drop foreign keys by name
+    await queryRunner.query(`
+      ALTER TABLE "comments" DROP CONSTRAINT IF EXISTS "FK_comments_user_id"
+    `);
     
-    if (table) {
-      // Drop foreign keys
-      const userForeignKey = table.foreignKeys.find(
-        (fk) => fk.columnNames.indexOf('userId') !== -1,
-      );
-      if (userForeignKey) {
-        await queryRunner.dropForeignKey('comments', userForeignKey);
-      }
-
-      const videoForeignKey = table.foreignKeys.find(
-        (fk) => fk.columnNames.indexOf('videoId') !== -1,
-      );
-      if (videoForeignKey) {
-        await queryRunner.dropForeignKey('comments', videoForeignKey);
-      }
-
-      const parentForeignKey = table.foreignKeys.find(
-        (fk) => fk.columnNames.indexOf('parentId') !== -1,
-      );
-      if (parentForeignKey) {
-        await queryRunner.dropForeignKey('comments', parentForeignKey);
-      }
-    }
+    await queryRunner.query(`
+      ALTER TABLE "comments" DROP CONSTRAINT IF EXISTS "FK_comments_video_id"
+    `);
+    
+    await queryRunner.query(`
+      ALTER TABLE "comments" DROP CONSTRAINT IF EXISTS "FK_comments_parent_id"
+    `);
 
     // Drop the table
     await queryRunner.dropTable('comments');

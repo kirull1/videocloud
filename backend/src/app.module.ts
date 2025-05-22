@@ -8,6 +8,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { TagsModule } from './modules/tags/tags.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { ReactionsModule } from './modules/reactions/reactions.module';
+import { ChannelsModule } from './modules/channels/channels.module';
 import { S3Module } from './shared/services/s3.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -38,6 +39,7 @@ import { DataSourceOptions } from 'typeorm';
     TagsModule,
     CommentsModule,
     ReactionsModule,
+    ChannelsModule,
     S3Module,
   ],
 })

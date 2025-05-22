@@ -10,35 +10,35 @@ export class Comment {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ nullable: true })
+  @Column({ name: 'parent_id', nullable: true })
   parentId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: string;
 
   @ManyToOne(() => Video, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'videoId' })
+  @JoinColumn({ name: 'video_id' })
   video: Video;
 
-  @Column()
+  @Column({ name: 'video_id' })
   videoId: string;
 
-  @Column({ default: 0 })
+  @Column({ name: 'likes_count', default: 0 })
   likesCount: number;
 
-  @Column({ default: 0 })
+  @Column({ name: 'dislikes_count', default: 0 })
   dislikesCount: number;
 
-  @Column({ default: 0 })
+  @Column({ name: 'replies_count', default: 0 })
   repliesCount: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

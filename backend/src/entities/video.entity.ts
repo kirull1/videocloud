@@ -12,6 +12,7 @@ import {
 import { User } from './user.entity';
 import { Category } from './category.entity';
 import { Tag } from './tag.entity';
+import { Channel } from './channel.entity';
 
 @Entity('videos')
 export class Video {
@@ -51,6 +52,13 @@ export class Video {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user!: User;
+
+  @Column({ name: 'channel_id', nullable: true })
+  channelId?: string;
+
+  @ManyToOne(() => Channel, (channel) => channel.videos, { nullable: true })
+  @JoinColumn({ name: 'channel_id' })
+  channel?: Channel;
 
   @Column({ name: 'category_id', nullable: true })
   categoryId?: string;
