@@ -23,6 +23,8 @@ const mockVideos = {
     userId: 'user1',
     username: 'testuser',
     userAvatarUrl: 'https://picsum.photos/seed/user1/100/100',
+    channelId: 'channel1',
+    channelName: 'Test Channel',
     status: VideoStatus.READY,
     visibility: VideoVisibility.PUBLIC
   },
@@ -37,6 +39,8 @@ const mockVideos = {
     userId: 'user1',
     username: 'testuser',
     userAvatarUrl: 'https://picsum.photos/seed/user1/100/100',
+    channelId: 'channel1',
+    channelName: 'Test Channel',
     status: VideoStatus.READY,
     visibility: VideoVisibility.PUBLIC
   },
@@ -51,6 +55,8 @@ const mockVideos = {
     userId: 'user2',
     username: 'kirull1',
     userAvatarUrl: 'https://picsum.photos/seed/user2/100/100',
+    channelId: 'channel2',
+    channelName: 'Music Channel',
     status: VideoStatus.READY,
     visibility: VideoVisibility.PUBLIC
   },
@@ -65,6 +71,8 @@ const mockVideos = {
     userId: 'user1',
     username: 'testuser',
     userAvatarUrl: 'https://picsum.photos/seed/user1/100/100',
+    channelId: 'channel1',
+    channelName: 'Test Channel',
     status: VideoStatus.READY,
     visibility: VideoVisibility.PUBLIC
   }
@@ -141,6 +149,13 @@ watch(videoId, async (newId, oldId) => {
     }
   }
 }, { immediate: true });
+
+// Navigate to the channel page
+const navigateToChannel = () => {
+  if (video.value?.channelId) {
+    router.push(`/channel/${video.value.channelId}`);
+  }
+};
 </script>
 
 <template>
@@ -201,13 +216,19 @@ watch(videoId, async (newId, oldId) => {
         </div>
         
         <div class="video-page__uploader">
-          <img 
-            :src="video.userAvatarUrl || `/api/users/${video.userId}/avatar`" 
-            alt="Uploader avatar" 
+          <img
+            :src="video.userAvatarUrl || `/api/users/${video.userId}/avatar`"
+            alt="Channel avatar"
             class="video-page__uploader-avatar"
+            @click="navigateToChannel"
           />
           <div class="video-page__uploader-info">
-            <h3 class="video-page__uploader-name">{{ video.username }}</h3>
+            <h3 class="video-page__uploader-name" @click="navigateToChannel">
+              {{ video.channelName || video.username }}
+            </h3>
+            <div v-if="video.channelId" class="video-page__channel-link" @click="navigateToChannel">
+              View channel
+            </div>
           </div>
         </div>
         
@@ -352,8 +373,23 @@ watch(videoId, async (newId, oldId) => {
 .video-page__uploader-name {
   font-size: 16px;
   font-weight: 500;
-  margin: 0;
+  margin: 0 0 4px;
   color: var(--text-primary, #1A2233);
+  cursor: pointer;
+}
+
+.video-page__uploader-name:hover {
+  color: var(--primary, #41A4FF);
+}
+
+.video-page__channel-link {
+  font-size: 14px;
+  color: var(--primary, #41A4FF);
+  cursor: pointer;
+}
+
+.video-page__channel-link:hover {
+  text-decoration: underline;
 }
 
 .video-page__description-title {

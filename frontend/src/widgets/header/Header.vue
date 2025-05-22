@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import Search from '@/features/search';
 import Auth from '@/features/auth';
 import Logo from '@/shared/ui/Logo';
+
+const router = useRouter();
 
 defineProps({
   isAuthenticated: {
@@ -19,10 +22,14 @@ defineProps({
   }
 });
 
-const emit = defineEmits(['search', 'login', 'signup', 'logout']);
+const emit = defineEmits(['login', 'signup', 'logout']);
 
 const handleSearch = (query: string) => {
-  emit('search', query);
+  // Navigate to search page with query parameter
+  router.push({
+    path: '/search',
+    query: { q: query }
+  });
 };
 
 const handleLogin = () => {

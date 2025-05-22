@@ -32,6 +32,10 @@ const props = defineProps({
     type: Date,
     default: () => new Date()
   },
+  channelId: {
+    type: String,
+    default: ''
+  },
   channelName: {
     type: String,
     default: ''
@@ -115,7 +119,16 @@ const handleClick = () => {
 
 const handleChannelClick = (event: Event) => {
   event.stopPropagation();
+  
+  // Emit the channelClick event for backward compatibility
   emit('channelClick', props.channelName);
+  
+  // Navigate to the channel page if channelId is available
+  if (props.channelId) {
+    router.push({
+      path: `/channel/${props.channelId}`
+    });
+  }
 };
 </script>
 

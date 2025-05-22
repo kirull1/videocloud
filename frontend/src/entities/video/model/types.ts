@@ -27,6 +27,8 @@ export interface Video {
   userId: string;
   username: string;
   userAvatarUrl?: string;
+  channelId?: string;
+  channelName?: string;
   categoryId?: string;
   category?: Category;
   tags?: Tag[];

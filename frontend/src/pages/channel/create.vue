@@ -1,7 +1,5 @@
 <template>
-  <div class="create-channel-page">
-    <Header @search="handleSearch" />
-    
+  <div class="create-channel-page">    
     <div class="create-channel-page__content">
       <h1 class="create-channel-page__title">Create Your Channel</h1>
       
@@ -138,13 +136,6 @@ const createChannel = async () => {
   }
 };
 
-// Handle search from header
-const handleSearch = (query: string) => {
-  router.push({
-    path: '/search',
-    query: { q: query }
-  });
-};
 </script>
 
 <style scoped>

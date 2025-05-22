@@ -1,7 +1,5 @@
 <template>
-  <div class="channel-page">
-    <Header @search="handleSearch" />
-    
+  <div class="channel-page">    
     <div v-if="isLoading && !channel" class="channel-page__loading">
       <div class="channel-page__loading-spinner"/>
       <p>Loading channel...</p>
@@ -186,14 +184,6 @@ watch(channel, (newChannel) => {
     };
   }
 }, { immediate: true });
-
-// Handle search from header
-const handleSearch = (query: string) => {
-  router.push({
-    path: '/search',
-    query: { q: query }
-  });
-};
 
 // Fetch channel data
 onMounted(async () => {

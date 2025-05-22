@@ -3,7 +3,6 @@ import { onMounted, computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
-import Header from '@/widgets/header';
 import { CommentSection } from '@/features/comments';
 import { ReactionButtons } from '@/features/reactions';
 
@@ -77,14 +76,6 @@ const handleDelete = async () => {
   }
 };
 
-// Handle search from header
-const handleSearch = (query: string) => {
-  router.push({
-    path: '/search',
-    query: { q: query }
-  });
-};
-
 // Fetch the video when the component is mounted
 onMounted(async () => {
   try {
@@ -96,9 +87,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="video-page">
-    <Header @search="handleSearch" />
-    
+  <div class="video-page">    
     <div v-if="isLoading && !video" class="video-page__loading">
       <div class="video-page__loading-spinner"/>
       <p>Loading video...</p>

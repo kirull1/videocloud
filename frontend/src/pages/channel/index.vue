@@ -1,7 +1,5 @@
 <template>
-  <div class="channel-list-page">
-    <Header @search="handleSearch" />
-    
+  <div class="channel-list-page">    
     <div class="channel-list-page__content">
       <h1 class="channel-list-page__title">Channels</h1>
       
@@ -122,14 +120,6 @@ const navigateToChannel = (channelId: string) => {
 // Create a new channel
 const createChannel = () => {
   router.push('/channel/create');
-};
-
-// Handle search from header
-const handleSearch = (query: string) => {
-  router.push({
-    path: '/search',
-    query: { q: query }
-  });
 };
 
 // Fetch channels on mount

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { isDev } from '@/shared/lib/isDev';
+import Header from '@/widgets/header/Header.vue';
 import { RouterView } from 'vue-router'
 
 if (isDev()) {
@@ -8,5 +9,6 @@ if (isDev()) {
 </script>
 
 <template>
+  <Header />
   <RouterView />
 </template>

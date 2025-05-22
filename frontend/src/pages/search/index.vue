@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import Header from '@/widgets/header';
 import VideoCard from '@/entities/video/ui/VideoCard';
 import { videoStore, VideoVisibility, VideoStatus } from '@/entities/video';
 import { categoryStore } from '@/entities/category';
@@ -79,14 +78,6 @@ async function fetchSearchResults() {
   }
 }
 
-// Handle search from header
-const handleSearch = (query: string) => {
-  router.push({
-    path: '/search',
-    query: { q: query }
-  });
-};
-
 // Handle video click
 const handleVideoClick = (videoId: string) => {
   router.push({
@@ -121,7 +112,6 @@ onMounted(async () => {
 
 <template>
   <main>
-    <Header :is-search-loading="isLoading" @search="handleSearch" />
     <div class="container">
       <div class="search-header">
         <h1 class="page-title">

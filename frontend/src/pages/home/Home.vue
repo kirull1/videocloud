@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import Header from '@/widgets/header';
 import VideoCard from '@/entities/video/ui/VideoCard';
 import { videoStore, VideoVisibility, VideoStatus } from '@/entities/video';
 import { categoryStore } from '@/entities/category';
@@ -91,19 +90,10 @@ const handleVideoClick = (videoId: string) => {
 const handleChannelClick = (channelName: string) => {
   console.log(`Clicked on channel: ${channelName}`);
 };
-
-// Handle search from header
-const handleSearch = (query: string) => {
-  router.push({
-    path: '/search',
-    query: { q: query }
-  });
-};
 </script>
 
 <template>
   <main>
-    <Header @search="handleSearch" />
     <div class="container">
       <h1 class="page-title">Discover Videos</h1>
       
