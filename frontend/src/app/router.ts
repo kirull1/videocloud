@@ -41,6 +41,11 @@ const router = createRouter({
       name: 'video-watch',
       component: () => import('@/pages/videos/watch.vue')
     },
+    {
+      path: '/search',
+      name: 'search',
+      component: () => import('@/pages/search/index.vue')
+    },
   ],
 })
 

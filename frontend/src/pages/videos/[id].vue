@@ -3,6 +3,10 @@ import { onMounted, computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
+import Header from '@/widgets/header';
+
+// Declare localStorage for TypeScript
+declare const localStorage: Storage;
 
 const route = useRoute();
 const router = useRouter();
@@ -71,6 +75,14 @@ const handleDelete = async () => {
   }
 };
 
+// Handle search from header
+const handleSearch = (query: string) => {
+  router.push({
+    path: '/search',
+    query: { q: query }
+  });
+};
+
 // Fetch the video when the component is mounted
 onMounted(async () => {
   try {
@@ -83,6 +95,8 @@ onMounted(async () => {
 
 <template>
   <div class="video-page">
+    <Header @search="handleSearch" />
+    
     <div v-if="isLoading && !video" class="video-page__loading">
       <div class="video-page__loading-spinner"/>
       <p>Loading video...</p>
@@ -170,8 +184,28 @@ onMounted(async () => {
           </div>
         </div>
         
+        <div v-if="video.category" class="video-page__category">
+          <h3 class="video-page__section-title">Category</h3>
+          <div class="video-page__category-badge">
+            {{ video.category.name }}
+          </div>
+        </div>
+        
+        <div v-if="video.tags && video.tags.length > 0" class="video-page__tags">
+          <h3 class="video-page__section-title">Tags</h3>
+          <div class="video-page__tags-container">
+            <span
+              v-for="tag in video.tags"
+              :key="tag.id"
+              class="video-page__tag"
+            >
+              #{{ tag.name }}
+            </span>
+          </div>
+        </div>
+        
         <div v-if="video.description" class="video-page__description">
-          <h3 class="video-page__description-title">Description</h3>
+          <h3 class="video-page__section-title">Description</h3>
           <p class="video-page__description-text">{{ video.description }}</p>
         </div>
       </div>
@@ -373,7 +407,7 @@ onMounted(async () => {
   color: var(--text-primary, #1A2233);
 }
 
-.video-page__description-title {
+.video-page__section-title {
   font-size: 16px;
   font-weight: 500;
   margin: 0 0 8px;
@@ -385,6 +419,45 @@ onMounted(async () => {
   line-height: 1.5;
   color: var(--text-primary, #1A2233);
   white-space: pre-wrap;
+}
+
+.video-page__category {
+  margin-bottom: 16px;
+}
+
+.video-page__category-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: var(--primary, #41A4FF);
+  color: white;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.video-page__tags {
+  margin-bottom: 16px;
+}
+
+.video-page__tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.video-page__tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: rgba(65, 164, 255, 0.1);
+  color: var(--primary, #41A4FF);
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.video-page__tag:hover {
+  background-color: rgba(65, 164, 255, 0.2);
 }
 
 @media (max-width: 768px) {

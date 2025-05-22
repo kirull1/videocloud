@@ -192,13 +192,16 @@
   - ✅ Quality variants creation
   - ✅ Processing status tracking
 
-- 🔄 Video playback enhancements
+- ✅ Video playback enhancements
 
   - ✅ Adaptive streaming support
   - ✅ Quality selection
   - ✅ Format selection (MP4, HLS, DASH)
-  - ⬜ Advanced playback controls
-  - ⬜ Fullscreen and PiP functionality
+  - ✅ Advanced playback controls
+  - ✅ Fullscreen and PiP functionality
+  - ✅ Playback speed control
+  - ✅ Volume control with mute toggle
+  - ✅ Keyboard shortcuts
 
 - ⬜ Video playback
   - ⬜ Video player component
@@ -208,11 +211,12 @@
 
 #### Content Organization
 
-- ⬜ Video metadata management
+- 🔄 Video metadata management
 
-  - ⬜ Title, description, tags
-  - ⬜ Categories and playlists
-  - ⬜ Visibility settings
+  - ✅ Title, description
+  - ✅ Categories and tags
+  - ✅ Visibility settings
+  - ⬜ Playlists
 
 - ⬜ User channel pages
   - ⬜ Channel customization
@@ -221,11 +225,11 @@
 
 #### Discovery and Search
 
-- ⬜ Search functionality
+- 🔄 Search functionality
 
-  - ⬜ Basic search implementation
-  - ⬜ Advanced filters
-  - ⬜ Search results page
+  - ✅ Basic search implementation
+  - ✅ Advanced filters
+  - ✅ Search results page
 
 - ⬜ Recommendation system
   - ⬜ Basic recommendation algorithm
@@ -338,6 +342,9 @@
 
 | Milestone                | Description                                           | Date           |
 | ------------------------ | ----------------------------------------------------- | -------------- |
+| Advanced Search          | Implemented search functionality with filters         | May 22, 2025 |
+| Content Organization     | Implemented categories and tags with filtering        | May 22, 2025 |
+| Advanced Video Player    | Implemented custom controls, fullscreen, PiP, and keyboard shortcuts | May 21, 2025 |
 | Adaptive Video Streaming | Implemented adaptive streaming with quality selection | May 21, 2025 |
 | Video Processing Pipeline | Implemented complete video transcoding and processing service | May 21, 2025 |
 | Server-Side Duration Fix 4 | Set execute permission on ffprobe executable to fix EACCES | May 21, 2025 |

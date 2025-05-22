@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import Header from '@/widgets/header';
 import VideoCard from '@/entities/video/ui/VideoCard';
 import { videoStore, VideoVisibility, VideoStatus } from '@/entities/video';
@@ -8,20 +8,32 @@ import { categoryStore } from '@/entities/category';
 import { tagStore } from '@/entities/tag';
 import { isDev } from '@/shared/lib/isDev';
 
+const route = useRoute();
 const router = useRouter();
 const isLoading = ref(true);
 const videos = ref<any[]>([]);
 const error = ref<string | null>(null);
+const searchQuery = ref<string>('');
 const selectedCategoryId = ref<string | null>(null);
 const selectedTagId = ref<string | null>(null);
+const totalResults = ref(0);
+
+// Get search query from route
+searchQuery.value = route.query.q as string || '';
+
+// Watch for route changes to update search query
+watch(() => route.query.q, (newQuery) => {
+  searchQuery.value = newQuery as string || '';
+  fetchSearchResults();
+});
 
 // Watch for category or tag changes and reload videos
 watch([selectedCategoryId, selectedTagId], async () => {
-  await fetchVideos();
+  await fetchSearchResults();
 });
 
-// Fetch videos with current filters
-async function fetchVideos() {
+// Fetch search results
+async function fetchSearchResults() {
   try {
     isLoading.value = true;
     
@@ -30,9 +42,14 @@ async function fetchVideos() {
       visibility: VideoVisibility.PUBLIC,
       status: VideoStatus.READY,
       limit: 20,
-      sortBy: 'createdAt',
+      sortBy: 'relevance',
       sortOrder: 'DESC'
     };
+    
+    // Add search query if present
+    if (searchQuery.value) {
+      queryParams.search = searchQuery.value;
+    }
     
     // Add category filter if selected
     if (selectedCategoryId.value) {
@@ -44,40 +61,31 @@ async function fetchVideos() {
       queryParams.tagId = selectedTagId.value;
     }
     
-    // Fetch videos with filters
+    // Fetch videos with search query and filters
     const response = await videoStore.fetchVideos(queryParams);
 
     if (isDev()) {
-      console.log("VIDEOS: ", response.items);
+      console.log("SEARCH RESULTS: ", response.items);
     }
     
-    // Store videos
+    // Store videos and total
     videos.value = response.items;
+    totalResults.value = response.total;
   } catch (err) {
-    console.error('Failed to fetch videos:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to fetch videos';
+    console.error('Failed to fetch search results:', err);
+    error.value = err instanceof Error ? err.message : 'Failed to fetch search results';
   } finally {
     isLoading.value = false;
   }
 }
 
-// Fetch categories and tags, then fetch videos
-onMounted(async () => {
-  try {
-    // Fetch categories and tags in parallel
-    await Promise.all([
-      categoryStore.fetchCategories(),
-      tagStore.fetchTags()
-    ]);
-    
-    // Then fetch videos
-    await fetchVideos();
-  } catch (err) {
-    console.error('Failed to fetch initial data:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to fetch initial data';
-    isLoading.value = false;
-  }
-});
+// Handle search from header
+const handleSearch = (query: string) => {
+  router.push({
+    path: '/search',
+    query: { q: query }
+  });
+};
 
 // Handle video click
 const handleVideoClick = (videoId: string) => {
@@ -92,20 +100,38 @@ const handleChannelClick = (channelName: string) => {
   console.log(`Clicked on channel: ${channelName}`);
 };
 
-// Handle search from header
-const handleSearch = (query: string) => {
-  router.push({
-    path: '/search',
-    query: { q: query }
-  });
-};
+// Fetch categories and tags, then fetch search results
+onMounted(async () => {
+  try {
+    // Fetch categories and tags in parallel
+    await Promise.all([
+      categoryStore.fetchCategories(),
+      tagStore.fetchTags()
+    ]);
+    
+    // Then fetch search results
+    await fetchSearchResults();
+  } catch (err) {
+    console.error('Failed to fetch initial data:', err);
+    error.value = err instanceof Error ? err.message : 'Failed to fetch initial data';
+    isLoading.value = false;
+  }
+});
 </script>
 
 <template>
   <main>
-    <Header @search="handleSearch" />
+    <Header :is-search-loading="isLoading" @search="handleSearch" />
     <div class="container">
-      <h1 class="page-title">Discover Videos</h1>
+      <div class="search-header">
+        <h1 class="page-title">
+          <span v-if="searchQuery">Search results for "{{ searchQuery }}"</span>
+          <span v-else>Search videos</span>
+        </h1>
+        <div v-if="!isLoading && searchQuery" class="search-results-count">
+          {{ totalResults }} results found
+        </div>
+      </div>
       
       <div class="filters">
         <div class="filter-section">
@@ -158,11 +184,18 @@ const handleSearch = (query: string) => {
       </div>
       
       <div v-if="isLoading" class="loading-spinner">
-        Loading videos...
+        <div class="spinner"/>
+        <p>Searching videos...</p>
       </div>
       
       <div v-else-if="videos.length === 0" class="empty-message">
-        No videos found
+        <div v-if="searchQuery">
+          No videos found for "{{ searchQuery }}"
+          <p class="empty-message-suggestion">Try different keywords or remove filters</p>
+        </div>
+        <div v-else>
+          Enter a search term to find videos
+        </div>
       </div>
       
       <div v-else class="video-grid">
@@ -196,11 +229,22 @@ const handleSearch = (query: string) => {
   padding: 24px 16px;
 }
 
+.search-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
 .page-title {
   font-size: 24px;
   font-weight: 600;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   color: var(--text-primary, #1A2233);
+}
+
+.search-results-count {
+  font-size: 14px;
+  color: var(--text-secondary, #67748B);
 }
 
 .filters {
@@ -261,20 +305,45 @@ const handleSearch = (query: string) => {
 
 .loading-spinner {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 200px;
   color: var(--text-secondary, #67748B);
 }
 
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(65, 164, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--primary, #41A4FF);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .empty-message {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 200px;
   color: var(--text-secondary, #67748B);
   background-color: var(--panel-bg, #E6F0FB);
   border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.empty-message-suggestion {
+  margin-top: 8px;
+  font-size: 14px;
+  opacity: 0.8;
 }
 
 .video-grid {
@@ -307,6 +376,10 @@ const handleSearch = (query: string) => {
 @media (max-width: 480px) {
   .video-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .page-title {
+    font-size: 20px;
   }
 }
 </style>

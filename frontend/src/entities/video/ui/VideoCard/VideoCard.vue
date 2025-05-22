@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import type { Category } from '@/entities/category/model/types';
+import type { Tag } from '@/entities/tag/model/types';
 
 // Get router instance
 const router = useRouter();
@@ -45,6 +47,14 @@ const props = defineProps({
   isWatched: {
     type: Boolean,
     default: false
+  },
+  category: {
+    type: Object as () => Category | null,
+    default: null
+  },
+  tags: {
+    type: Array as () => Tag[],
+    default: () => []
   }
 });
 
@@ -147,6 +157,21 @@ const handleChannelClick = (event: Event) => {
           <span class="video-card__views">{{ formattedViews }}</span>
           <span class="video-card__separator">•</span>
           <span class="video-card__date">{{ formattedDate }}</span>
+        </div>
+        
+        <div v-if="category" class="video-card__category">
+          <span class="video-card__category-label">{{ category.name }}</span>
+        </div>
+        
+        <div v-if="tags && tags.length > 0" class="video-card__tags">
+          <span
+            v-for="tag in tags.slice(0, 2)"
+            :key="tag.id"
+            class="video-card__tag"
+          >
+            #{{ tag.name }}
+          </span>
+          <span v-if="tags.length > 2" class="video-card__more-tags">+{{ tags.length - 2 }}</span>
         </div>
       </div>
     </div>
@@ -281,6 +306,40 @@ const handleChannelClick = (event: Event) => {
 
 .video-card__separator {
   margin: 0 4px;
+}
+
+.video-card__category {
+  margin-top: 4px;
+}
+
+.video-card__category-label {
+  display: inline-block;
+  padding: 2px 6px;
+  background-color: var(--primary, #41A4FF);
+  color: white;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.video-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.video-card__tag {
+  font-size: 11px;
+  color: var(--primary, #41A4FF);
+  background-color: rgba(65, 164, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.video-card__more-tags {
+  font-size: 11px;
+  color: var(--text-secondary, #67748B);
 }
 
 @media (max-width: 768px) {
