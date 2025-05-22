@@ -663,6 +663,30 @@ AppModule
   - Proper error handling and loading states
   - Support for pagination and lazy loading of replies
 
+### Reactions System
+- Comprehensive reaction management:
+  - Users can like or dislike videos
+  - Each user can have only one reaction per video
+  - Users can change their reaction or remove it
+  - Reactions are tracked and aggregated for each video
+  - Authorization checks ensure users are authenticated to react
+- Database design:
+  - Unique constraint on userId and videoId to prevent duplicate reactions
+  - Foreign keys to videos and users with cascade deletion
+  - Enum type for reaction types (like/dislike)
+  - Timestamps for creation and updates
+  - Counter fields in videos table for efficient aggregation
+- User interface components:
+  - ReactionButtons component for displaying and interacting with reactions
+  - Visual feedback for active reactions
+  - Real-time updates of reaction counts
+  - Responsive design with proper spacing and styling
+- State management:
+  - Centralized reaction store for managing reaction data
+  - Optimistic updates for better user experience
+  - Proper error handling and loading states
+  - Efficient caching of video reactions
+
 ### Advanced Search System
 - Comprehensive search functionality:
   - Full-text search across video titles and descriptions

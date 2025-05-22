@@ -36,6 +36,12 @@ export class Video {
   @Column({ name: 'views', default: 0 })
   views!: number;
 
+  @Column({ name: 'likes_count', default: 0 })
+  likesCount!: number;
+
+  @Column({ name: 'dislikes_count', default: 0 })
+  dislikesCount!: number;
+
   @Column({ name: 'is_public', default: true })
   isPublic!: boolean;
 

@@ -5,6 +5,7 @@ import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
 import Header from '@/widgets/header';
 import { CommentSection } from '@/features/comments';
+import { ReactionButtons } from '@/features/reactions';
 
 // Declare localStorage for TypeScript
 declare const localStorage: Storage;
@@ -154,6 +155,10 @@ onMounted(async () => {
               {{ visibilityText }}
             </span>
           </div>
+        </div>
+        
+        <div class="video-page__reactions">
+          <ReactionButtons :video-id="video.id" />
         </div>
         
         <div class="video-page__actions">
@@ -350,6 +355,10 @@ onMounted(async () => {
 .video-page__visibility--unlisted {
   background-color: var(--text-secondary, #67748B);
   color: white;
+}
+
+.video-page__reactions {
+  margin-bottom: 16px;
 }
 
 .video-page__actions {

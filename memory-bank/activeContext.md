@@ -19,6 +19,17 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Recent Changes
 
+### Reactions and Ratings Implementation
+- Created a comprehensive reactions system with like/dislike functionality
+- Implemented backend API for creating, retrieving, and updating reactions
+- Developed frontend components for displaying and interacting with reactions
+- Added support for toggling reactions (like/dislike)
+- Implemented reaction counts and user reaction tracking
+- Created a user-friendly reaction UI with visual feedback
+- Added loading states and error handling for all reaction operations
+- Ensured responsive design for all screen sizes
+- Integrated the reactions system with the video detail page
+
 ### Comments System Implementation
 - Created a comprehensive comments system with nested replies
 - Implemented backend API for creating, reading, updating, and deleting comments

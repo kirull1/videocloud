@@ -244,10 +244,10 @@
   - ✅ Replies and threading
   - ⬜ Moderation tools
 
-- ⬜ Reactions and ratings
-  - ⬜ Like/dislike functionality
-  - ⬜ Rating aggregation
-  - ⬜ Engagement metrics
+- 🔄 Reactions and ratings
+  - ✅ Like/dislike functionality
+  - ✅ Rating aggregation
+  - ✅ Engagement metrics
 
 ### Infrastructure
 
@@ -342,6 +342,7 @@
 
 | Milestone                | Description                                           | Date           |
 | ------------------------ | ----------------------------------------------------- | -------------- |
+| Reactions System         | Implemented like/dislike functionality with metrics   | May 22, 2025 |
 | Comments System          | Implemented comments with nested replies              | May 22, 2025 |
 | Advanced Search          | Implemented search functionality with filters         | May 22, 2025 |
 | Content Organization     | Implemented categories and tags with filtering        | May 22, 2025 |
