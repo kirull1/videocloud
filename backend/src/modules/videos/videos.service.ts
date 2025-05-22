@@ -149,136 +149,47 @@ export class VideosService {
   ): Promise<PaginatedVideosResponseDto> {
     const {
       page = 1,
-      limit = 10,
-      search,
-      status,
-      visibility,
-      categoryId,
-      tagId,
-      sortBy = 'createdAt',
-      sortOrder = 'DESC',
+      limit = 20,
     } = queryDto;
 
-    // Use raw query to avoid column name issues
-    const skip = (page - 1) * limit;
-
-    // Build the WHERE clause
-    let whereClause = '';
-    const params: any = {};
-
-    if (!currentUserId) {
-      whereClause = `WHERE v.is_public = true`;
-    } else {
-      whereClause = `WHERE (v.user_id = '${currentUserId}' OR v.is_public = true)`;
+    try {
+      // Get all videos with relations
+      const allVideos = await this.videoRepository.find({
+        relations: ['user', 'category', 'tags'],
+      });
+      
+      // Filter videos based on search query if provided
+      let filteredVideos = allVideos;
+      
+      if (queryDto.search) {
+        const searchTerm = queryDto.search.toLowerCase();
+        filteredVideos = allVideos.filter(video =>
+          video.title.toLowerCase().includes(searchTerm) ||
+          (video.description && video.description.toLowerCase().includes(searchTerm))
+        );
+      }
+      
+      // Map videos to response DTOs
+      const items = filteredVideos.map(video => this.mapVideoToResponseDto(video, video.user));
+      
+      return {
+        items,
+        total: items.length,
+        page,
+        limit,
+        totalPages: Math.ceil(items.length / limit),
+      };
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+      return {
+        items: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      };
     }
 
-    if (search) {
-      whereClause += ` AND (v.title ILIKE '%${search}%' OR v.description ILIKE '%${search}%')`;
-    }
-
-    if (categoryId) {
-      whereClause += ` AND v.category_id = '${categoryId}'`;
-    }
-
-    if (tagId) {
-      whereClause += ` AND EXISTS (SELECT 1 FROM video_tags vt WHERE vt.video_id = v.id AND vt.tag_id = '${tagId}')`;
-    }
-
-    // Count query
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM videos v
-      ${whereClause}
-    `;
-
-    // Data query
-    const dataQuery = `
-      SELECT
-        v.id, v.title, v.description,
-        v.file_path as "filePath", v.duration, v.thumbnail_path as "thumbnailUrl",
-        v.views, v.is_public as "isPublic",
-        v.user_id as "userId", v.category_id as "categoryId", v.created_at as "createdAt", v.updated_at as "updatedAt",
-        u.id as "user_id", u.username, u.avatar_url as "userAvatarUrl",
-        c.id as "category_id", c.name as "category_name", c.slug as "category_slug",
-        c.description as "category_description", c.icon_url as "category_iconUrl",
-        c.order as "category_order"
-      FROM videos v
-      LEFT JOIN users u ON u.id = v.user_id
-      LEFT JOIN categories c ON c.id = v.category_id
-      ${whereClause}
-      ORDER BY v.${sortBy === 'createdAt' ? 'created_at' : sortBy} ${sortOrder}
-      LIMIT ${limit} OFFSET ${skip}
-    `;
-
-    // Execute queries
-    const totalResult = await this.videoRepository.query(countQuery);
-    const total = parseInt(totalResult[0].total, 10);
-
-    const videos = await this.videoRepository.query(dataQuery);
-
-    // Map results to DTOs
-    const items = await Promise.all(
-      videos.map(async (video: any) => {
-        // Map category if exists
-        let category: any = undefined;
-        if (video.category_id) {
-          category = {
-            id: video.category_id,
-            name: video.category_name,
-            slug: video.category_slug,
-            description: video.category_description,
-            iconUrl: video.category_iconUrl,
-            order: video.category_order,
-            createdAt: video.category_createdAt,
-            updatedAt: video.category_updatedAt,
-          };
-        }
-
-        // Generate signed URL for video if it exists
-        let videoUrl: string | null = null;
-        if (video.filePath) {
-          try {
-            videoUrl = await this.s3Service.getSignedUrl(video.filePath);
-          } catch (error) {
-            console.error(`Failed to generate signed URL for video ${video.id}:`, error);
-          }
-        }
-
-        // Determine status based on isPublic
-        const status = video.isPublic ? VideoStatus.READY : VideoStatus.PROCESSING;
-        // Determine visibility based on isPublic
-        const visibility = video.isPublic ? VideoVisibility.PUBLIC : VideoVisibility.PRIVATE;
-
-        // Create response DTO
-        return {
-          id: video.id,
-          title: video.title,
-          description: video.description,
-          status,
-          visibility,
-          thumbnailUrl: video.thumbnailUrl,
-          videoUrl,
-          duration: video.duration,
-          views: video.views,
-          createdAt: video.createdAt,
-          updatedAt: video.updatedAt,
-          userId: video.userId,
-          username: video.username,
-          userAvatarUrl: video.userAvatarUrl,
-          categoryId: video.categoryId,
-          category,
-          tags: [], // We'll handle tags separately if needed
-        };
-      }),
-    );
-
-    return {
-      items,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
   }
 
   async findOne(id: string, currentUserId?: string): Promise<VideoResponseDto> {
