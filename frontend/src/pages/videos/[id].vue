@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
 import Header from '@/widgets/header';
+import { CommentSection } from '@/features/comments';
 
 // Declare localStorage for TypeScript
 declare const localStorage: Storage;
@@ -208,6 +209,9 @@ onMounted(async () => {
           <h3 class="video-page__section-title">Description</h3>
           <p class="video-page__description-text">{{ video.description }}</p>
         </div>
+        
+        <!-- Comments Section -->
+        <CommentSection :video-id="video.id" />
       </div>
     </template>
   </div>

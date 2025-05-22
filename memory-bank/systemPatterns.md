@@ -641,6 +641,28 @@ AppModule
 - Adds robust error handling and detailed logging
 - Ensures cleanup of temporary files after processing
 
+### Comments System
+- Comprehensive comment management:
+  - Comments can be created, read, updated, and deleted
+  - Support for nested replies with proper threading
+  - Comments are associated with videos and users
+  - Authorization checks ensure users can only edit/delete their own comments
+- Database design:
+  - Self-referencing relationship for nested comments
+  - Foreign keys to videos and users with cascade deletion
+  - Counters for likes, dislikes, and replies
+  - Timestamps for creation and updates
+- User interface components:
+  - CommentItem component for displaying individual comments
+  - CommentForm component for creating and editing comments
+  - CommentSection component for organizing the entire comments section
+  - Responsive design with proper spacing and typography
+- State management:
+  - Centralized comment store for managing comment data
+  - Optimistic updates for better user experience
+  - Proper error handling and loading states
+  - Support for pagination and lazy loading of replies
+
 ### Advanced Search System
 - Comprehensive search functionality:
   - Full-text search across video titles and descriptions

@@ -238,10 +238,10 @@
 
 #### Engagement Features
 
-- ⬜ Comments system
+- 🔄 Comments system
 
-  - ⬜ Comment creation and display
-  - ⬜ Replies and threading
+  - ✅ Comment creation and display
+  - ✅ Replies and threading
   - ⬜ Moderation tools
 
 - ⬜ Reactions and ratings
@@ -342,6 +342,7 @@
 
 | Milestone                | Description                                           | Date           |
 | ------------------------ | ----------------------------------------------------- | -------------- |
+| Comments System          | Implemented comments with nested replies              | May 22, 2025 |
 | Advanced Search          | Implemented search functionality with filters         | May 22, 2025 |
 | Content Organization     | Implemented categories and tags with filtering        | May 22, 2025 |
 | Advanced Video Player    | Implemented custom controls, fullscreen, PiP, and keyboard shortcuts | May 21, 2025 |

@@ -6,6 +6,7 @@ import { UsersModule } from './modules/users/users.module';
 import { VideosModule } from './modules/videos/videos.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { TagsModule } from './modules/tags/tags.module';
+import { CommentsModule } from './modules/comments/comments.module';
 import { S3Module } from './shared/services/s3.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -34,6 +35,7 @@ import { DataSourceOptions } from 'typeorm';
     VideosModule,
     CategoriesModule,
     TagsModule,
+    CommentsModule,
     S3Module,
   ],
 })

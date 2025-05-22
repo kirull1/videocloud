@@ -19,6 +19,17 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Recent Changes
 
+### Comments System Implementation
+- Created a comprehensive comments system with nested replies
+- Implemented backend API for creating, reading, updating, and deleting comments
+- Developed frontend components for displaying and interacting with comments
+- Added support for nested replies with proper threading
+- Implemented comment editing and deletion with proper authorization
+- Created a user-friendly comment form with validation
+- Added loading states and error handling for all comment operations
+- Ensured responsive design for all screen sizes
+- Integrated the comments system with the video detail page
+
 ### Advanced Search Implementation
 - Created a dedicated search page with comprehensive filtering
 - Implemented search functionality in the header across all pages

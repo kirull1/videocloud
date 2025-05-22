@@ -334,6 +334,16 @@ CREATE TABLE users (
   - Implemented loading state and error handling for search operations
   - Ensured responsive design for all screen sizes
   - Integrated with existing category and tag filtering
+- Implemented comments system with:
+  - Backend API for creating, reading, updating, and deleting comments
+  - Database schema with self-referencing relationship for nested replies
+  - Frontend components for displaying and interacting with comments
+  - Support for nested replies with proper threading
+  - Comment editing and deletion with proper authorization
+  - User-friendly comment form with validation
+  - Loading states and error handling for all comment operations
+  - Responsive design for all screen sizes
+  - Integration with the video detail page
 - Need to implement proper testing for all new features
 - Need to add proper documentation for all new features
 - Need to implement proper security measures for all new features
