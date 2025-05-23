@@ -56,6 +56,23 @@ const router = createRouter({
       name: 'search',
       component: () => import('@/pages/search/index.vue')
     },
+    // Channel routes
+    {
+      path: '/channel',
+      name: 'channels',
+      component: () => import('@/pages/channel/index.vue')
+    },
+    {
+      path: '/channel/create',
+      name: 'channel-create',
+      component: () => import('@/pages/channel/create.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/channel/:id',
+      name: 'channel-detail',
+      component: () => import('../pages/channel/detail.vue')
+    },
   ],
 })
 

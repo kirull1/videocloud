@@ -152,7 +152,8 @@ const handleSubmit = async () => {
     // Initialize user store to fetch user data
     await userStore.fetchUserProfile();
     
-    router.push('/');
+    // Use window.location.href for full page refresh after registration
+    window.location.href = '/';
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'An error occurred';
   } finally {

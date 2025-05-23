@@ -2,15 +2,32 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { userStore } from '../model/userStore'
+import { channelStore } from '@/entities/channel'
 
 const router = useRouter()
 const isMenuOpen = ref(false)
 const isAuthenticated = computed(() => userStore.isAuthenticated.value)
 const username = computed(() => userStore.username.value)
 const userAvatar = computed(() => userStore.avatarUrl.value)
+const hasChannel = ref(false)
+const isCheckingChannel = ref(false)
 
-onMounted(() => {
+onMounted(async () => {
   userStore.init()
+  
+  // Check if user has a channel
+  if (isAuthenticated.value) {
+    try {
+      isCheckingChannel.value = true
+      await channelStore.fetchMyChannel()
+      hasChannel.value = !!channelStore.myChannel
+    } catch (error) {
+      console.error('Error checking for channel:', error)
+      hasChannel.value = false
+    } finally {
+      isCheckingChannel.value = false
+    }
+  }
 })
 
 const toggleMenu = () => {
@@ -31,34 +48,26 @@ const handleLogout = async () => {
       <router-link to="/auth/register" class="auth-button register">Sign Up</router-link>
     </div>
     <div v-else class="user-menu">
-      <router-link to="/videos/upload" class="upload-button">
-        <svg xmlns="http://www.w3.org/2000/svg"
-             width="20"
-             height="20"
-             viewBox="0 0 24 24"
-             fill="none"
-             stroke="currentColor"
-             stroke-width="2"
-             stroke-linecap="round"
-             stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12"
-                y1="3"
-                x2="12"
-                y2="15"/>
-        </svg>
-        <span>Upload</span>
-      </router-link>
+      
       <button class="user-button" @click="toggleMenu">
         <img :src="userAvatar" alt="User avatar" class="avatar" />
         <span class="username">{{ username }}</span>
       </button>
+      
       <transition name="menu-fade">
         <div v-if="isMenuOpen" class="menu">
           <router-link to="/profile" class="menu-item" @click="toggleMenu">Profile</router-link>
-          <router-link to="/videos/upload" class="menu-item" @click="toggleMenu">Upload Video</router-link>
-          <router-link to="/settings" class="menu-item" @click="toggleMenu">Settings</router-link>
+          
+          <!-- Show Upload Video or Create Channel in menu based on whether user has a channel -->
+          <template v-if="hasChannel">
+            <router-link to="/videos/upload" class="menu-item" @click="toggleMenu">Upload Video</router-link>
+          </template>
+          <template v-else>
+            <router-link to="/channel/create" class="menu-item create-channel" @click="toggleMenu">
+              Create Channel
+            </router-link>
+          </template>
+          
           <button class="menu-item logout" @click="handleLogout">Logout</button>
         </div>
       </transition>
@@ -111,27 +120,6 @@ const handleLogout = async () => {
   gap: 1rem;
 }
 
-.upload-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #28a745;
-  color: white;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.upload-button:hover {
-  background-color: #218838;
-}
-
-.upload-button svg {
-  width: 16px;
-  height: 16px;
-}
 
 .user-button {
   display: flex;
@@ -192,6 +180,16 @@ const handleLogout = async () => {
   color: white;
 }
 
+.create-channel {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.create-channel:hover {
+  background-color: #28a745;
+  color: white;
+}
+
 /* Menu animation */
 .menu-fade-enter-active,
 .menu-fade-leave-active {
@@ -207,14 +205,6 @@ const handleLogout = async () => {
 @media (max-width: 768px) {
   .username {
     display: none;
-  }
-  
-  .upload-button span {
-    display: none;
-  }
-  
-  .upload-button {
-    padding: 0.5rem;
   }
 }
 </style>

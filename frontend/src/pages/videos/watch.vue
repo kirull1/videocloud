@@ -150,10 +150,14 @@ watch(videoId, async (newId, oldId) => {
   }
 }, { immediate: true });
 
-// Navigate to the channel page
+// Navigate to the channel page with page refresh
 const navigateToChannel = () => {
   if (video.value?.channelId) {
-    router.push(`/channel/${video.value.channelId}`);
+    console.log('Navigating to channel:', video.value.channelId);
+    // Use window.location for full page refresh with correct base URL
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const channelUrl = `${baseUrl}channel/${video.value.channelId}`.replace('//', '/');
+    window.location.href = channelUrl;
   }
 };
 </script>
@@ -368,6 +372,13 @@ const navigateToChannel = () => {
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.video-page__uploader-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(65, 164, 255, 0.5);
 }
 
 .video-page__uploader-name {

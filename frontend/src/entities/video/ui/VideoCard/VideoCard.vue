@@ -125,9 +125,11 @@ const handleChannelClick = (event: Event) => {
   
   // Navigate to the channel page if channelId is available
   if (props.channelId) {
-    router.push({
-      path: `/channel/${props.channelId}`
-    });
+    console.log('Navigating to channel:', props.channelId);
+    // Use window.location for full page refresh with correct base URL
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const channelUrl = `${baseUrl}channel/${props.channelId}`.replace('//', '/');
+    window.location.href = channelUrl;
   }
 };
 </script>
@@ -172,20 +174,7 @@ const handleChannelClick = (event: Event) => {
           <span class="video-card__date">{{ formattedDate }}</span>
         </div>
         
-        <div v-if="category" class="video-card__category">
-          <span class="video-card__category-label">{{ category.name }}</span>
-        </div>
-        
-        <div v-if="tags && tags.length > 0" class="video-card__tags">
-          <span
-            v-for="tag in tags.slice(0, 2)"
-            :key="tag.id"
-            class="video-card__tag"
-          >
-            #{{ tag.name }}
-          </span>
-          <span v-if="tags.length > 2" class="video-card__more-tags">+{{ tags.length - 2 }}</span>
-        </div>
+        <!-- Categories and tags removed as requested -->
       </div>
     </div>
   </div>
@@ -279,6 +268,12 @@ const handleChannelClick = (event: Event) => {
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.video-card__channel-avatar:hover {
+  transform: scale(1.1);
 }
 
 .video-card__info {
@@ -321,39 +316,7 @@ const handleChannelClick = (event: Event) => {
   margin: 0 4px;
 }
 
-.video-card__category {
-  margin-top: 4px;
-}
-
-.video-card__category-label {
-  display: inline-block;
-  padding: 2px 6px;
-  background-color: var(--primary, #41A4FF);
-  color: white;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.video-card__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.video-card__tag {
-  font-size: 11px;
-  color: var(--primary, #41A4FF);
-  background-color: rgba(65, 164, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.video-card__more-tags {
-  font-size: 11px;
-  color: var(--text-secondary, #67748B);
-}
+/* Category and tag styles removed */
 
 @media (max-width: 768px) {
   .video-card__title {

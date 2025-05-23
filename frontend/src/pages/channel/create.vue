@@ -1,9 +1,14 @@
 <template>
-  <div class="create-channel-page">    
+  <div class="create-channel-page">
     <div class="create-channel-page__content">
       <h1 class="create-channel-page__title">Create Your Channel</h1>
       
-      <div v-if="!isAuthenticated" class="create-channel-page__auth-required">
+      <div v-if="isLoading" class="create-channel-page__loading">
+        <div class="create-channel-page__loading-spinner"/>
+        <p>Checking channel status...</p>
+      </div>
+      
+      <div v-else-if="!isAuthenticated" class="create-channel-page__auth-required">
         <p>You need to be logged in to create a channel.</p>
         <button 
           class="create-channel-page__login-button"
@@ -81,9 +86,9 @@
           <button 
             type="submit"
             class="create-channel-page__form-submit"
-            :disabled="isLoading"
+            :disabled="isCreating"
           >
-            {{ isLoading ? 'Creating...' : 'Create Channel' }}
+            {{ isCreating ? 'Creating...' : 'Create Channel' }}
           </button>
           <button 
             type="button"
@@ -99,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { channelStore } from '@/entities/channel';
 import Header from '@/widgets/header';
@@ -109,12 +114,38 @@ import type { CreateChannelRequest } from '@/entities/channel';
 declare const localStorage: Storage;
 
 const router = useRouter();
-const isLoading = computed(() => channelStore.isLoading);
+const isLoading = ref(true);
+const isCreating = computed(() => channelStore.isLoading);
 const error = computed(() => channelStore.error);
+const checkingChannel = ref(true);
 
 // Check if user is authenticated
 const isAuthenticated = computed(() => {
   return !!localStorage.getItem('token');
+});
+
+// Check if user already has a channel on mount
+onMounted(async () => {
+  if (isAuthenticated.value) {
+    try {
+      checkingChannel.value = true;
+      await channelStore.fetchMyChannel();
+      
+      // If user already has a channel, redirect to video upload page
+      if (channelStore.myChannel) {
+        console.log('User already has a channel, redirecting to video upload page');
+        router.push('/videos/upload');
+      }
+    } catch (error) {
+      console.error('Error checking for channel:', error);
+      // If there's an error, assume no channel and allow creation
+    } finally {
+      checkingChannel.value = false;
+      isLoading.value = false;
+    }
+  } else {
+    isLoading.value = false;
+  }
 });
 
 // Channel data form
@@ -129,9 +160,10 @@ const channelData = ref<CreateChannelRequest>({
 const createChannel = async () => {
   try {
     await channelStore.createChannel(channelData.value);
-    router.push('/channel');
+    // Redirect to video upload page after successful channel creation
+    router.push('/videos/upload');
   } catch (err) {
-    console.error(err);
+    console.error('Error creating channel:', err);
     alert('Failed to create channel. Please try again.');
   }
 };
@@ -166,6 +198,32 @@ const createChannel = async () => {
   background-color: var(--panel-bg, #E6F0FB);
   border-radius: 8px;
   padding: 24px;
+}
+
+.create-channel-page__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  text-align: center;
+  background-color: var(--panel-bg, #E6F0FB);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.create-channel-page__loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(65, 164, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--primary, #41A4FF);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .create-channel-page__login-button {
