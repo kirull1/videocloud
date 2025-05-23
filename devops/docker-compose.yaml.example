@@ -1,0 +1,39 @@
+version: "3.7"
+services:
+  videocloud-frontend:
+    container_name: nginx
+    platform: linux/amd64
+    image: cr.yandex/YC_IMAGE/videocloud/frontend:production
+    environment:
+      VITE_API_URL: "http://localhost:3001/api"
+    ports:
+      - "80:80"
+    tty: true
+    restart: always
+  videocloud-backend:
+    container_name: backend
+    platform: linux/amd64
+    image: cr.yandex/YC_IMAGE/videocloud/backend:production
+    ports:
+      - "3001:3001"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    environment:
+      DATABASE_HOST: "DATABASE_HOST"
+      DATABASE_PORT: "DATABASE_PORT"
+      DATABASE_USERNAME: "DATABASE_USERNAME"
+      DATABASE_PASSWORD: "DATABASE_PASSWORD"
+      DATABASE_NAME: "DATABASE_DATABASE"
+      DATABASE_SCHEMA: "DATABASE_SCHEMA"
+      DATABASE_SSL: "true"
+      JWT_SECRET: "JWT_SECRET"
+      JWT_EXPIRES_IN: "30d"
+      YANDEX_CLOUD_REGION: "ru-central1"
+      YANDEX_CLOUD_S3_ENDPOINT: "https://storage.yandexcloud.net"
+      YANDEX_CLOUD_S3_BUCKET: "YANDEX_CLOUD_S3_BUCKET"
+      YANDEX_CLOUD_ACCESS_KEY_ID: "YANDEX_CLOUD_ACCESS_KEY_ID"
+      YANDEX_CLOUD_SECRET_ACCESS_KEY: "YANDEX_CLOUD_SECRET_ACCESS_KEY"
+      S3_PUBLIC_URL_EXPIRATION: "3600"
+    tty: true
+    restart: always

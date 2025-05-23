@@ -86,3 +86,9 @@ missing/node_modules
 missing/dist
 missing/dist-ssr
 missing/coverage
+
+devops/docker-compose.yaml
+
+# SSL
+*/ssl
+ssl
