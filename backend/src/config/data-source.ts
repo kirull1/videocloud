@@ -12,6 +12,9 @@ import { CreateTagsAndVideoTagsTables1716042200000 } from '../migrations/1716042
 import { SeedCategoriesAndTags1716042300000 } from '../migrations/1716042300000-SeedCategoriesAndTags';
 import { RenameColumnsToSnakeCase1716042400000 } from '../migrations/1716042400000-RenameColumnsToSnakeCase';
 import { AddFilePathToVideos1716043000000 } from '../migrations/1716043000000-AddFilePathToVideos';
+import { RenameUserColumnsToCamelCase1716650400000 } from '../migrations/1716650400000-RenameUserColumnsToCamelCase';
+import { RenameVideoColumnsToCamelCase1716650500000 } from '../migrations/1716650500000-RenameVideoColumnsToCamelCase';
+import { FixAvatarColumnName1716650600000 } from '../migrations/1716650600000-FixAvatarColumnName';
 import fs from 'fs';
 import { homedir } from 'os';
 import path from 'path';
@@ -40,6 +43,9 @@ export const AppDataSource = new DataSource({
     SeedCategoriesAndTags1716042300000,
     RenameColumnsToSnakeCase1716042400000,
     AddFilePathToVideos1716043000000,
+    RenameUserColumnsToCamelCase1716650400000,
+    RenameVideoColumnsToCamelCase1716650500000,
+    FixAvatarColumnName1716650600000,
   ],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',

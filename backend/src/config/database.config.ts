@@ -1,6 +1,5 @@
 import { registerAs } from '@nestjs/config';
 import { DataSourceOptions } from 'typeorm';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { User } from '../entities/user.entity';
 import { Video } from '../entities/video.entity';
 import { Category } from '../entities/category.entity';
@@ -18,6 +17,9 @@ import { SeedCategoriesAndTags1716042300000 } from '../migrations/1716042300000-
 import { CreateCommentsTable1716650000000 } from '../migrations/1716650000000-CreateCommentsTable';
 import { CreateReactionsTable1716650100000 } from '../migrations/1716650100000-CreateReactionsTable';
 import { CreateChannelsTable1716650200000 } from '../migrations/1716650200000-CreateChannelsTable';
+import { RenameUserColumnsToCamelCase1716650400000 } from '../migrations/1716650400000-RenameUserColumnsToCamelCase';
+import { RenameVideoColumnsToCamelCase1716650500000 } from '../migrations/1716650500000-RenameVideoColumnsToCamelCase';
+import { FixAvatarColumnName1716650600000 } from '../migrations/1716650600000-FixAvatarColumnName';
 import fs from 'fs';
 import { homedir } from 'os';
 import path from 'path';
@@ -47,11 +49,13 @@ const databaseConfig = (): DataSourceOptions => ({
     CreateCommentsTable1716650000000,
     CreateReactionsTable1716650100000,
     CreateChannelsTable1716650200000,
+    RenameUserColumnsToCamelCase1716650400000,
+    RenameVideoColumnsToCamelCase1716650500000,
+    FixAvatarColumnName1716650600000,
   ],
   migrationsRun: true, // Set to true to run migrations automatically
   synchronize: false, // Set to false to prevent automatic schema synchronization
   logging: process.env.NODE_ENV === 'development',
-  namingStrategy: new SnakeNamingStrategy(),
 });
 
 export default registerAs('database', databaseConfig);

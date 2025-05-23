@@ -84,6 +84,8 @@ async function updateAvatar(file: File) {
 async function logout() {
   await authApi.logout()
   user.value = null
+  // Refresh the page after logout
+  window.location.href = '/'
 }
 
 // Initialize user data if authenticated

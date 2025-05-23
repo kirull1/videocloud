@@ -25,10 +25,10 @@ export class Video {
   @Column({ name: 'description', type: 'text', nullable: true })
   description?: string;
 
-  @Column({ name: 'file_path', nullable: true })
+  @Column({ name: 'filePath', nullable: true })
   filePath?: string;
 
-  @Column({ name: 'thumbnail_path', nullable: true })
+  @Column({ name: 'thumbnailUrl', nullable: true })
   thumbnailUrl?: string;
 
   @Column({ name: 'duration', nullable: true })
@@ -37,54 +37,54 @@ export class Video {
   @Column({ name: 'views', default: 0 })
   views!: number;
 
-  @Column({ name: 'likes_count', default: 0 })
+  @Column({ name: 'likesCount', default: 0 })
   likesCount!: number;
 
-  @Column({ name: 'dislikes_count', default: 0 })
+  @Column({ name: 'dislikesCount', default: 0 })
   dislikesCount!: number;
 
-  @Column({ name: 'is_public', default: true })
+  @Column({ name: 'isPublic', default: true })
   isPublic!: boolean;
 
-  @Column({ name: 'user_id' })
+  @Column({ name: 'userId' })
   userId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'userId' })
   user!: User;
 
-  @Column({ name: 'channel_id', nullable: true })
+  @Column({ name: 'channelId', nullable: true })
   channelId?: string;
 
   @ManyToOne(() => Channel, (channel) => channel.videos, { nullable: true })
-  @JoinColumn({ name: 'channel_id' })
+  @JoinColumn({ name: 'channelId' })
   channel?: Channel;
 
-  @Column({ name: 'category_id', nullable: true })
+  @Column({ name: 'categoryId', nullable: true })
   categoryId?: string;
 
   @ManyToOne(() => Category, (category) => category.videos, { nullable: true })
-  @JoinColumn({ name: 'category_id' })
+  @JoinColumn({ name: 'categoryId' })
   category?: Category;
 
   @ManyToMany(() => Tag, (tag) => tag.videos)
   @JoinTable({
-    name: 'video_tags',
+    name: 'videoTags',
     joinColumn: {
-      name: 'video_id',
+      name: 'videoId',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
-      name: 'tag_id',
+      name: 'tagId',
       referencedColumnName: 'id',
     },
   })
   tags!: Tag[];
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'createdAt' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updatedAt' })
   updatedAt!: Date;
 }
 

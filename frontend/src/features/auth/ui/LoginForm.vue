@@ -98,9 +98,9 @@ const handleSubmit = async () => {
     // Initialize user store to fetch user data
     await userStore.fetchUserProfile();
     
-    // Redirect to home page or the original intended destination
+    // Redirect to home page or the original intended destination with page refresh
     const redirectPath = router.currentRoute.value.query.redirect as string || '/';
-    router.push(redirectPath);
+    window.location.href = redirectPath; // Use window.location for full page refresh
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'An error occurred';
   } finally {

@@ -7,7 +7,10 @@ import { json, urlencoded } from 'express';
 const logger = createLogger('Bootstrap');
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Create the app with body parser disabled to prevent double parsing
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false, // Disable the built-in body parser
+  });
 
   // Apply global prefix
   app.setGlobalPrefix(appConfig.apiPrefix);
