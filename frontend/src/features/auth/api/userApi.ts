@@ -21,6 +21,16 @@ interface ChangePasswordRequest {
   confirmPassword: string;
 }
 
+interface RequestPasswordResetRequest {
+  email: string;
+}
+
+interface ResetPasswordRequest {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
 interface MessageResponse {
   message: string;
 }
@@ -199,5 +209,73 @@ export const userApi = {
     }
 
     return response.json();
+  },
+
+  async requestPasswordReset(data: RequestPasswordResetRequest): Promise<MessageResponse> {
+    try {
+      console.log('Sending password reset request:', data);
+      
+      const response = await fetch(`${API_URL}/password-reset/request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        // Try to get response as text first
+        const errorText = await response.text();
+        console.error('Password reset request failed:', response.status, errorText);
+        
+        // Try to parse as JSON if possible
+        try {
+          const error = JSON.parse(errorText);
+          throw new Error(error.message || 'Failed to request password reset');
+        } catch (e) {
+          // If parsing fails, use the raw text
+          throw new Error(`Failed to request password reset: ${response.status} ${errorText}`);
+        }
+      }
+
+      return response.json();
+    } catch (error: any) {
+      console.error('Password reset request error:', error);
+      throw error;
+    }
+  },
+
+  async resetPassword(data: ResetPasswordRequest): Promise<MessageResponse> {
+    try {
+      console.log('Sending password reset:', data);
+      
+      const response = await fetch(`${API_URL}/password-reset/reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        // Try to get response as text first
+        const errorText = await response.text();
+        console.error('Password reset failed:', response.status, errorText);
+        
+        // Try to parse as JSON if possible
+        try {
+          const error = JSON.parse(errorText);
+          throw new Error(error.message || 'Failed to reset password');
+        } catch (e) {
+          // If parsing fails, use the raw text
+          throw new Error(`Failed to reset password: ${response.status} ${errorText}`);
+        }
+      }
+
+      return response.json();
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
   },
 };

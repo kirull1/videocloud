@@ -18,14 +18,23 @@ import { SeedCategoriesAndTags1716042300000 } from '../migrations/1716042300000-
 import { CreateCommentsTable1716650000000 } from '../migrations/1716650000000-CreateCommentsTable';
 import { CreateReactionsTable1716650100000 } from '../migrations/1716650100000-CreateReactionsTable';
 import { CreateChannelsTable1716650200000 } from '../migrations/1716650200000-CreateChannelsTable';
+import fs from 'fs';
+import { homedir } from 'os';
+import path from 'path';
+
+const SSL_CERT = fs.readFileSync(path.join(homedir(), 'video-cloud/.postgresql/root.crt')).toString();
 
 const databaseConfig = (): DataSourceOptions => ({
   type: 'postgres',
   host: process.env.DATABASE_HOST || 'localhost',
   port: parseInt(process.env.DATABASE_PORT || '5432', 10),
-  username: process.env.DATABASE_USER || 'postgres',
+  username: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'videocloud',
+  ssl: process.env.DATABASE_SSL === 'true' ? {
+    rejectUnauthorized: true,
+    ca: SSL_CERT,
+  } : false,
   entities: [User, Video, Category, Tag, Comment, Reaction, Channel],
   migrations: [
     AddIsEmailVerifiedToUsers1712500000000,

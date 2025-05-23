@@ -11,7 +11,9 @@ import {
   Logger,
   Param,
   Res,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,6 +22,8 @@ import { User } from '../../entities/user.entity';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -125,5 +129,51 @@ export class UsersController {
   async verifyEmail(@Body('token') token: string) {
     this.logger.log(`Verifying email with token: ${token.substring(0, 10)}...`);
     return await this.usersService.verifyEmail(token);
+  }
+
+  @Post('password-reset/request')
+  async requestPasswordReset(@Req() request: Request) {
+    try {
+      // Log the raw request for debugging
+      this.logger.log(`Password reset request received`);
+      
+      // Get the email from the request body
+      const email = request.body?.email;
+      
+      if (!email) {
+        throw new BadRequestException('Email is required');
+      }
+      
+      this.logger.log(`Password reset requested for email: ${email}`);
+      return await this.usersService.requestPasswordReset(email);
+    } catch (error: any) {
+      this.logger.error(`Error requesting password reset: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  @Post('password-reset/reset')
+  async resetPassword(@Req() request: Request) {
+    try {
+      // Log the raw request for debugging
+      this.logger.log(`Password reset request received`);
+      
+      // Get the data from the request body
+      const { token, password, confirmPassword } = request.body || {};
+      
+      if (!token || !password || !confirmPassword) {
+        throw new BadRequestException('Token, password and confirmPassword are required');
+      }
+      
+      this.logger.log(`Password reset with token: ${token.substring(0, 10)}...`);
+      return await this.usersService.resetPassword(
+        token,
+        password,
+        confirmPassword
+      );
+    } catch (error: any) {
+      this.logger.error(`Error resetting password: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 }

@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ConflictException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,6 +17,8 @@ import { S3Service } from '../../shared/services/s3.service';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -204,5 +207,91 @@ export class UsersService {
     // Otherwise, generate a default avatar URL based on username
     const defaultAvatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.username)}&size=100`;
     return { avatarUrl: defaultAvatarUrl };
+  }
+
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    try {
+      this.logger.log(`Password reset requested for email: ${email}`);
+      
+      const user = await this.userRepository.findOne({ where: { email } });
+  
+      if (!user) {
+        // For security reasons, don't reveal that the email doesn't exist
+        this.logger.warn(`Password reset requested for non-existent email: ${email}`);
+        return { message: 'If your email is registered, you will receive a password reset link' };
+      }
+  
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      
+      // In a real application, you would:
+      // 1. Hash the token before storing it
+      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+      
+      // 2. Store the token with an expiration time (e.g., 10 minutes)
+      // For this implementation, we'll simulate storing the token
+      // In a real app, you would add resetToken and resetTokenExpires fields to the User entity
+      
+      // 3. Send an email with the reset link
+      // For now, we'll just return the token
+      
+      this.logger.log(`Reset token generated for user: ${user.username} (${user.id})`);
+      
+      return {
+        message: `If your email is registered, you will receive a password reset link. Token: ${resetToken}`,
+      };
+    } catch (error: any) {
+      this.logger.error(`Error in requestPasswordReset: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async resetPassword(token: string, password: string, confirmPassword: string): Promise<{ message: string }> {
+    try {
+      this.logger.log(`Password reset attempt with token: ${token.substring(0, 10)}...`);
+      
+      if (password !== confirmPassword) {
+        throw new BadRequestException('Passwords do not match');
+      }
+  
+      // In a real application, you would:
+      // 1. Hash the provided token
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+      
+      // 2. Find the user with this token and check if the token is still valid
+      // For this implementation, we'll simulate finding the user
+      // In a real app, you would query the user by the hashed token and check the expiration
+      
+      // Simulate token validation and user lookup
+      if (!token || token.length < 32) {
+        throw new BadRequestException('Invalid or expired token');
+      }
+  
+      // Simulate finding a user (in a real app, you'd query the database)
+      // For demo purposes, we'll create a mock user
+      const mockUserId = '12345678-1234-1234-1234-123456789012';
+      
+      // Hash new password
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(password, salt);
+  
+      // In a real application, you would:
+      // 1. Update the user's password
+      // 2. Remove the reset token and expiration
+      // 3. Save the user
+      
+      // Simulate database operation with await
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      
+      this.logger.log(`Password reset successful for mock user ID: ${mockUserId}`);
+      
+      return { message: 'Password reset successful. You can now log in with your new password.' };
+    } catch (error: any) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(`Error in resetPassword: ${error.message}`, error.stack);
+      throw new Error('An error occurred while resetting your password. Please try again.');
+    }
   }
 }

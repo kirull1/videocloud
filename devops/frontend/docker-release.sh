@@ -15,7 +15,7 @@ FULL_IMAGE_NAME="${REGISTRY}/${REPOSITORY}/${IMAGE_NAME}:${TAG}"
 echo "===== Building Docker image: ${FULL_IMAGE_NAME} ====="
 
 echo "Building Docker image directly from project..."
-docker build -t ${FULL_IMAGE_NAME} -f Dockerfile ../../ --no-cache
+docker build --platform linux/amd64 -t ${FULL_IMAGE_NAME} -f Dockerfile ../../ --no-cache
 
 echo "===== Docker image built successfully ====="
 

@@ -12,14 +12,23 @@ import { CreateTagsAndVideoTagsTables1716042200000 } from '../migrations/1716042
 import { SeedCategoriesAndTags1716042300000 } from '../migrations/1716042300000-SeedCategoriesAndTags';
 import { RenameColumnsToSnakeCase1716042400000 } from '../migrations/1716042400000-RenameColumnsToSnakeCase';
 import { AddFilePathToVideos1716043000000 } from '../migrations/1716043000000-AddFilePathToVideos';
+import fs from 'fs';
+import { homedir } from 'os';
+import path from 'path';
+
+const SSL_CERT = fs.readFileSync(path.join(homedir(), 'video-cloud/.postgresql/root.crt')).toString();
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DATABASE_HOST || 'localhost',
   port: parseInt(process.env.DATABASE_PORT || '5432', 10),
-  username: process.env.DATABASE_USER || 'postgres',
+  username: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'videocloud',
+  ssl: process.env.DATABASE_SSL === 'true' ? {
+    rejectUnauthorized: true,
+    ca: SSL_CERT,
+  } : false,
   entities: [User, Video, Category, Tag],
   migrations: [
     AddIsEmailVerifiedToUsers1712500000000,
