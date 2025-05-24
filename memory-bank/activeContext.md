@@ -19,6 +19,15 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Recent Changes
 
+### UI Simplification - Removed Category and Tag Filters
+- Removed Categories and Tags filters from the home page
+- Removed Categories and Tags filters from the search page
+- Simplified the UI for a cleaner user experience
+- Updated empty state message in search to remove reference to filters
+- Maintained category and tag information on video cards for informational purposes
+- Removed all filter-related CSS styles and media queries
+- Simplified data fetching by removing filter parameters
+
 ### Authentication Validation System Implementation
 - Created a comprehensive token validation system that checks authentication at multiple levels
 - Implemented automatic logout on invalid authentication

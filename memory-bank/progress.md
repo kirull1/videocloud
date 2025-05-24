@@ -345,6 +345,7 @@
 
 | Milestone                | Description                                           | Date           |
 | ------------------------ | ----------------------------------------------------- | -------------- |
+| UI Simplification        | Removed Categories and Tags filters from home and search | May 24, 2025 |
 | Authentication Validation| Implemented comprehensive token validation system     | May 24, 2025   |
 | User Channel Pages       | Implemented channel pages with customization and analytics | May 22, 2025 |
 | Reactions System         | Implemented like/dislike functionality with metrics   | May 22, 2025 |
@@ -480,6 +481,15 @@
 4. Develop mobile applications
 
 ## Recent Achievements
+
+### UI Simplification
+- Removed Categories and Tags filters from the home page
+- Removed Categories and Tags filters from the search page
+- Simplified the UI for a cleaner user experience
+- Updated empty state message in search to remove reference to filters
+- Maintained category and tag information on video cards
+- Removed all filter-related CSS styles and media queries
+- Simplified data fetching by removing filter parameters
 
 ### Authentication System
 - Implemented comprehensive token validation system
