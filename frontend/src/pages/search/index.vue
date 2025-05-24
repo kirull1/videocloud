@@ -3,8 +3,6 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import VideoCard from '@/entities/video/ui/VideoCard';
 import { videoStore, VideoVisibility, VideoStatus } from '@/entities/video';
-import { categoryStore } from '@/entities/category';
-import { tagStore } from '@/entities/tag';
 import { isDev } from '@/shared/lib/isDev';
 
 const route = useRoute();
@@ -13,8 +11,6 @@ const isLoading = ref(true);
 const videos = ref<any[]>([]);
 const error = ref<string | null>(null);
 const searchQuery = ref<string>('');
-const selectedCategoryId = ref<string | null>(null);
-const selectedTagId = ref<string | null>(null);
 const totalResults = ref(0);
 
 // Get search query from route
@@ -24,11 +20,6 @@ searchQuery.value = route.query.q as string || '';
 watch(() => route.query.q, (newQuery) => {
   searchQuery.value = newQuery as string || '';
   fetchSearchResults();
-});
-
-// Watch for category or tag changes and reload videos
-watch([selectedCategoryId, selectedTagId], async () => {
-  await fetchSearchResults();
 });
 
 // Fetch search results
@@ -50,17 +41,7 @@ async function fetchSearchResults() {
       queryParams.search = searchQuery.value;
     }
     
-    // Add category filter if selected
-    if (selectedCategoryId.value) {
-      queryParams.categoryId = selectedCategoryId.value;
-    }
-    
-    // Add tag filter if selected
-    if (selectedTagId.value) {
-      queryParams.tagId = selectedTagId.value;
-    }
-    
-    // Fetch videos with search query and filters
+    // Fetch videos with search query
     const response = await videoStore.fetchVideos(queryParams);
 
     if (isDev()) {
@@ -91,16 +72,9 @@ const handleChannelClick = (channelName: string) => {
   console.log(`Clicked on channel: ${channelName}`);
 };
 
-// Fetch categories and tags, then fetch search results
+// Fetch search results on mount
 onMounted(async () => {
   try {
-    // Fetch categories and tags in parallel
-    await Promise.all([
-      categoryStore.fetchCategories(),
-      tagStore.fetchTags()
-    ]);
-    
-    // Then fetch search results
     await fetchSearchResults();
   } catch (err) {
     console.error('Failed to fetch initial data:', err);
@@ -123,51 +97,6 @@ onMounted(async () => {
         </div>
       </div>
       
-      <div class="filters">
-        <div class="filter-section">
-          <h3 class="filter-title">Categories</h3>
-          <div class="filter-options">
-            <button
-              class="filter-option"
-              :class="{ 'filter-option--active': selectedCategoryId === null }"
-              @click="selectedCategoryId = null"
-            >
-              All
-            </button>
-            <button
-              v-for="category in categoryStore.categories.value"
-              :key="category.id"
-              class="filter-option"
-              :class="{ 'filter-option--active': selectedCategoryId === category.id }"
-              @click="selectedCategoryId = category.id"
-            >
-              {{ category.name }}
-            </button>
-          </div>
-        </div>
-        
-        <div class="filter-section">
-          <h3 class="filter-title">Tags</h3>
-          <div class="filter-options">
-            <button
-              class="filter-option"
-              :class="{ 'filter-option--active': selectedTagId === null }"
-              @click="selectedTagId = null"
-            >
-              All
-            </button>
-            <button
-              v-for="tag in tagStore.tags.value"
-              :key="tag.id"
-              class="filter-option"
-              :class="{ 'filter-option--active': selectedTagId === tag.id }"
-              @click="selectedTagId = tag.id"
-            >
-              #{{ tag.name }}
-            </button>
-          </div>
-        </div>
-      </div>
       
       <div v-if="error" class="error-message">
         {{ error }}
@@ -181,7 +110,7 @@ onMounted(async () => {
       <div v-else-if="videos.length === 0" class="empty-message">
         <div v-if="searchQuery">
           No videos found for "{{ searchQuery }}"
-          <p class="empty-message-suggestion">Try different keywords or remove filters</p>
+          <p class="empty-message-suggestion">Try different keywords</p>
         </div>
         <div v-else>
           Enter a search term to find videos
@@ -237,52 +166,6 @@ onMounted(async () => {
   color: var(--text-secondary, #67748B);
 }
 
-.filters {
-  margin-bottom: 24px;
-}
-
-.filter-section {
-  margin-bottom: 16px;
-}
-
-.filter-title {
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: var(--text-primary, #1A2233);
-}
-
-.filter-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filter-option {
-  padding: 6px 12px;
-  background-color: var(--panel-bg, #E6F0FB);
-  border: 1px solid transparent;
-  border-radius: 16px;
-  font-size: 14px;
-  color: var(--text-secondary, #67748B);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-option:hover {
-  border-color: var(--primary, #41A4FF);
-  color: var(--primary, #41A4FF);
-}
-
-.filter-option--active {
-  background-color: var(--primary, #41A4FF);
-  color: white;
-}
-
-.filter-option--active:hover {
-  background-color: var(--secondary, #9067E6);
-  color: white;
-}
 
 .error-message {
   padding: 16px;
@@ -351,16 +234,6 @@ onMounted(async () => {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
   
-  .filter-options {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .filter-option {
-    flex-shrink: 0;
-  }
 }
 
 @media (max-width: 480px) {

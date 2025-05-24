@@ -1,25 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import VideoCard from '@/entities/video/ui/VideoCard';
 import { videoStore, VideoVisibility, VideoStatus } from '@/entities/video';
-import { categoryStore } from '@/entities/category';
-import { tagStore } from '@/entities/tag';
 import { isDev } from '@/shared/lib/isDev';
 
 const router = useRouter();
 const isLoading = ref(true);
 const videos = ref<any[]>([]);
 const error = ref<string | null>(null);
-const selectedCategoryId = ref<string | null>(null);
-const selectedTagId = ref<string | null>(null);
 
-// Watch for category or tag changes and reload videos
-watch([selectedCategoryId, selectedTagId], async () => {
-  await fetchVideos();
-});
-
-// Fetch videos with current filters
+// Fetch videos
 async function fetchVideos() {
   try {
     isLoading.value = true;
@@ -33,17 +24,7 @@ async function fetchVideos() {
       sortOrder: 'DESC'
     };
     
-    // Add category filter if selected
-    if (selectedCategoryId.value) {
-      queryParams.categoryId = selectedCategoryId.value;
-    }
-    
-    // Add tag filter if selected
-    if (selectedTagId.value) {
-      queryParams.tagId = selectedTagId.value;
-    }
-    
-    // Fetch videos with filters
+    // Fetch videos
     const response = await videoStore.fetchVideos(queryParams);
 
     if (isDev()) {
@@ -60,16 +41,9 @@ async function fetchVideos() {
   }
 }
 
-// Fetch categories and tags, then fetch videos
+// Fetch videos on mount
 onMounted(async () => {
   try {
-    // Fetch categories and tags in parallel
-    await Promise.all([
-      categoryStore.fetchCategories(),
-      tagStore.fetchTags()
-    ]);
-    
-    // Then fetch videos
     await fetchVideos();
   } catch (err) {
     console.error('Failed to fetch initial data:', err);
@@ -96,52 +70,6 @@ const handleChannelClick = (channelName: string) => {
   <main>
     <div class="container">
       <h1 class="page-title">Discover Videos</h1>
-      
-      <div class="filters">
-        <div class="filter-section">
-          <h3 class="filter-title">Categories</h3>
-          <div class="filter-options">
-            <button
-              class="filter-option"
-              :class="{ 'filter-option--active': selectedCategoryId === null }"
-              @click="selectedCategoryId = null"
-            >
-              All
-            </button>
-            <button
-              v-for="category in categoryStore.categories.value"
-              :key="category.id"
-              class="filter-option"
-              :class="{ 'filter-option--active': selectedCategoryId === category.id }"
-              @click="selectedCategoryId = category.id"
-            >
-              {{ category.name }}
-            </button>
-          </div>
-        </div>
-        
-        <div class="filter-section">
-          <h3 class="filter-title">Tags</h3>
-          <div class="filter-options">
-            <button
-              class="filter-option"
-              :class="{ 'filter-option--active': selectedTagId === null }"
-              @click="selectedTagId = null"
-            >
-              All
-            </button>
-            <button
-              v-for="tag in tagStore.tags.value"
-              :key="tag.id"
-              class="filter-option"
-              :class="{ 'filter-option--active': selectedTagId === tag.id }"
-              @click="selectedTagId = tag.id"
-            >
-              #{{ tag.name }}
-            </button>
-          </div>
-        </div>
-      </div>
       
       <div v-if="error" class="error-message">
         {{ error }}
@@ -193,53 +121,6 @@ const handleChannelClick = (channelName: string) => {
   color: var(--text-primary, #1A2233);
 }
 
-.filters {
-  margin-bottom: 24px;
-}
-
-.filter-section {
-  margin-bottom: 16px;
-}
-
-.filter-title {
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: var(--text-primary, #1A2233);
-}
-
-.filter-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filter-option {
-  padding: 6px 12px;
-  background-color: var(--panel-bg, #E6F0FB);
-  border: 1px solid transparent;
-  border-radius: 16px;
-  font-size: 14px;
-  color: var(--text-secondary, #67748B);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-option:hover {
-  border-color: var(--primary, #41A4FF);
-  color: var(--primary, #41A4FF);
-}
-
-.filter-option--active {
-  background-color: var(--primary, #41A4FF);
-  color: white;
-}
-
-.filter-option--active:hover {
-  background-color: var(--secondary, #9067E6);
-  color: white;
-}
-
 .error-message {
   padding: 16px;
   margin-bottom: 24px;
@@ -280,17 +161,6 @@ const handleChannelClick = (channelName: string) => {
 @media (max-width: 768px) {
   .video-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  }
-  
-  .filter-options {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .filter-option {
-    flex-shrink: 0;
   }
 }
 
