@@ -242,6 +242,9 @@ CREATE TABLE users (
 - Password hashing with bcrypt
 - Protected routes
 - Input validation
+- Comprehensive token validation system
+- Automatic logout on invalid authentication
+- Cookie clearing on logout
 
 ### Data Protection
 - Environment variables
@@ -373,3 +376,42 @@ CREATE TABLE users (
 - Need to add proper documentation for all new features
 - Need to implement proper security measures for all new features
 - Need to add proper logging system for all new features
+
+## Authentication Validation System
+
+### Implementation Details
+- Created a comprehensive token validation system that checks authentication at multiple levels:
+  - Client-side validation before making API requests
+  - Router-level validation before navigation to protected routes
+  - API-level validation on every authenticated request
+  - Application-level validation on startup
+
+### New Authentication Utilities
+- Created `apiUtils.ts` with authentication helper functions:
+  - `handleApiResponse()`: Detects 401 errors and triggers logout
+  - `authenticatedFetch()`: Provides consistent auth header handling for API requests
+- Enhanced `authApi.ts` with new functionality:
+  - `checkAuthValidity()`: Validates token by making a request to the user profile endpoint
+  - Improved `logout()`: Clears both localStorage token and all auth-related cookies
+
+### Router Authentication Enhancements
+- Updated router guards to perform async token validation before navigation
+- Added redirect to login page with preserved destination URL if token is invalid
+- Implemented proper error handling for authentication failures during navigation
+
+### Application Initialization Improvements
+- Added token validation during application startup in App.vue
+- Modified userStore.init() to validate token before fetching user profile
+- Implemented automatic logout if token validation fails at any point
+
+### API Request Authentication
+- Refactored all API calls to use the new authentication utilities
+- Implemented consistent error handling for authentication failures
+- Added automatic logout on 401 Unauthorized responses
+- Centralized authentication header management
+
+### Security Improvements
+- Implemented complete session termination on logout
+- Added cookie clearing to prevent stale authentication data
+- Enhanced error handling for authentication failures
+- Improved user experience with proper redirects after authentication issues

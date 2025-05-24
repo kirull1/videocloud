@@ -170,6 +170,9 @@ async uploadAvatar(file: File): Promise<AvatarResponse> {
 - JWT token validation
 - Protected routes
 - Input sanitization
+- Comprehensive token validation system
+- Automatic logout on invalid authentication
+- Cookie clearing on logout
 
 ### Data Protection
 - Environment variables
@@ -873,3 +876,49 @@ AppModule
    - Queue-based task distribution
    - Auto-scaling based on queue depth
    - Resource allocation based on video complexity
+
+## Authentication Validation System
+
+### Token Validation Implementation
+- Multi-layer token validation approach:
+ - Client-side validation before making API requests
+ - Router-level validation before navigation to protected routes
+ - API-level validation on every authenticated request
+ - Application-level validation on startup
+- Comprehensive token validation flow:
+ 1. Token existence check (is token present in localStorage)
+ 2. Token validity check (is token properly formatted)
+ 3. Token authentication check (is token accepted by the backend)
+ 4. Automatic logout on any validation failure
+
+### Authentication API Utilities
+- `checkAuthValidity()` function in authApi:
+ - Makes a request to the user profile endpoint to validate token
+ - Returns boolean indicating if token is valid
+ - Automatically logs out user if token is invalid
+- Enhanced `logout()` function:
+ - Removes token from localStorage
+ - Clears all authentication-related cookies
+ - Redirects to login page
+ - Ensures complete session termination
+
+### API Request Authentication
+- `apiUtils.ts` utility with authentication helpers:
+ - `handleApiResponse()` function to detect 401 errors and trigger logout
+ - `authenticatedFetch()` function for consistent auth header handling
+ - Centralized error handling for authentication failures
+ - Automatic token validation on all API requests
+
+### Router Authentication Guards
+- Enhanced router guards with token validation:
+ - Async validation before navigation to protected routes
+ - Redirects to login page if token is invalid
+ - Preserves intended destination for post-login redirect
+ - Prevents access to protected routes with invalid tokens
+
+### Application Initialization
+- Token validation during application startup:
+ - Validates token when App component is mounted
+ - Initializes user store only if token is valid
+ - Provides immediate feedback on authentication status
+ - Ensures consistent authentication state across the application
