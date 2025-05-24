@@ -17,9 +17,7 @@ async function bootstrap() {
 
   // Configure CORS if enabled
   if (appConfig.cors.enabled) {
-    app.enableCors({
-      origin: appConfig.cors.origin,
-    });
+    app.enableCors(appConfig.cors);
   }
 
   // Configure body parser limits for large file uploads

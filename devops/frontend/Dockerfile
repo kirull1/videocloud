@@ -4,6 +4,8 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@10.8.1 --activate
 
+ENV VITE_API_URL=https://cloud-video.ru/api
+
 COPY frontend/package.json frontend/pnpm-lock.yaml* ./
 COPY frontend/tsconfig*.json ./
 COPY tsconfig.base.json ../
@@ -11,7 +13,7 @@ COPY frontend/vite.config.ts ./
 COPY frontend/env.d.ts ./
 COPY frontend/index.html ./
 
-RUN pnpm install --force
+RUN pnpm install
 
 COPY frontend/src/ ./src/
 COPY frontend/public/ ./public/

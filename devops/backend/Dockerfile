@@ -8,7 +8,7 @@ COPY backend/package.json backend/pnpm-lock.yaml* ./
 COPY backend/tsconfig*.json ./
 COPY tsconfig.base.json ../
 
-RUN pnpm install --force
+RUN pnpm install
 
 COPY backend/src/ ./src/
 COPY backend/scripts/ ./scripts/
