@@ -6,7 +6,7 @@
  */
 export const generateAvatarUrl = (username: string, size = 32): string => {
   // Use DiceBear's initials style for consistent, professional avatars
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(username)}&size=${size}`;
+  return `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(username)}&size=${size}`;
 };
 
 /**
