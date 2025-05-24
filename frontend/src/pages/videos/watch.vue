@@ -154,10 +154,8 @@ watch(videoId, async (newId, oldId) => {
 const navigateToChannel = () => {
   if (video.value?.channelId) {
     console.log('Navigating to channel:', video.value.channelId);
-    // Use window.location for full page refresh with correct base URL
-    const baseUrl = import.meta.env.BASE_URL || '/';
-    const channelUrl = `${baseUrl}channel/${video.value.channelId}`.replace('//', '/');
-    window.location.href = channelUrl;
+    // Simplify the URL construction to ensure it works correctly
+    window.location.href = `/channel/${video.value.channelId}`;
   }
 };
 </script>

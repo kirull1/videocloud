@@ -89,9 +89,24 @@ async function logout() {
 }
 
 // Initialize user data if authenticated
-function init() {
+async function init() {
   if (isAuthenticated.value) {
-    fetchUserProfile()
+    try {
+      // Check if the authentication is valid
+      const isValid = await authApi.checkAuthValidity()
+      
+      if (isValid) {
+        // If authentication is valid, fetch the user profile
+        await fetchUserProfile()
+      } else {
+        // If authentication is invalid, the user has already been logged out by checkAuthValidity
+        console.log('Authentication is invalid, user has been logged out')
+      }
+    } catch (err) {
+      console.error('Error initializing user store:', err)
+      // In case of an error, log out the user
+      await authApi.logout()
+    }
   }
 }
 

@@ -126,10 +126,9 @@ const handleChannelClick = (event: Event) => {
   // Navigate to the channel page if channelId is available
   if (props.channelId) {
     console.log('Navigating to channel:', props.channelId);
-    // Use window.location for full page refresh with correct base URL
-    const baseUrl = import.meta.env.BASE_URL || '/';
-    const channelUrl = `${baseUrl}channel/${props.channelId}`.replace('//', '/');
-    window.location.href = channelUrl;
+    
+    // Simplify the URL construction to ensure it works correctly
+    window.location.href = `/channel/${props.channelId}`;
   }
 };
 </script>

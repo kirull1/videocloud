@@ -52,6 +52,11 @@ export const authApi = {
 
   async logout(): Promise<void> {
     localStorage.removeItem('token');
+    // Clear any auth-related cookies
+    document.cookie.split(';').forEach(cookie => {
+      const [name] = cookie.trim().split('=');
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
   },
 
   getToken(): string | null {
@@ -60,5 +65,39 @@ export const authApi = {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  },
+
+  async checkAuthValidity(): Promise<boolean> {
+    const token = this.getToken();
+    
+    if (!token) {
+      return false;
+    }
+    
+    try {
+      // Make a request to the users/profile endpoint to validate the token
+      // If the token is invalid, this request will fail with a 401 Unauthorized error
+      const response = await fetch(`/api/users/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      // If the response is not ok, the token is invalid
+      if (!response.ok) {
+        console.log('Token validation failed:', response.status);
+        // Token is invalid, log out the user
+        await this.logout();
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error validating token:', error);
+      // In case of an error, assume the token is invalid
+      await this.logout();
+      return false;
+    }
   },
 }; 

@@ -77,7 +77,7 @@ const router = createRouter({
 })
 
 // Navigation guard to check authentication for protected routes
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // This route requires auth, check if logged in
     if (!authApi.isAuthenticated()) {
@@ -86,10 +86,34 @@ router.beforeEach((to, from, next) => {
         path: '/auth/login',
         query: { redirect: to.fullPath }
       })
-    } else {
+      return
+    }
+    
+    // Check if the authentication is valid
+    try {
+      const isValid = await authApi.checkAuthValidity()
+      
+      if (!isValid) {
+        // Authentication is invalid, redirect to login page
+        next({
+          path: '/auth/login',
+          query: { redirect: to.fullPath }
+        })
+        return
+      }
+      
+      // Authentication is valid, proceed to the route
       next()
+    } catch (error) {
+      console.error('Error checking authentication validity:', error)
+      // In case of an error, redirect to login page
+      next({
+        path: '/auth/login',
+        query: { redirect: to.fullPath }
+      })
     }
   } else {
+    // Route doesn't require authentication, proceed
     next()
   }
 })
