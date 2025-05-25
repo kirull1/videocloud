@@ -1,10 +1,17 @@
 import { Module } from '@nestjs/common';
 import { VideoProcessingService } from './video-processing.service';
-import { S3Module } from '../s3.module';
+import { ProcessingProgressService } from './processing-progress.service';
+import { S3Service } from '../s3.service';
 
 @Module({
-  imports: [S3Module],
-  providers: [VideoProcessingService],
-  exports: [VideoProcessingService],
+  providers: [
+    VideoProcessingService,
+    ProcessingProgressService,
+    S3Service,
+  ],
+  exports: [
+    VideoProcessingService,
+    ProcessingProgressService,
+  ],
 })
 export class VideoProcessingModule {}

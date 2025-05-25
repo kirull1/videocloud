@@ -126,9 +126,9 @@ onMounted(async () => {
           <p>Your video is currently being processed. This may take a few minutes.</p>
         </div>
         
-        <VideoPlayer 
-          v-else 
-          :src="`/api/videos/${video.id}/stream`" 
+        <VideoPlayer
+          v-else
+          :video-id="video.id"
           :poster="video.thumbnailUrl"
         />
       </div>

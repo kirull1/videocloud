@@ -54,6 +54,13 @@ const handleSubmit = async () => {
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to post comment';
     console.error('Failed to post comment:', err);
+    
+    // Auto-retry after 2 seconds if it's a network error
+    if (err instanceof Error && err.message.includes('network')) {
+      setTimeout(() => {
+        handleSubmit();
+      }, 2000);
+    }
   } finally {
     isSubmitting.value = false;
   }

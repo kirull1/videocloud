@@ -21,6 +21,8 @@
 - AWS SDK for S3 integration
 - fluent-ffmpeg for video processing
 - @ffprobe-installer/ffprobe for media metadata extraction
+- ffmpeg-static for consistent ffmpeg availability
+- Server-Sent Events (SSE) for real-time progress updates
 
 ### Development Tools
 - pnpm for package management
@@ -161,6 +163,17 @@ backend/
 - POST /users/verify-email - Request email verification
 - POST /users/verify-email/:token - Verify email
 
+### Videos
+- POST /videos - Upload a new video
+- GET /videos - Get a list of videos
+- GET /videos/:id - Get a specific video
+- PATCH /videos/:id - Update a video
+- DELETE /videos/:id - Delete a video
+- GET /videos/:id/stream - Stream a video
+- GET /videos/:id/streaming-info - Get streaming information for a video
+- SSE /videos/:id/progress - Get real-time processing progress updates (Server-Sent Events)
+- GET /videos/:id/progress-status - Get current processing status (non-SSE version)
+
 ## Database Schema
 
 ### Users Table
@@ -192,6 +205,19 @@ CREATE TABLE users (
 - Memory storage (not disk storage) for file uploads
 - File validation for type and size
 - Direct streaming to S3 from memory
+
+### Video Thumbnail Handling
+- Custom thumbnails can be uploaded during video creation
+- Auto-generated thumbnails are created during video processing
+- Thumbnails are stored in S3 with public-read ACL
+- Cache-busting parameters prevent browser caching issues
+- Cache control headers (no-cache, must-revalidate) for optimal caching behavior
+- Unique filenames with timestamps to ensure freshness
+- Different storage paths for uploaded vs. generated thumbnails:
+  - Uploaded: thumbnails/{userId}/{videoId}/{filename}
+  - Generated: thumbnails/{userId}/{videoId}/generated/{filename}
+- Frontend uses full page reloads when navigating to video pages
+- S3Service provides getPublicUrl method with optional cache-busting parameter
 
 ### Avatar Upload
 - Maximum file size: 2MB
@@ -380,6 +406,66 @@ CREATE TABLE users (
 - Maintained category and tag information on video cards for informational purposes
 - Updated empty state message in search to remove reference to filters
 - Removed filter-related CSS styles and media queries for cleaner codebase
+- Frontend video upload components are implemented and ready for backend integration
+- Video upload form includes:
+  - File selection with drag-and-drop support
+  - Metadata input (title, description, category, tags, privacy)
+  - Thumbnail generation and custom thumbnail upload
+  - Upload progress tracking with speed and time estimation
+  - Error handling and validation
+- Implemented video upload backend functionality with:
+  - RESTful endpoints for video file upload
+  - S3 integration for secure file storage
+  - File validation for size, type, and metadata
+  - Background processing for transcoding and thumbnail generation
+  - Real-time progress tracking with Server-Sent Events (SSE)
+  - Dedicated processing page to monitor video processing
+  - Visual progress indicators with stage information and percentage
+  - Automatic navigation to video page upon completion
+  - Error handling and recovery mechanisms
+  - Proper ffmpeg integration with ffmpeg-static package
+  - Fixed video duration handling to ensure integer storage in database
+  - Improved error handling for missing ffmpeg
+  - Simplified approach for environments without ffmpeg:
+    - Direct file copying instead of transcoding attempts
+    - Simple placeholder thumbnail creation
+    - Skip ffmpeg commands entirely to avoid errors
+    - Proper directory creation with error handling
+    - Graceful degradation of video processing
+  - Robust video status management:
+    - Videos always marked as READY even if processing fails
+    - Multiple fallback mechanisms to ensure video playability
+    - Nested error handling to prevent processing failures from blocking video access
+    - Clear separation between processing errors and video availability
+  - Comprehensive video streaming fallback system:
+    - VideoPlayer component uses videoId instead of direct src
+    - Streaming info API provides available quality variants
+    - Automatic fallback to original video file if no variants exist
+    - Proper error handling for missing files with informative messages
+    - Format detection from file extension for correct MIME type
+
+- Enhanced comment system with improved user experience:
+  - Fixed API endpoint configuration using appConfig
+  - Added proper error handling with user-friendly messages
+  - Implemented success notifications for comment actions
+  - Added automatic retry for network errors
+  - Enhanced UI with loading spinners and error icons
+  - Improved visual feedback for all comment operations
+  - Added watch functionality to reload comments when video changes
+  - Implemented proper error handling for comment deletion
+  - Added success message animation with fadeInOut effect
+  - Enhanced mobile responsiveness for comment components
+  - Improved error recovery with retry buttons
+  - Added scroll-to-error functionality for better visibility
+  - Optimized API calls to reduce unnecessary requests
+  - Fixed issue with video thumbnails not displaying correctly after upload:
+    - Added cache-busting parameters to thumbnail URLs
+    - Added proper cache control headers to thumbnails in S3Service
+    - Modified the VideosService to preserve the original thumbnail if one was provided during upload
+    - Added timestamp to thumbnail filenames to ensure uniqueness
+    - Updated frontend components to use full page reloads when navigating to video pages
+    - Created different storage paths for uploaded vs. generated thumbnails
+    - Added logic to refresh existing thumbnail URLs with new cache-busting parameters
 
 ## Authentication Validation System
 

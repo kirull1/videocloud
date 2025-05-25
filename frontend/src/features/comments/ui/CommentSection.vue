@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { commentStore, CommentItem, CommentForm } from '@/entities/comment';
 
 const props = defineProps({
@@ -15,6 +15,13 @@ const error = ref<string | null>(null);
 // Load comments when component is mounted
 onMounted(async () => {
   await loadComments();
+});
+
+// Watch for changes in videoId and reload comments
+watch(() => props.videoId, async (newVideoId) => {
+  if (newVideoId) {
+    await loadComments();
+  }
 });
 
 // Load comments for the video
@@ -48,9 +55,31 @@ const handleDelete = async (commentId: string) => {
   if (!confirm('Are you sure you want to delete this comment?')) return;
   
   try {
+    isLoading.value = true;
     await commentStore.deleteComment(commentId);
+    // Show a success message
+    const successMessage = document.createElement('div');
+    successMessage.className = 'comment-section__success-message';
+    successMessage.textContent = 'Comment deleted successfully';
+    document.body.appendChild(successMessage);
+    
+    // Remove the success message after 3 seconds
+    setTimeout(() => {
+      document.body.removeChild(successMessage);
+    }, 3000);
   } catch (err) {
     console.error('Failed to delete comment:', err);
+    error.value = err instanceof Error ? err.message : 'Failed to delete comment';
+    
+    // Scroll to the error message
+    setTimeout(() => {
+      const errorElement = document.querySelector('.comment-section__error');
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -75,11 +104,13 @@ const handleCommentSubmit = () => {
     </div>
     
     <div v-if="isLoading" class="comment-section__loading">
-      Loading comments...
+      <div class="comment-section__loading-spinner"/>
+      <p>Loading comments...</p>
     </div>
     
     <div v-else-if="error" class="comment-section__error">
-      {{ error }}
+      <div class="comment-section__error-icon">!</div>
+      <p>{{ error }}</p>
       <button class="comment-section__retry-button" @click="loadComments">
         Retry
       </button>
@@ -140,10 +171,42 @@ const handleCommentSubmit = () => {
   background-color: var(--panel-bg, #E6F0FB);
   border-radius: 8px;
   color: var(--text-secondary, #67748B);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.comment-section__loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(65, 164, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--primary, #41A4FF);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .comment-section__error {
   color: var(--error, #FF677B);
+}
+
+.comment-section__error-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--error, #FF677B);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
 }
 
 .comment-section__retry-button {
@@ -166,9 +229,38 @@ const handleCommentSubmit = () => {
   flex-direction: column;
 }
 
+/* Success message */
+.comment-section__success-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--success, #8FF6E9);
+  color: #155724;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(20px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
 @media (max-width: 768px) {
   .comment-section__title {
     font-size: 18px;
+  }
+  
+  .comment-section__success-message {
+    left: 20px;
+    right: 20px;
+    text-align: center;
   }
 }
 </style>

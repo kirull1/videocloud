@@ -772,6 +772,84 @@ AppModule
 - Generates multiple thumbnails and selects the best one
 - Creates adaptive streaming variants for different network conditions
 - Handles cleanup of temporary files after processing
+- Real-time progress tracking with Server-Sent Events (SSE)
+
+### Video Thumbnail System
+- Comprehensive thumbnail management:
+  - Custom thumbnails can be uploaded during video creation
+  - Auto-generated thumbnails are created during video processing
+  - Thumbnails are stored in S3 with public access
+  - Cache-busting parameters prevent browser caching issues
+  - Different storage paths for uploaded vs. generated thumbnails
+  - Proper cache control headers for optimal caching behavior
+- Thumbnail generation process:
+  - Multiple thumbnails are generated at different timestamps
+  - Thumbnails are stored in a "generated" subfolder to avoid conflicts
+  - Thumbnails include timestamp in filename for uniqueness
+  - Original thumbnails are preserved if provided during upload
+- Frontend thumbnail handling:
+  - Full page reloads when navigating to video pages ensure fresh thumbnails
+  - Cache-busting parameters are added to thumbnail URLs
+  - Consistent thumbnail display across the application
+  - Proper error handling for missing thumbnails
+- S3 integration:
+  - Thumbnails are stored with public-read ACL for direct access
+  - Proper content type headers for correct browser rendering
+  - Unique paths based on user ID and video ID
+  - Efficient cleanup of old thumbnails when videos are deleted
+
+### Video Processing Progress Tracking
+- Dedicated ProcessingProgressService for tracking video processing stages
+- Implements the Observer pattern for real-time progress updates
+- Tracks multiple processing stages:
+  - UPLOADING: Initial file upload
+  - ANALYZING: Metadata extraction and analysis
+  - TRANSCODING: Converting to different formats and qualities
+  - GENERATING_THUMBNAILS: Creating thumbnail images
+  - FINALIZING: Final processing steps
+  - COMPLETED: Processing successfully completed
+  - FAILED: Processing encountered an error
+- Provides detailed progress information:
+  - Current processing stage
+  - Progress percentage (0-100%)
+  - Status message
+  - Error details (if applicable)
+  - Timestamps for start, update, and completion
+- Server-Sent Events (SSE) endpoint for real-time updates
+- Responsive UI component for displaying processing status
+- Dedicated processing page with progress visualization
+- Robust error handling and recovery mechanisms:
+  - Automatic reconnection attempts for SSE connection failures
+  - Fallback to polling if SSE is not supported or fails
+  - User-friendly error messages with retry button
+  - Graceful degradation to ensure progress tracking continues
+  - CORS configuration for cross-origin SSE connections
+  - Proper API URL configuration using appConfig
+- Public access to processing progress for public videos:
+  - Removed JwtAuthGuard from progress endpoints
+  - Added proper permission checks for both authenticated and unauthenticated users
+  - Allow access to video owner or if video is public
+- Memory-based storage for progress tracking (no database persistence)
+- Improved video processing reliability:
+  - Added ffmpeg-static package for consistent ffmpeg availability
+  - Proper integer handling for video duration to prevent database errors
+  - Graceful handling of missing ffmpeg with informative error messages
+  - Simplified approach for environments without ffmpeg:
+    - Direct file copying instead of transcoding attempts
+    - Simple placeholder thumbnail creation
+    - Skip ffmpeg commands entirely to avoid errors
+    - Proper directory creation with error handling
+    - Detailed logging of fallback actions for debugging
+  - Guaranteed video playability:
+    - Videos always marked as READY even if processing fails
+    - Multiple fallback attempts to ensure video status is updated
+    - Nested try-catch blocks to handle errors at different levels
+    - Original video always accessible regardless of processing outcome
+  - Multi-level fallback for video streaming:
+    - Try transcoded variants first (high, medium, low quality)
+    - Fall back to original video file if no variants are available
+    - Proper error handling for missing files
+    - Automatic format detection from file extension
 
 ### Advanced Video Player
 - Custom-built video player with enhanced functionality:
@@ -818,7 +896,31 @@ AppModule
 - Duration is stored in the database with the video
 - Video cards display the actual duration of videos
 - After upload, video processing pipeline is triggered in the background
-- Video status is updated as processing progresses
+- User is redirected to the processing page to monitor progress
+- ProcessingProgressService tracks and updates processing status
+- Server-Sent Events (SSE) provide real-time progress updates to the frontend
+- Processing progress is displayed with stage information and percentage
+- Upon completion, user is automatically redirected to the video page
+
+### Video Upload Backend Implementation ✅
+- Backend provides RESTful endpoints for video upload
+- Multer handles multipart/form-data for file uploads
+- File validation checks:
+  - File size (maximum 500MB)
+  - File type (MP4, WebM, OGG, QuickTime)
+  - Required metadata (title, etc.)
+- S3 integration stores video files securely
+- Unique filenames are generated based on user ID and timestamp
+- Video processing service handles:
+  - Transcoding to different formats (MP4, WebM)
+  - Creating quality variants (720p, 480p, 360p)
+  - Generating thumbnails at strategic points
+  - Extracting metadata (duration, resolution, codec)
+- ProcessingProgressService tracks processing stages and progress
+- Server-Sent Events (SSE) provide real-time updates to the frontend
+- Background processing allows users to continue using the application
+- Status updates are sent to the frontend as processing progresses
+- Dedicated processing page displays progress with visual indicators
 
 ## Communication Patterns
 

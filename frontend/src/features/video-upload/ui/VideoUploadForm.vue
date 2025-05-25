@@ -368,14 +368,10 @@ const uploadVideo = async () => {
     
     successMessage.value = 'Video uploaded successfully! It will be processed shortly.';
     
-    // If upload is successful, redirect to the video player page after a short delay
+    // If upload is successful, redirect to the processing page with a full page reload
     if (uploadedVideo) {
-      setTimeout(() => {
-        router.push({
-          name: 'video-watch',
-          query: { id: uploadedVideo.id }
-        });
-      }, 2000);
+      // Use window.location.href instead of router.push to force a full page reload
+      window.location.href = `/videos/processing?id=${uploadedVideo.id}`;
     }
   } catch (err) {
     // Error is already handled by the store

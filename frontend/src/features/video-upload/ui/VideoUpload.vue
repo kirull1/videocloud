@@ -255,10 +255,11 @@ const handleUploadStart = async () => {
         metadata: { ...metadata.value }
       });
       
-      // If upload is successful, redirect to the video page
+      // If upload is successful, redirect to the video page with a full page reload
       if (uploadedVideo) {
         setTimeout(() => {
-          router.push(`/videos/${uploadedVideo.id}`);
+          // Use window.location.href instead of router.push to force a full page reload
+          window.location.href = `/videos/watch?id=${uploadedVideo.id}`;
         }, 1000);
       }
     } catch (err) {

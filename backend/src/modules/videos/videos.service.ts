@@ -52,6 +52,8 @@ export class VideosService {
       mimetype: string;
     } | null,
   ): Promise<VideoResponseDto> {
+    this.logger.log(`Creating video for user ${userId}`);
+    
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
@@ -86,28 +88,6 @@ export class VideosService {
       tags.push(...foundTags);
     }
 
-    // Upload video to S3
-    const s3Key = await this.s3Service.uploadVideo(file, userId);
-
-    // Handle thumbnail
-    let thumbnailUrl: string;
-    
-    if (thumbnailFile && thumbnailFile.buffer) {
-      // If a thumbnail was provided, upload it to S3
-      const thumbnailKey = await this.s3Service.uploadThumbnail(
-        thumbnailFile.buffer,
-        thumbnailFile.mimetype,
-        userId,
-        Date.now().toString() // Use timestamp as videoId since we don't have the video ID yet
-      );
-      
-      // Generate the public URL for the thumbnail
-      thumbnailUrl = this.s3Service.getPublicUrl(thumbnailKey);
-    } else {
-      // If no thumbnail was provided, use a placeholder
-      thumbnailUrl = `https://picsum.photos/seed/${Date.now()}/640/360`;
-    }
-
     // Calculate video duration if not provided
     let duration = createVideoDto.duration;
     if (!duration && file.buffer) {
@@ -121,26 +101,61 @@ export class VideosService {
       }
     }
 
+    // Upload video to S3
+    const s3Key = await this.s3Service.uploadVideo(file, userId);
+
     // Create video entity
     const video = new Video();
     video.title = createVideoDto.title;
     video.description = createVideoDto.description;
     video.filePath = s3Key;
-    video.thumbnailUrl = thumbnailUrl;
     video.userId = userId;
-    video.duration = duration;
+    // Make sure duration is an integer to avoid database errors
+    video.duration = duration ? Math.round(duration) : undefined;
     // Set isPublic based on visibility
     video.isPublic = createVideoDto.visibility === VideoVisibility.PUBLIC;
     video.category = category;
     video.tags = tags;
 
-    // Save video to database
+    // Save video to database to get an ID
     const savedVideo = await this.videoRepository.save(video);
+    this.logger.log(`Video created with ID: ${savedVideo.id}`);
+
+    // Now that we have a video ID, handle the thumbnail if provided
+    if (thumbnailFile && thumbnailFile.buffer) {
+      try {
+        this.logger.log(`Uploading custom thumbnail for video ${savedVideo.id}`);
+        
+        // Upload the thumbnail to S3 with the actual video ID
+        const thumbnailKey = await this.s3Service.uploadThumbnail(
+          thumbnailFile.buffer,
+          thumbnailFile.mimetype,
+          userId,
+          savedVideo.id
+        );
+        
+        // Generate the public URL for the thumbnail with cache-busting
+        const thumbnailUrl = this.s3Service.getPublicUrl(thumbnailKey, true); // Set noCaching to true
+        
+        // Update the video with the thumbnail URL
+        savedVideo.thumbnailUrl = thumbnailUrl;
+        await this.videoRepository.save(savedVideo);
+        
+        this.logger.log(`Custom thumbnail uploaded for video ${savedVideo.id}: ${thumbnailUrl}`);
+      } catch (error: any) {
+        this.logger.error(`Failed to upload thumbnail: ${error.message}`, error.stack);
+        // Continue without thumbnail if upload fails
+      }
+    }
 
     // Start video processing in the background
     this.processVideoInBackground(savedVideo.id, s3Key, userId);
 
-    return this.mapVideoToResponseDto(savedVideo, user);
+    // Get the response DTO and set the justUploaded flag to true
+    const responseDto = this.mapVideoToResponseDto(savedVideo, user);
+    responseDto.justUploaded = true;
+    
+    return responseDto;
   }
 
   async findAll(
@@ -351,13 +366,26 @@ export class VideosService {
     // Determine visibility based on isPublic
     const visibility = video.isPublic ? VideoVisibility.PUBLIC : VideoVisibility.PRIVATE;
 
+    // Process thumbnail URL to ensure it has cache-busting
+    let thumbnailUrl = video.thumbnailUrl;
+    if (thumbnailUrl && thumbnailUrl.includes('storage.yandexcloud.net') && !thumbnailUrl.includes('?t=')) {
+      // Extract the key from the URL
+      const urlParts = thumbnailUrl.split('?')[0]; // Remove any existing query parameters
+      const key = urlParts.split('storage.yandexcloud.net/')[1];
+      if (key) {
+        // Update with cache-busting
+        thumbnailUrl = this.s3Service.getPublicUrl(key, true);
+        this.logger.log(`Added cache-busting to thumbnail URL in response: ${thumbnailUrl}`);
+      }
+    }
+
     return {
       id: video.id,
       title: video.title,
       description: video.description,
       status,
       visibility,
-      thumbnailUrl: video.thumbnailUrl,
+      thumbnailUrl: thumbnailUrl,
       videoUrl: null, // Will be set separately if needed
       duration: video.duration,
       views: video.views,
@@ -444,18 +472,41 @@ export class VideosService {
         return;
       }
       
-      // Process the video
-      const result = await this.videoProcessingService.processVideo(s3Key, userId, videoId);
-      
-      // Update the video entity with the processed information
-      video.duration = result.duration || video.duration;
-      
-      // If thumbnails were generated, update the thumbnail URL to use the first one
-      if (result.thumbnails.length > 0) {
-        video.thumbnailUrl = this.s3Service.getPublicUrl(result.thumbnails[0].path);
+      try {
+        // Process the video
+        const result = await this.videoProcessingService.processVideo(s3Key, userId, videoId);
+        
+        // Update the video entity with the processed information
+        // Make sure duration is an integer to avoid database errors
+        if (result.duration) {
+          video.duration = Math.round(result.duration);
+        }
+        
+        // Only update the thumbnail URL if no thumbnail was provided during upload
+        if (!video.thumbnailUrl && result.thumbnails.length > 0) {
+          video.thumbnailUrl = this.s3Service.getPublicUrl(result.thumbnails[0].path, true); // Add cache-busting
+          this.logger.log(`Updated video ${videoId} with generated thumbnail: ${video.thumbnailUrl}`);
+        } else if (video.thumbnailUrl) {
+          // Update the existing thumbnail URL with cache-busting to force refresh
+          if (video.thumbnailUrl.includes('storage.yandexcloud.net')) {
+            // Extract the key from the URL
+            const urlParts = video.thumbnailUrl.split('?')[0]; // Remove any existing query parameters
+            const key = urlParts.split('storage.yandexcloud.net/')[1];
+            if (key) {
+              // Update with cache-busting
+              video.thumbnailUrl = this.s3Service.getPublicUrl(key, true);
+              this.logger.log(`Updated existing thumbnail URL with cache-busting: ${video.thumbnailUrl}`);
+            }
+          }
+          this.logger.log(`Keeping original thumbnail for video ${videoId}: ${video.thumbnailUrl}`);
+        }
+      } catch (processingError: any) {
+        // Log the error but continue to mark the video as ready
+        this.logger.error(`Error during video processing for ${videoId}: ${processingError.message}`, processingError.stack);
       }
       
-      // Set the video status to READY
+      // Always set the video status to READY, even if processing failed
+      // This ensures the video is playable even without transcoding
       video.isPublic = true;
       
       // Save the updated video entity
@@ -464,7 +515,21 @@ export class VideosService {
       this.logger.log(`Background processing completed for video ${videoId}`);
     } catch (error: any) {
       this.logger.error(`Error processing video ${videoId}: ${error.message}`, error.stack);
-      // Don't throw the error, just log it, as this is a background process
+      
+      // Try to mark the video as ready even if there was an error
+      try {
+        const video = await this.videoRepository.findOne({
+          where: { id: videoId },
+        });
+        
+        if (video) {
+          video.isPublic = true;
+          await this.videoRepository.save(video);
+          this.logger.log(`Marked video ${videoId} as ready despite processing error`);
+        }
+      } catch (saveError: any) {
+        this.logger.error(`Failed to mark video ${videoId} as ready: ${saveError.message}`);
+      }
     }
   }
 

@@ -72,6 +72,10 @@ const saveEdit = async () => {
     isEditing.value = false;
   } catch (error) {
     console.error('Failed to update comment:', error);
+    
+    // Show a user-friendly error message
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update comment';
+    alert(`Error: ${errorMessage}. Please try again.`);
   }
 };
 
@@ -85,6 +89,12 @@ const toggleReplies = async () => {
       await commentStore.fetchReplies(props.comment.videoId, props.comment.id);
     } catch (error) {
       console.error('Failed to fetch replies:', error);
+      
+      // Show an alert with a more user-friendly message
+      alert('Could not load replies. Please try again later.');
+      
+      // Hide the replies section since we couldn't load them
+      showReplies.value = false;
     }
   }
 };
@@ -104,7 +114,15 @@ const handleEdit = () => {
 };
 
 const handleDelete = () => {
-  emit('delete', props.comment.id);
+  try {
+    emit('delete', props.comment.id);
+  } catch (error) {
+    console.error('Failed to delete comment:', error);
+    
+    // Show a user-friendly error message
+    const errorMessage = error instanceof Error ? error.message : 'Failed to delete comment';
+    alert(`Error: ${errorMessage}. Please try again.`);
+  }
 };
 
 // Check if the current user is the author of the comment

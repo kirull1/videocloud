@@ -1,6 +1,8 @@
 import type { Comment, CreateCommentRequest, UpdateCommentRequest } from '../model/types';
 
-const API_URL = '/api/comments';
+import { appConfig } from '@/shared/config/app.config';
+
+const API_URL = `${appConfig.apiUrl}/comments`;
 
 export const commentApi = {
   async getComments(videoId: string, parentId?: string): Promise<Comment[]> {

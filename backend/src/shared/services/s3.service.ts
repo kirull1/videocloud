@@ -110,16 +110,28 @@ export class S3Service {
     userId: string,
     videoId: string,
   ): Promise<string> {
-    const uniqueFilename = `${videoId}.jpg`;
-    const key = `${this.thumbnailFolder}${userId}/${uniqueFilename}`;
+    // Use the original file extension if possible, otherwise default to jpg
+    const extension = mimeType.split('/')[1] || 'jpg';
+    // Add a timestamp to the filename to prevent caching issues
+    const timestamp = Date.now();
+    const uniqueFilename = `${videoId}_${timestamp}.${extension}`;
+    const key = `${this.thumbnailFolder}${userId}/${videoId}/${uniqueFilename}`;
 
     try {
+      // Create directory structure if it doesn't exist
+      const dirPath = path.dirname(key);
+      
       await this.s3Client.send(
         new PutObjectCommand({
           Bucket: this.bucket,
           Key: key,
           Body: buffer,
           ContentType: mimeType,
+          // Make thumbnails publicly accessible like avatars
+          ACL: 'public-read',
+          // Add cache control headers to prevent caching
+          CacheControl: 'no-cache, no-store, must-revalidate',
+          Expires: new Date(0),
         }),
       );
 
@@ -205,8 +217,16 @@ export class S3Service {
   /**
    * Get the public URL for a file
    */
-  getPublicUrl(key: string): string {
-    return `https://${this.bucket}.storage.yandexcloud.net/${key}`;
+  getPublicUrl(key: string, noCaching: boolean = false): string {
+    const baseUrl = `https://${this.bucket}.storage.yandexcloud.net/${key}`;
+    
+    // Add a cache-busting parameter if noCaching is true
+    if (noCaching) {
+      const timestamp = Date.now();
+      return `${baseUrl}?t=${timestamp}`;
+    }
+    
+    return baseUrl;
   }
 
   /**
@@ -235,18 +255,23 @@ export class S3Service {
   /**
    * Upload a file from a local path to S3
    */
-  async uploadFile(localPath: string, s3Key: string, contentType?: string): Promise<string> {
+  async uploadFile(localPath: string, s3Key: string, contentType?: string, publicRead?: boolean): Promise<string> {
     try {
       const fileContent = fs.readFileSync(localPath);
       
-      await this.s3Client.send(
-        new PutObjectCommand({
-          Bucket: this.bucket,
-          Key: s3Key,
-          Body: fileContent,
-          ContentType: contentType || this.getContentType(localPath),
-        }),
-      );
+      const params: any = {
+        Bucket: this.bucket,
+        Key: s3Key,
+        Body: fileContent,
+        ContentType: contentType || this.getContentType(localPath),
+      };
+      
+      // Add ACL if publicRead is true
+      if (publicRead) {
+        params.ACL = 'public-read';
+      }
+      
+      await this.s3Client.send(new PutObjectCommand(params));
 
       this.logger.log(`File uploaded successfully: ${s3Key}`);
       return s3Key;

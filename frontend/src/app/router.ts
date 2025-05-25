@@ -52,6 +52,12 @@ const router = createRouter({
       component: () => import('@/pages/videos/watch.vue')
     },
     {
+      path: '/videos/processing',
+      name: 'video-processing',
+      component: () => import('@/pages/videos/processing.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/search',
       name: 'search',
       component: () => import('@/pages/search/index.vue')

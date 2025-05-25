@@ -20,6 +20,8 @@ export class VideoResponseDto {
   categoryId?: string;
   category?: CategoryResponseDto;
   tags?: TagResponseDto[];
+  // Flag to indicate if this is a newly uploaded video (for frontend to trigger page reload)
+  justUploaded?: boolean;
 }
 
 export class PaginatedVideosResponseDto {
