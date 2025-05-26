@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
@@ -11,89 +11,14 @@ const videoId = computed(() => route.query.id as string);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 
-// Mock data for test videos
-const mockVideos = {
-  video1: {
-    id: 'video1',
-    title: 'Introduction to NestJS',
-    description: 'Learn the basics of NestJS, a progressive Node.js framework for building efficient and scalable server-side applications.',
-    thumbnailUrl: 'https://picsum.photos/seed/video1/640/360',
-    duration: 210, // 3:30
-    views: 3200,
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    userId: 'user1',
-    username: 'testuser',
-    userAvatarUrl: 'https://picsum.photos/seed/user1/100/100',
-    channelId: 'channel1',
-    channelName: 'Test Channel',
-    status: VideoStatus.READY,
-    visibility: VideoVisibility.PUBLIC
-  },
-  video2: {
-    id: 'video2',
-    title: 'React Hooks Deep Dive',
-    description: 'An in-depth look at React Hooks and how they can simplify your React components.',
-    thumbnailUrl: 'https://picsum.photos/seed/video2/640/360',
-    duration: 255, // 4:15
-    views: 4100,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-    userId: 'user1',
-    username: 'testuser',
-    userAvatarUrl: 'https://picsum.photos/seed/user1/100/100',
-    channelId: 'channel1',
-    channelName: 'Test Channel',
-    status: VideoStatus.READY,
-    visibility: VideoVisibility.PUBLIC
-  },
-  video3: {
-    id: 'video3',
-    title: 'Piano Basics for Beginners',
-    description: 'Start your piano journey with these basic lessons for complete beginners.',
-    thumbnailUrl: 'https://picsum.photos/seed/video3/640/360',
-    duration: 345, // 5:45
-    views: 2800,
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
-    userId: 'user2',
-    username: 'kirull1',
-    userAvatarUrl: 'https://picsum.photos/seed/user2/100/100',
-    channelId: 'channel2',
-    channelName: 'Music Channel',
-    status: VideoStatus.READY,
-    visibility: VideoVisibility.PUBLIC
-  },
-  video4: {
-    id: 'video4',
-    title: 'Minecraft Building Tips',
-    description: 'Improve your Minecraft building skills with these useful tips and tricks.',
-    thumbnailUrl: 'https://picsum.photos/seed/video4/640/360',
-    duration: 180, // 3:00
-    views: 5600,
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
-    userId: 'user1',
-    username: 'testuser',
-    userAvatarUrl: 'https://picsum.photos/seed/user1/100/100',
-    channelId: 'channel1',
-    channelName: 'Test Channel',
-    status: VideoStatus.READY,
-    visibility: VideoVisibility.PUBLIC
-  }
-};
-
-// Get the current video from the store or mock data
 const video = computed(() => {
-  const id = videoId.value;
-  if (id && id in mockVideos) {
-    return mockVideos[id as keyof typeof mockVideos];
-  }
   return videoStore.currentVideo.value;
 });
 
-// Check if the video is ready to play
 const isVideoReady = computed(() => 
   video.value?.status === VideoStatus.READY
 );
 
-// Format the video upload date
 const formattedDate = computed(() => {
   if (!video.value) return '';
   return new Date(video.value.createdAt).toLocaleDateString('en-US', {
@@ -116,30 +41,8 @@ const formattedViews = computed(() => {
   return `${(views / 1000000).toFixed(1)}M views`;
 });
 
-// Get mock video URL for test videos
-const getMockVideoUrl = (id: string) => {
-  // For test videos, use a sample video URL
-  if (id in mockVideos) {
-    return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-  }
-  // For real videos, use the API
-  return `/api/videos/${id}/stream`;
-};
-
-// Fetch the video when the component is mounted or videoId changes
 watch(videoId, async (newId, oldId) => {
   if (newId && newId !== oldId) {
-    // If it's a mock video, no need to fetch from the API
-    if (newId in mockVideos) {
-      isLoading.value = true;
-      // Simulate loading delay
-      setTimeout(() => {
-        isLoading.value = false;
-      }, 500);
-      return;
-    }
-    
-    // Otherwise, fetch from the API
     try {
       isLoading.value = true;
       await videoStore.fetchVideo(newId);
@@ -151,11 +54,9 @@ watch(videoId, async (newId, oldId) => {
   }
 }, { immediate: true });
 
-// Navigate to the channel page with page refresh
 const navigateToChannel = () => {
   if (video.value?.channelId) {
     console.log('Navigating to channel:', video.value.channelId);
-    // Simplify the URL construction to ensure it works correctly
     window.location.href = `/channel/${video.value.channelId}`;
   }
 };
@@ -202,8 +103,6 @@ const navigateToChannel = () => {
         </div>
         
         <VideoPlayer
-          v-else
-          :src="getMockVideoUrl(video.id)"
           :poster="video.thumbnailUrl"
         />
       </div>

@@ -11,11 +11,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     
     this.logger.log(`Auth header: ${authHeader ? authHeader.substring(0, 20) + '...' : 'none'}`);
     
-    // For debugging purposes, let's log the request details
     this.logger.log(`Request method: ${request.method}`);
     this.logger.log(`Request URL: ${request.url}`);
     
-    // Call the parent canActivate method
     return super.canActivate(context);
   }
 
@@ -24,24 +22,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       this.logger.error(`JWT authentication failed: ${err?.message || 'No user'}`);
       this.logger.error(`JWT info: ${JSON.stringify(info)}`);
       
-      // For debugging, let's bypass authentication
-      this.logger.warn('Bypassing authentication for debugging');
-      
-      // Create a mock user for debugging
-      const request = context.switchToHttp().getRequest();
-      const mockUser = {
-        id: '1266aecf-9682-4eb7-aa41-934b27a84d13', // Use the testuser7 ID
-        username: 'testuser7',
-        email: 'testuser7@example.com',
-        isEmailVerified: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      return mockUser;
-      
-      // Comment out the line below to bypass authentication
-      // throw new UnauthorizedException(info?.message || 'Unauthorized');
+      throw new UnauthorizedException(info?.message || 'Unauthorized');
     }
     
     this.logger.log(`User authenticated: ${user.username} (${user.id})`);

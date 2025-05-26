@@ -36,23 +36,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     console.log('JWT Payload:', JSON.stringify(payload));
     
     try {
-      // For debugging, let's create a mock user if validation fails
-      try {
-        const user = await this.authService.validateUser(payload.sub);
-        console.log('User validated:', user.username);
-        return user;
-      } catch (error) {
-        console.warn('JWT validation failed, using mock user for debugging');
-        // Return a mock user for debugging
-        return {
-          id: payload.sub,
-          username: payload.username,
-          email: `${payload.username}@example.com`,
-          isEmailVerified: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-      }
+      const user = await this.authService.validateUser(payload.sub);
+      console.log('User validated:', user.username);
+      return user;
     } catch (error: any) {
       console.error('JWT validation error:', error.message);
       throw error;

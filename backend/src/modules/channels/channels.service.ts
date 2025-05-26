@@ -172,8 +172,6 @@ export class ChannelsService {
       ? channel.totalViews / channel.videoCount 
       : 0;
 
-    // For a real implementation, we would fetch time-series data from a database
-    // Here we're just creating mock data for demonstration purposes
     const viewsPerDay: { date: string; views: number }[] = [];
     const subscribersPerDay: { date: string; subscribers: number }[] = [];
     const now = new Date();
