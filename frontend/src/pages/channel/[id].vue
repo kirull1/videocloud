@@ -95,11 +95,7 @@ import { onMounted, computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { channelStore } from '@/entities/channel';
 import { videoStore } from '@/entities/video';
-import Header from '@/widgets/header';
 import type { UpdateChannelRequest } from '@/entities/channel';
-
-// Declare localStorage for TypeScript
-declare const localStorage: Storage;
 
 const route = useRoute();
 const router = useRouter();
