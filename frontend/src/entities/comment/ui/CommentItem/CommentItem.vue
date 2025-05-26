@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import type { Comment } from '../../model/types';
 import { commentStore } from '../../model/commentStore';
+import { getMe } from '@/shared/lib/getMe';
 
 const props = defineProps({
   comment: {
@@ -128,9 +129,8 @@ const handleDelete = () => {
   }
 };
 
-// Check if the current user is the author of the comment
 const isCurrentUser = computed(() => {
-  const userId = localStorage.getItem('userId');
+  const userId = getMe().sub;
   return userId === props.comment.userId;
 });
 </script>
@@ -140,14 +140,14 @@ const isCurrentUser = computed(() => {
     <div class="comment__avatar">
       <img 
         :src="comment.userAvatarUrl || `/api/users/${comment.userId}/avatar`" 
-        :alt="comment.username" 
+        :alt="comment.user.username" 
         class="comment__avatar-img"
       />
     </div>
     
     <div class="comment__content">
       <div class="comment__header">
-        <span class="comment__username">{{ comment.username }}</span>
+        <span class="comment__username">{{ comment.user.username }}</span>
         <span class="comment__date">{{ formattedDate }}</span>
       </div>
       
@@ -181,13 +181,13 @@ const isCurrentUser = computed(() => {
       </div>
       
       <div class="comment__actions">
-        <button 
+        <!-- <button 
           v-if="!isReply"
           class="comment__action-button"
           @click="toggleReplyForm"
         >
           Reply
-        </button>
+        </button> -->
         
         <button 
           v-if="isCurrentUser"

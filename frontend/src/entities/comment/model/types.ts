@@ -4,11 +4,14 @@ export interface Comment {
   parentId: string | null;
   videoId: string;
   userId: string;
-  username: string;
   userAvatarUrl: string | null;
   likesCount: number;
   dislikesCount: number;
   repliesCount: number;
+  user: {
+      id: string;
+      username: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
