@@ -62,9 +62,13 @@ async function createComment(data: CreateCommentRequest) {
       }
       replies.value[data.parentId].unshift(newComment);
       
-      // Update the parent comment's repliesCount
+      // Update the parent comment's repliesCount if it exists
       const parentIndex = comments.value.findIndex(c => c.id === data.parentId);
       if (parentIndex !== -1) {
+        // Initialize repliesCount if it doesn't exist
+        if (comments.value[parentIndex].repliesCount === undefined) {
+          comments.value[parentIndex].repliesCount = 0;
+        }
         comments.value[parentIndex].repliesCount += 1;
       }
     } else {
@@ -132,8 +136,13 @@ async function deleteComment(id: string) {
     // If it was a reply, update the parent's repliesCount
     if (comment && comment.parentId) {
       const parentIndex = comments.value.findIndex(c => c.id === comment.parentId);
-      if (parentIndex !== -1 && comments.value[parentIndex].repliesCount > 0) {
-        comments.value[parentIndex].repliesCount -= 1;
+      if (parentIndex !== -1) {
+        // Initialize repliesCount if it doesn't exist
+        if (comments.value[parentIndex].repliesCount === undefined) {
+          comments.value[parentIndex].repliesCount = 0;
+        } else if (comments.value[parentIndex].repliesCount > 0) {
+          comments.value[parentIndex].repliesCount -= 1;
+        }
       }
     }
   } catch (err) {

@@ -45,7 +45,10 @@ const formattedDate = computed(() => {
   }
 });
 
-const hasReplies = computed(() => props.comment.repliesCount > 0);
+const hasReplies = computed(() => {
+  // Handle the case where repliesCount is undefined
+  return props.comment.repliesCount !== undefined && props.comment.repliesCount > 0;
+});
 
 const replies = computed(() => {
   if (!props.comment.id || !showReplies.value) return [];
@@ -212,7 +215,7 @@ const isCurrentUser = computed(() => {
           class="comment__replies-button"
           @click="toggleReplies"
         >
-          <span v-if="!showReplies">Show {{ comment.repliesCount }} {{ comment.repliesCount === 1 ? 'reply' : 'replies' }}</span>
+          <span v-if="!showReplies">Show {{ comment.repliesCount || 0 }} {{ (comment.repliesCount === 1) ? 'reply' : 'replies' }}</span>
           <span v-else>Hide replies</span>
         </button>
       </div>

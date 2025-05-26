@@ -138,7 +138,10 @@ const handleCommentSubmit = () => {
             cancel-label="Cancel"
             :show-cancel="true"
             @cancel="onCancel"
-            @submit="onCancel"
+            @submit="() => {
+              handleCommentSubmit();
+              onCancel();
+            }"
           />
         </template>
       </CommentItem>

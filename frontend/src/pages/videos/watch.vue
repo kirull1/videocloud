@@ -3,6 +3,7 @@ import { onMounted, computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
+import { CommentSection } from '@/features/comments/ui';
 
 const route = useRoute();
 const router = useRouter();
@@ -238,6 +239,11 @@ const navigateToChannel = () => {
           <h3 class="video-page__description-title">Description</h3>
           <p class="video-page__description-text">{{ video.description }}</p>
         </div>
+        
+        <!-- Comments Section -->
+        <div :class="['video-page__comments', { 'video-page__comments--no-description': !video.description }]">
+          <CommentSection :video-id="video.id" />
+        </div>
       </div>
     </template>
   </div>
@@ -414,6 +420,16 @@ const navigateToChannel = () => {
   color: var(--text-primary, #1A2233);
   white-space: pre-wrap;
   margin: 0;
+}
+
+.video-page__comments {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(103, 116, 139, 0.2);
+}
+
+.video-page__comments--no-description {
+  border-top: none;
 }
 
 @media (max-width: 768px) {

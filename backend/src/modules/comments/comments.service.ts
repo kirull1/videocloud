@@ -35,11 +35,13 @@ export class CommentsService {
         throw new NotFoundException(`Parent comment with ID ${createCommentDto.parentId} not found`);
       }
 
-      // Increment replies count for parent comment
+      // Temporarily disable repliesCount update until the database schema is updated
+      /*
       await this.commentsRepository.update(
         { id: createCommentDto.parentId },
         { repliesCount: () => 'repliesCount + 1' },
       );
+      */
     }
 
     // Create new comment
@@ -139,6 +141,8 @@ export class CommentsService {
       throw new ForbiddenException('You can only delete your own comments');
     }
 
+    // Temporarily disable repliesCount update until the database schema is updated
+    /*
     // If this is a reply, decrement the parent's repliesCount
     if (comment.parentId) {
       await this.commentsRepository.update(
@@ -146,6 +150,7 @@ export class CommentsService {
         { repliesCount: () => 'repliesCount - 1' },
       );
     }
+    */
 
     await this.commentsRepository.remove(comment);
   }
