@@ -1,0 +1,34 @@
+{
+  "version.label": {
+    "message": "Текущая",
+    "description": "The label for version current"
+  },
+  "sidebar.apiReference.category.API Reference": {
+    "message": "Справочник API",
+    "description": "The label for category API Reference in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/api-overview": {
+    "message": "Обзор API",
+    "description": "The label for the doc item api/api-overview in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/authentication": {
+    "message": "Аутентификация",
+    "description": "The label for the doc item api/authentication in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/video-api": {
+    "message": "API видео",
+    "description": "The label for the doc item api/video-api in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/user-api": {
+    "message": "API пользователей",
+    "description": "The label for the doc item api/user-api in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/analytics-api": {
+    "message": "API аналитики",
+    "description": "The label for the doc item api/analytics-api in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/webhooks": {
+    "message": "Вебхуки",
+    "description": "The label for the doc item api/webhooks in sidebar apiReference"
+  }
+} 

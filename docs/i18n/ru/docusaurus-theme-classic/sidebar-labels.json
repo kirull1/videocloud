@@ -1,0 +1,30 @@
+{
+  "category.label.Getting Started": {
+    "message": "Начало работы",
+    "description": "The label for category Getting Started in sidebar gettingStarted"
+  },
+  "category.label.User Guide": {
+    "message": "Руководство пользователя",
+    "description": "The label for category User Guide in sidebar userGuide"
+  },
+  "category.label.API Reference": {
+    "message": "Справочник API",
+    "description": "The label for category API Reference in sidebar apiReference"
+  },
+  "category.label.Development": {
+    "message": "Разработка",
+    "description": "The label for category Development in sidebar development"
+  },
+  "category.label.Architecture": {
+    "message": "Архитектура",
+    "description": "The label for category Architecture in sidebar architecture"
+  },
+  "category.label.Security": {
+    "message": "Безопасность",
+    "description": "The label for category Security in sidebar security"
+  },
+  "category.label.Contributing": {
+    "message": "Участие в разработке",
+    "description": "The label for category Contributing in sidebar contributing"
+  }
+} 

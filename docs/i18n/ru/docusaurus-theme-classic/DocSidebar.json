@@ -1,0 +1,18 @@
+{
+  "theme.docs.sidebar.expandButtonTitle": {
+    "message": "Развернуть боковую панель",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.sidebar.expandButtonAriaLabel": {
+    "message": "Развернуть боковую панель",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.sidebar.collapseButtonTitle": {
+    "message": "Свернуть боковую панель",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.collapseButtonAriaLabel": {
+    "message": "Свернуть боковую панель",
+    "description": "The ARIA label and title attribute for collapse button of doc sidebar"
+  }
+} 

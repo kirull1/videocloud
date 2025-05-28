@@ -3,6 +3,7 @@
 /dist-ssr
 /build
 /node_modules
+/*/node_modules
 /.temp
 /.tmp
 /*/temp
@@ -86,6 +87,10 @@ missing/node_modules
 missing/dist
 missing/dist-ssr
 missing/coverage
+
+docs/node_modules
+docs/.docusaurus
+docs/build
 
 devops/docker-compose.yaml
 

@@ -1,0 +1,42 @@
+{
+  "theme.docs.paginator.previous": {
+    "message": "Предыдущая",
+    "description": "The label used to navigate to the previous doc"
+  },
+  "theme.docs.paginator.next": {
+    "message": "Следующая",
+    "description": "The label used to navigate to the next doc"
+  },
+  "theme.docs.versions.unreleasedVersionLabel": {
+    "message": "Это документация для будущей версии {versionLabel}.",
+    "description": "The label used to tell the user that he's browsing an unreleased doc version"
+  },
+  "theme.docs.versions.unmaintainedVersionLabel": {
+    "message": "Это документация для {versionLabel}, которая больше не поддерживается.",
+    "description": "The label used to tell the user that he's browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionSuggestionLabel": {
+    "message": "Для актуальной документации смотрите: {latestVersionLink}.",
+    "description": "The label used to tell the user to check the latest version"
+  },
+  "theme.docs.versions.latestVersionLinkLabel": {
+    "message": "последняя версия",
+    "description": "The label used for the latest version suggestion link label"
+  },
+  "theme.common.editThisPage": {
+    "message": "Редактировать эту страницу",
+    "description": "The link label to edit the current page"
+  },
+  "theme.lastUpdated.atDate": {
+    "message": " {date}",
+    "description": "The words used to describe on which date a page has been last updated"
+  },
+  "theme.lastUpdated.byUser": {
+    "message": " пользователем {user}",
+    "description": "The words used to describe by who the page has been last updated"
+  },
+  "theme.lastUpdated.lastUpdatedAtBy": {
+    "message": "Последнее обновление{atDate}{byUser}",
+    "description": "The sentence used to display when a page has been last updated, and by who"
+  }
+} 

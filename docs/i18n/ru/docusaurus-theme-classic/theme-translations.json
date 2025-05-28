@@ -1,0 +1,42 @@
+{
+  "theme.IdealImageMessage.loading": {
+    "message": "Загрузка...",
+    "description": "When the full-scale image is loading"
+  },
+  "theme.IdealImageMessage.load": {
+    "message": "Нажмите, чтобы загрузить{sizeMessage}",
+    "description": "To prompt users to load the full image. sizeMessage is a parenthesized size figure."
+  },
+  "theme.IdealImageMessage.offline": {
+    "message": "Ваш браузер не в сети. Изображение не загружено",
+    "description": "When the user is viewing an offline document"
+  },
+  "theme.IdealImageMessage.404error": {
+    "message": "404. Изображение не найдено",
+    "description": "When the image is not found"
+  },
+  "theme.IdealImageMessage.error": {
+    "message": "Ошибка. Нажмите, чтобы перезагрузить",
+    "description": "When the image fails to load for unknown error"
+  },
+  "theme.Navbar.mobileSidebarSecondaryMenu.backButtonLabel": {
+    "message": "← Назад в главное меню",
+    "description": "The label of the back button to return to main menu, inside the mobile navbar sidebar secondary menu (notably used to display the docs sidebar)"
+  },
+  "theme.Navbar.item.toggleColorMode.ariaLabel": {
+    "message": "Переключить между темной и светлой темой (сейчас {mode})",
+    "description": "The ARIA label for navbar color mode toggle"
+  },
+  "theme.Navbar.item.toggleColorMode.ariaLabel.mode.dark": {
+    "message": "темная тема",
+    "description": "The name for the dark color mode"
+  },
+  "theme.Navbar.item.toggleColorMode.ariaLabel.mode.light": {
+    "message": "светлая тема",
+    "description": "The name for the light color mode"
+  },
+  "theme.TOCCollapsible.toggleButtonLabel": {
+    "message": "На этой странице",
+    "description": "The label used by the button on the collapsible TOC component"
+  }
+} 

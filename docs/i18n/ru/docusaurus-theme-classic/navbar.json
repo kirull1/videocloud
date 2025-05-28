@@ -1,0 +1,42 @@
+{
+  "title": {
+    "message": "VideoCloud",
+    "description": "The title in the navbar"
+  },
+  "item.label.Home": {
+    "message": "Главная",
+    "description": "Navbar item with label Home"
+  },
+  "item.label.Getting Started": {
+    "message": "Начало работы",
+    "description": "Navbar item with label Getting Started"
+  },
+  "item.label.User Guide": {
+    "message": "Руководство пользователя",
+    "description": "Navbar item with label User Guide"
+  },
+  "item.label.API Reference": {
+    "message": "Справочник API",
+    "description": "Navbar item with label API Reference"
+  },
+  "item.label.FAQ": {
+    "message": "FAQ",
+    "description": "Navbar item with label FAQ"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  },
+  "item.label.Language": {
+    "message": "Язык",
+    "description": "Navbar language dropdown label"
+  },
+  "locale.label.en": {
+    "message": "English",
+    "description": "English language label"
+  },
+  "locale.label.ru": {
+    "message": "Русский",
+    "description": "Russian language label"
+  }
+} 

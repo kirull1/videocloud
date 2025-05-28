@@ -1,0 +1,70 @@
+{
+  "theme.NotFound.title": {
+    "message": "Страница не найдена",
+    "description": "The title of the 404 page"
+  },
+  "theme.NotFound.p1": {
+    "message": "К сожалению, мы не смогли найти страницу, которую вы искали.",
+    "description": "The first paragraph of the 404 page"
+  },
+  "theme.NotFound.p2": {
+    "message": "Пожалуйста, свяжитесь с владельцем сайта, который привел вас по этой ссылке, и сообщите им, что ссылка больше не работает.",
+    "description": "The second paragraph of the 404 page"
+  },
+  "theme.ErrorPageContent.title": {
+    "message": "Эта страница упала.",
+    "description": "The title of the fallback page when the page crashed"
+  },
+  "theme.ErrorPageContent.tryAgain": {
+    "message": "Попробовать снова",
+    "description": "The label of the button to try again when the page crashed"
+  },
+  "theme.BackToTopButton.buttonAriaLabel": {
+    "message": "Прокрутить назад к началу",
+    "description": "The ARIA label for the back to top button"
+  },
+  "theme.blog.archive.title": {
+    "message": "Архив",
+    "description": "The page & hero title of the blog archive page"
+  },
+  "theme.blog.sidebar.navAriaLabel": {
+    "message": "Навигация по последним постам блога",
+    "description": "The ARIA label for recent posts in the blog sidebar"
+  },
+  "theme.docs.breadcrumbs.home": {
+    "message": "Главная страница",
+    "description": "The ARIA label for the home page in the breadcrumbs"
+  },
+  "theme.docs.sidebar.collapseButtonTitle": {
+    "message": "Свернуть боковую панель",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.expandButtonTitle": {
+    "message": "Развернуть боковую панель",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.sidebar.navAriaLabel": {
+    "message": "Боковая панель документации",
+    "description": "The ARIA label for the sidebar navigation"
+  },
+  "theme.navbar.mobileLanguageDropdown.label": {
+    "message": "Языки",
+    "description": "The label for the mobile language switcher dropdown"
+  },
+  "theme.colorToggle.ariaLabel": {
+    "message": "Переключение между темной и светлой темой (сейчас используется {mode})",
+    "description": "The ARIA label for the navbar color mode toggle"
+  },
+  "theme.colorToggle.ariaLabel.mode.dark": {
+    "message": "темная тема",
+    "description": "The name for the dark color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.light": {
+    "message": "светлая тема",
+    "description": "The name for the light color mode"
+  },
+  "theme.SearchBar.label": {
+    "message": "Поиск",
+    "description": "The ARIA label and placeholder for search button"
+  }
+} 

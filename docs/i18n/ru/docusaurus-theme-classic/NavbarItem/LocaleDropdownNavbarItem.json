@@ -1,0 +1,10 @@
+{
+  "theme.navbar.items.localeDropdown.label": {
+    "message": "Язык",
+    "description": "The label for the locale dropdown in the navbar"
+  },
+  "theme.navbar.items.localeDropdown.ariaLabel": {
+    "message": "Выбор языка",
+    "description": "The ARIA label for the locale dropdown in the navbar"
+  }
+} 

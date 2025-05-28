@@ -34,7 +34,9 @@
     "install:globals": "npm install -g pnpm@10.8.1",
     "clean:deps": "rm -rf ~/.schoolbook-frontend-monorepo-tmp/ && pnpm clean:node_modules",
     "clean:cache": "tsx scripts/clean-cache.mts",
-    "clean:node_modules": "find . -type d -name node_modules -prune -exec rm -rf {} \\;"
+    "clean:node_modules": "find . -type d -name node_modules -prune -exec rm -rf {} \\;",
+    "docs:start": "pnpm --filter docs start",
+    "docs:build": "pnpm --filter docs build"
   },
   "devDependencies": {
     "@types/node": "20.10.5",

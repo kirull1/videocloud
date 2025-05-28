@@ -1,0 +1,180 @@
+/**
+ * Custom styles for VideoCloud documentation
+ */
+
+/* Root variables */
+:root {
+  --ifm-color-primary: #2e8555;
+  --ifm-color-primary-dark: #29784c;
+  --ifm-color-primary-darker: #277148;
+  --ifm-color-primary-darkest: #205d3b;
+  --ifm-color-primary-light: #33925d;
+  --ifm-color-primary-lighter: #359962;
+  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode variables */
+[data-theme='dark'] {
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1fa588;
+  --ifm-color-primary-darkest: #1a8870;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Hero section */
+.hero {
+  background-color: var(--ifm-color-primary);
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.hero__title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.hero__subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.hero__buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Features section */
+.features {
+  padding: 4rem 0;
+}
+
+.feature {
+  text-align: center;
+  padding: 2rem;
+}
+
+.feature__icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--ifm-color-primary);
+}
+
+.feature__title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.feature__description {
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* Code blocks */
+pre {
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+code {
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.9em;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+th, td {
+  padding: 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+}
+
+th {
+  background-color: var(--ifm-color-emphasis-100);
+  font-weight: 600;
+}
+
+/* Links */
+a {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--ifm-color-primary-darker);
+  text-decoration: underline;
+}
+
+/* Buttons */
+.button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.button--primary {
+  background-color: var(--ifm-color-primary);
+  color: white;
+}
+
+.button--primary:hover {
+  background-color: var(--ifm-color-primary-darker);
+  color: white;
+  text-decoration: none;
+}
+
+.button--secondary {
+  background-color: transparent;
+  border: 2px solid var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+.button--secondary:hover {
+  background-color: var(--ifm-color-primary);
+  color: white;
+  text-decoration: none;
+}
+
+/* Responsive design */
+@media (max-width: 996px) {
+  .hero__title {
+    font-size: 2.5rem;
+  }
+
+  .hero__subtitle {
+    font-size: 1.25rem;
+  }
+
+  .hero__buttons {
+    flex-direction: column;
+  }
+
+  .feature {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero__title {
+    font-size: 2rem;
+  }
+
+  .hero__subtitle {
+    font-size: 1rem;
+  }
+} 
