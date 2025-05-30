@@ -209,6 +209,48 @@ const toggleFullscreen = () => {
   }
 };
 
+// Navigate to channel page
+const navigateToChannel = (event: Event) => {
+  event.stopPropagation();
+  
+  if (video.value?.channelId) {
+    router.push({
+      name: 'channel-detail',
+      params: { id: video.value.channelId }
+    });
+  } else if (video.value?.userId) {
+    // If we have userId but no channelId, we need to first get the channel for this user
+    console.log('Looking for channel for user:', video.value.userId);
+    const baseUrl = import.meta.env.VITE_API_URL || '/api';
+    
+    // Get channels and filter by userId on the client side
+    fetch(`${baseUrl}/channels`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch channels');
+        }
+        return response.json();
+      })
+      .then(channels => {
+        // Find the channel that belongs to this user
+        const userChannel = channels.find((channel: any) => channel.userId === video.value?.userId);
+        
+        if (userChannel) {
+          console.log('Found channel:', userChannel);
+          router.push({
+            name: 'channel-detail',
+            params: { id: userChannel.id }
+          });
+        } else {
+          console.error('No channel found for user:', video.value?.userId);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching channel for user:', error);
+      });
+  }
+};
+
 // Listen for fullscreen change
 onMounted(() => {
   document.addEventListener('fullscreenchange', () => {
@@ -234,9 +276,9 @@ const fetchRelatedVideos = async () => {
     // Filter out the current video
     if (video.value) {
       relatedVideos.value = response.items
-        .filter(v => v.id !== video.value?.id)
+        .filter((v: any) => v.id !== video.value?.id)
         .slice(0, 4)
-        .map(v => ({
+        .map((v: any) => ({
           id: v.id,
           title: v.title,
           thumbnailUrl: v.thumbnailUrl,
@@ -419,11 +461,8 @@ watch(videoId, async (newId, oldId) => {
             </div>
           </div>
         </div>
-      </div>
-    </template>
-  </div>
-</template>
-<div class="video-player-page__content">
+        
+        <div class="video-player-page__content">
           <div class="video-player-page__header">
             <h1 class="video-player-page__title">{{ video.title }}</h1>
             
@@ -463,11 +502,17 @@ watch(videoId, async (newId, oldId) => {
                    stroke-width="2" 
                    stroke-linecap="round" 
                    stroke-linejoin="round">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59"
+                      y1="13.51"
+                      x2="15.42"
+                      y2="17.49"/>
+                <line x1="15.41"
+                      y1="6.51"
+                      x2="8.59"
+                      y2="10.49"/>
               </svg>
               Share
             </button>
@@ -478,9 +523,10 @@ watch(videoId, async (newId, oldId) => {
               :src="video.userAvatarUrl || `/api/users/${video.userId}/avatar`" 
               alt="Uploader avatar" 
               class="video-player-page__uploader-avatar"
+              @click="navigateToChannel"
             />
             <div class="video-player-page__uploader-info">
-              <h3 class="video-player-page__uploader-name">{{ video.username }}</h3>
+              <h3 class="video-player-page__uploader-name" @click="navigateToChannel">{{ video.username }}</h3>
             </div>
           </div>
           
@@ -505,7 +551,7 @@ watch(videoId, async (newId, oldId) => {
                   class="video-player-page__comment-input"
                   placeholder="Add a comment..."
                   rows="2"
-                ></textarea>
+                />
                 <div class="video-player-page__comment-actions">
                   <button 
                     class="video-player-page__comment-cancel"
@@ -599,6 +645,10 @@ watch(videoId, async (newId, oldId) => {
           </div>
         </div>
       </div>
+    </template>
+  </div>
+</template>
+
 <style scoped>
 .video-player-page {
   max-width: 1400px;
@@ -912,14 +962,30 @@ watch(videoId, async (newId, oldId) => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  object-fit: cover;
+  margin-right: 16px;
+  cursor: pointer;
+}
+
+.video-player-page__uploader-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(65, 164, 255, 0.5);
+}
+
+.video-player-page__uploader-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .video-player-page__uploader-name {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   margin: 0;
   color: var(--text-primary, #1A2233);
+  cursor: pointer;
+}
+
+.video-player-page__uploader-name:hover {
+  color: var(--primary, #41A4FF);
 }
 
 .video-player-page__description {

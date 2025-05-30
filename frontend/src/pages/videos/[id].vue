@@ -76,6 +76,48 @@ const handleDelete = async () => {
   }
 };
 
+// Navigate to channel page
+const navigateToChannel = (event: Event) => {
+  event.stopPropagation();
+  
+  if (video.value?.channelId) {
+    router.push({
+      name: 'channel-detail',
+      params: { id: video.value.channelId }
+    });
+  } else if (video.value?.userId) {
+    // If we have userId but no channelId, we need to first get the channel for this user
+    console.log('Looking for channel for user:', video.value.userId);
+    const baseUrl = import.meta.env.VITE_API_URL || '/api';
+    
+    // Get channels and filter by userId on the client side
+    fetch(`${baseUrl}/channels`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch channels');
+        }
+        return response.json();
+      })
+      .then(channels => {
+        // Find the channel that belongs to this user
+        const userChannel = channels.find((channel: any) => channel.userId === video.value?.userId);
+        
+        if (userChannel) {
+          console.log('Found channel:', userChannel);
+          router.push({
+            name: 'channel-detail',
+            params: { id: userChannel.id }
+          });
+        } else {
+          console.error('No channel found for user:', video.value?.userId);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching channel for user:', error);
+      });
+  }
+};
+
 // Fetch the video when the component is mounted
 onMounted(async () => {
   try {
@@ -173,9 +215,10 @@ onMounted(async () => {
             :src="video.userAvatarUrl || `/api/users/${video.userId}/avatar`" 
             alt="Uploader avatar" 
             class="video-page__uploader-avatar"
+            @click="navigateToChannel"
           />
           <div class="video-page__uploader-info">
-            <h3 class="video-page__uploader-name">{{ video.username }}</h3>
+            <h3 class="video-page__uploader-name" @click="navigateToChannel">{{ video.username }}</h3>
           </div>
         </div>
         
@@ -399,14 +442,25 @@ onMounted(async () => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  object-fit: cover;
+  margin-right: 16px;
+  cursor: pointer;
+}
+
+.video-page__uploader-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .video-page__uploader-name {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   margin: 0;
   color: var(--text-primary, #1A2233);
+  cursor: pointer;
+}
+
+.video-page__uploader-name:hover {
+  color: var(--primary, #41A4FF);
 }
 
 .video-page__section-title {

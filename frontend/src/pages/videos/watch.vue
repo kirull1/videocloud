@@ -54,10 +54,44 @@ watch(videoId, async (newId, oldId) => {
   }
 }, { immediate: true });
 
-const navigateToChannel = () => {
+const navigateToChannel = (event: Event) => {
+  event.stopPropagation();
+  
   if (video.value?.channelId) {
-    console.log('Navigating to channel:', video.value.channelId);
-    window.location.href = `/channel/${video.value.channelId}`;
+    router.push({
+      name: 'channel-detail',
+      params: { id: video.value.channelId }
+    });
+  } else if (video.value?.userId) {
+    // If we have userId but no channelId, we need to first get the channel for this user
+    console.log('Looking for channel for user:', video.value.userId);
+    const baseUrl = import.meta.env.VITE_API_URL || '/api';
+    
+    // Get channels and filter by userId on the client side
+    fetch(`${baseUrl}/channels`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch channels');
+        }
+        return response.json();
+      })
+      .then(channels => {
+        // Find the channel that belongs to this user
+        const userChannel = channels.find((channel: any) => channel.userId === video.value?.userId);
+        
+        if (userChannel) {
+          console.log('Found channel:', userChannel);
+          router.push({
+            name: 'channel-detail',
+            params: { id: userChannel.id }
+          });
+        } else {
+          console.error('No channel found for user:', video.value?.userId);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching channel for user:', error);
+      });
   }
 };
 </script>
