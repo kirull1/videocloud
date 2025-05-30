@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
 import { userStore } from '@/features/auth/model/userStore';
+import { getAvatarUrl } from '@/shared/lib/avatar';
 
 interface Comment {
   id: string;
@@ -52,6 +53,24 @@ const videoElement = ref<HTMLVideoElement | null>(null);
 
 // Get the current video from the store
 const video = computed(() => videoStore.currentVideo.value);
+
+// Calculate avatar URL using the shared utility
+const avatarUrl = computed(() => {
+  if (!video.value) return '';
+  return getAvatarUrl(video.value.userAvatarUrl, video.value.username, 48);
+});
+
+// Calculate user's avatar URL for comment form
+const userAvatarUrl = computed(() => {
+  return userStore.user.value?.avatarUrl 
+    ? getAvatarUrl(userStore.user.value.avatarUrl, userStore.username.value, 40)
+    : '/api/users/avatar';
+});
+
+// Get commenter avatar URL
+const getCommenterAvatarUrl = (comment: Comment): string => {
+  return getAvatarUrl(comment.userAvatarUrl, comment.username, 40);
+};
 
 // Check if the video is ready to play
 const isVideoReady = computed(() => 
@@ -520,7 +539,7 @@ watch(videoId, async (newId, oldId) => {
           
           <div class="video-player-page__uploader">
             <img 
-              :src="video.userAvatarUrl || `/api/users/${video.userId}/avatar`" 
+              :src="avatarUrl" 
               alt="Uploader avatar" 
               class="video-player-page__uploader-avatar"
               @click="navigateToChannel"
@@ -541,7 +560,7 @@ watch(videoId, async (newId, oldId) => {
             
             <div v-if="userStore.isAuthenticated.value" class="video-player-page__comment-form">
               <img 
-                :src="userStore.user.value?.avatarUrl || '/api/users/avatar'" 
+                :src="userAvatarUrl" 
                 alt="Your avatar" 
                 class="video-player-page__comment-avatar"
               />
@@ -586,7 +605,7 @@ watch(videoId, async (newId, oldId) => {
                 class="video-player-page__comment"
               >
                 <img 
-                  :src="comment.userAvatarUrl || `/api/users/${comment.userId}/avatar`" 
+                  :src="getCommenterAvatarUrl(comment)" 
                   alt="Commenter avatar" 
                   class="video-player-page__comment-avatar"
                 />

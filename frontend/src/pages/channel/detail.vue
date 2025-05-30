@@ -105,6 +105,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import VideoCard from '@/entities/video/ui/VideoCard/VideoCard.vue';
+import { getAvatarUrl } from '@/shared/lib/avatar';
 
 const route = useRoute();
 const router = useRouter();
@@ -119,10 +120,8 @@ const activeTab = ref('videos');
 const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
 const avatarUrl = computed(() => {
-  if (channel.value?.userId) {
-    return `${apiUrl}/users/${channel.value.userId}/avatar`;
-  }
-  return 'https://via.placeholder.com/80';
+  if (!user.value || !channel.value) return '';
+  return getAvatarUrl(undefined, user.value.username, 100);
 });
 
 const tabs = [

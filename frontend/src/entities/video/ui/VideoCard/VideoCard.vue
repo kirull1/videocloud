@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Category } from '@/entities/category/model/types';
 import type { Tag } from '@/entities/tag/model/types';
+import { getAvatarUrl } from '@/shared/lib/avatar';
 
 // Get router instance
 const router = useRouter();
@@ -67,6 +68,11 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['click', 'channelClick']);
+
+// Generate avatar URL with fallback to username
+const avatarUrl = computed(() => {
+  return getAvatarUrl(props.channelAvatarUrl, props.channelName, 40);
+});
 
 const formattedDuration = computed(() => {
   if (props.duration === null || props.duration === undefined) {
@@ -192,9 +198,9 @@ const handleChannelClick = (event: Event) => {
     </div>
     
     <div class="video-card__content">
-      <div v-if="channelAvatarUrl" class="video-card__channel-avatar-container">
+      <div class="video-card__channel-avatar-container">
         <img 
-          :src="channelAvatarUrl" 
+          :src="avatarUrl" 
           :alt="channelName" 
           class="video-card__channel-avatar"
           @click="handleChannelClick"

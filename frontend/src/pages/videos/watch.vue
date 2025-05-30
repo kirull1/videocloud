@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
 import { CommentSection } from '@/features/comments/ui';
+import { getAvatarUrl } from '@/shared/lib/avatar';
 
 const route = useRoute();
 const router = useRouter();
@@ -39,6 +40,12 @@ const formattedViews = computed(() => {
   if (views < 1000) return `${views} views`;
   if (views < 1000000) return `${(views / 1000).toFixed(1)}K views`;
   return `${(views / 1000000).toFixed(1)}M views`;
+});
+
+// Calculate avatar URL using the shared utility
+const avatarUrl = computed(() => {
+  if (!video.value) return '';
+  return getAvatarUrl(video.value.userAvatarUrl, video.value.username || video.value.channelName || 'User', 48);
 });
 
 watch(videoId, async (newId, oldId) => {
@@ -153,7 +160,7 @@ const navigateToChannel = (event: Event) => {
         
         <div class="video-page__uploader">
           <img
-            :src="video.userAvatarUrl || `/api/users/${video.userId}/avatar`"
+            :src="avatarUrl"
             alt="Channel avatar"
             class="video-page__uploader-avatar"
             @click="navigateToChannel"

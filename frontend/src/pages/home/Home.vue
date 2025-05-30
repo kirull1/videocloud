@@ -104,7 +104,7 @@ const handleChannelClick = (channelName: string) => {
             :channelName="video.username"
             :channelId="video.channelId"
             :userId="video.userId"
-            :channelAvatarUrl="`/api/users/${video.userId}/avatar`"
+            :channelAvatarUrl="video.userAvatarUrl"
             :isNew="new Date(video.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000"
             :isWatched="false"
             :category="video.category"

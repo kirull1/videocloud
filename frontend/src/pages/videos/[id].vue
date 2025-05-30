@@ -5,6 +5,7 @@ import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
 import { CommentSection } from '@/features/comments';
 import { ReactionButtons } from '@/features/reactions';
+import { getAvatarUrl } from '@/shared/lib/avatar';
 
 // Declare localStorage for TypeScript
 declare const localStorage: Storage;
@@ -17,6 +18,12 @@ const error = ref<string | null>(null);
 
 // Get the current video from the store
 const video = computed(() => videoStore.currentVideo.value);
+
+// Calculate avatar URL using the shared utility
+const avatarUrl = computed(() => {
+  if (!video.value) return '';
+  return getAvatarUrl(video.value.userAvatarUrl, video.value.username, 48);
+});
 
 // Check if the video is ready to play
 const isVideoReady = computed(() => 
@@ -212,7 +219,7 @@ onMounted(async () => {
         
         <div class="video-page__uploader">
           <img 
-            :src="video.userAvatarUrl || `/api/users/${video.userId}/avatar`" 
+            :src="avatarUrl" 
             alt="Uploader avatar" 
             class="video-page__uploader-avatar"
             @click="navigateToChannel"
