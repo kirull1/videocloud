@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import { commentStore, CommentItem, CommentForm } from '@/entities/comment';
+import { userStore } from '@/features/auth/model/userStore';
 
 const props = defineProps({
   videoId: {
@@ -88,6 +89,9 @@ const handleCommentSubmit = () => {
   // The comment is already added to the store by the CommentForm component
   console.log('Comment submitted');
 };
+
+// Check if user is authenticated
+const isAuthenticated = computed(() => userStore.isAuthenticated.value);
 </script>
 
 <template>
@@ -117,7 +121,8 @@ const handleCommentSubmit = () => {
     </div>
     
     <div v-else-if="commentStore.comments.value.length === 0" class="comment-section__empty">
-      No comments yet. Be the first to comment!
+      <span v-if="isAuthenticated">No comments yet. Be the first to comment!</span>
+      <span v-else>No comments</span>
     </div>
     
     <div v-else class="comment-section__list">

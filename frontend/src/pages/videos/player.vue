@@ -595,7 +595,8 @@ watch(videoId, async (newId, oldId) => {
             </div>
             
             <div v-if="comments.length === 0" class="video-player-page__no-comments">
-              <p>No comments yet. Be the first to comment!</p>
+              <p v-if="userStore.isAuthenticated.value">No comments yet. Be the first to comment!</p>
+              <p v-else>No comments</p>
             </div>
             
             <div v-else class="video-player-page__comments-list">
