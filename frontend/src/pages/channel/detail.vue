@@ -219,7 +219,7 @@ const loadChannelVideos = async (channelId) => {
     console.log(`Fetching videos for channel: ${channelId}`);
     
     // Try both potential API endpoints for videos
-    const response = await fetch(`${apiUrl}/videos?channelId=${channelId}`);
+    const response = await fetch(`${apiUrl}/videos?channelId=${channelId}&sortBy=createdAt&sortOrder=DESC`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch videos: ${response.status}`);
@@ -255,6 +255,15 @@ const loadChannelVideos = async (channelId) => {
     } else {
       console.warn('Unexpected video data format:', data);
       videos.value = [];
+    }
+    
+    // Если API не поддерживает сортировку, сортируем на клиенте
+    if (videos.value.length > 0) {
+      videos.value.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA; // Сортировка от новых к старым
+      });
     }
   } catch (err) {
     console.error('Error fetching videos:', err);

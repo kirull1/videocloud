@@ -33,6 +33,15 @@ async function fetchVideos() {
     
     // Store videos
     videos.value = response.items;
+    
+    // Дополнительная сортировка на клиенте (от новых к старым)
+    if (videos.value.length > 0) {
+      videos.value.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA; // Сортировка от новых к старым
+      });
+    }
   } catch (err) {
     console.error('Failed to fetch videos:', err);
     error.value = err instanceof Error ? err.message : 'Failed to fetch videos';
