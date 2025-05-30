@@ -25,6 +25,16 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Recent Changes
 
+### Subscription System Fix
+- Fixed database schema issue where the channel_id foreign key in the subscriptions table was pointing to the users table instead of the channels table
+- Added missing updated_at column to the subscriptions table
+- Enhanced frontend UI to display user-friendly error messages for subscription operations
+- Added "This is your channel" indicator when a user views their own channel
+- Improved isChannelOwner computed property to more accurately check ownership
+- Modified fetchSubscriptionStatus to avoid unnecessary API calls for a user's own channel
+- Added visual feedback with toast messages for subscription actions
+- Implemented better error handling for subscription-related errors
+
 ### Channel Page Cleanup
 - Standardized channel page implementation by removing test/debug versions
 - Deleted unnecessary files: debug.vue, simple.vue, basic.vue, [id].vue, basic2.vue

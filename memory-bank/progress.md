@@ -352,6 +352,7 @@
 
 | Milestone                | Description                                           | Date           |
 | ------------------------ | ----------------------------------------------------- | -------------- |
+| Subscription System Fix  | Fixed database foreign key constraint and improved UI error handling | May 30, 2025 |
 | Channel Page Cleanup     | Removed test/debug versions and standardized implementation | May 26, 2025 |
 | Video Thumbnail Fix      | Fixed issue with thumbnails not displaying correctly  | May 25, 2025   |
 | Comment System Enhancements | Enhanced comment system with improved UX and error handling | May 24, 2025 |
@@ -612,6 +613,10 @@
 - Need to set up scalable storage solution
 
 ## Notes
+- Subscription functionality has been fixed by correcting a foreign key constraint in the database that was pointing to the wrong table
+- Frontend UI has been enhanced to show user-friendly error messages for subscription operations
+- Channel detail page now shows a "This is your channel" indicator when viewing own channel
+- The UI now prevents users from attempting to subscribe to their own channels
 - User profile management system is now fully implemented with proper validation and error handling
 - Custom avatar upload functionality is now fixed and working correctly
 - Frontend has been enhanced with animations, better loading states, and improved error handling

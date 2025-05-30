@@ -179,6 +179,18 @@ This file captures important patterns, preferences, and project intelligence tha
   6. Provides tabs for Videos and About sections
   7. Handles error states and loading indicators
 
+### Subscription System Flow
+1. User clicks "Subscribe" button on a channel page
+2. Frontend calls subscriptionApi.subscribeToChannel(channelId)
+3. Backend verifies the user is not trying to subscribe to their own channel
+4. Backend checks if the subscription already exists
+5. Database creates subscription record with proper foreign key relationships:
+   - subscriberId references users(id)
+   - channelId references channels(id) (not users(id) - this was a critical bug)
+6. Channel's subscriberCount is incremented
+7. Success or error message is displayed to the user
+8. UI updates to show the subscribed state
+
 ## Known Limitations
 
 - **Initial Version**: No support for live streaming in the MVP.

@@ -190,6 +190,21 @@ CREATE TABLE users (
 );
 ```
 
+### Subscriptions Table
+```sql
+CREATE TABLE subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  subscriber_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  channel_id UUID NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT UQ_subscriber_channel UNIQUE (subscriber_id, channel_id)
+);
+
+CREATE INDEX IDX_subscriptions_subscriber_id ON subscriptions (subscriber_id);
+CREATE INDEX IDX_subscriptions_channel_id ON subscriptions (channel_id);
+```
+
 ## File Storage
 
 ### S3 Integration
