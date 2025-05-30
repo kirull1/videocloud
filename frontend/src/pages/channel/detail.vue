@@ -1,373 +1,475 @@
 <template>
-  <div class="channel-page">    
-    <div v-if="isLoading && !channel" class="channel-page__loading">
-      <div class="channel-page__loading-spinner"/>
-      <p>Loading channel...</p>
-    </div>
+  <div class="channel-page">
+    <div v-if="loading" class="loading">Loading channel data...</div>
     
-    <div v-else-if="error" class="channel-page__error">
-      <div class="channel-page__error-icon">!</div>
+    <div v-else-if="error" class="error">
+      <h2>Error loading channel</h2>
       <p>{{ error }}</p>
-      <button class="channel-page__back-button" @click="router.push('/')">
-        Back to Home
-      </button>
+      <button @click="loadData">Retry</button>
     </div>
     
-    <template v-else-if="channel">
-      <div
-        class="channel-page__banner"
-        :style="{
-          backgroundImage: channel.bannerUrl ? `url(${channel.bannerUrl})` : 'none',
-          backgroundColor: channel.themeColor || '#41A4FF'
-        }"
-      >
-        <div class="channel-page__banner-overlay">
-          <h1 class="channel-page__name">{{ channel.name }}</h1>
-          <div class="channel-page__stats">
-            <span class="channel-page__stat">{{ subscriberCount }} subscribers</span>
-            <span class="channel-page__stat">{{ videoCount }} videos</span>
-            <span class="channel-page__stat">{{ totalViews }} views</span>
+    <div v-else-if="channel" class="channel-content">
+      <div class="channel-banner" :style="{ backgroundColor: channel.themeColor || '#41A4FF' }">
+        <div class="channel-info">
+          <div v-if="channel.userId" class="channel-avatar">
+            <img :src="avatarUrl" alt="Channel Avatar"/>
+          </div>
+          <div class="channel-details">
+            <h1 class="channel-name">{{ channel.name }}</h1>
+            <div v-if="user" class="channel-username">{{ user.username }}</div>
+            <div class="channel-stats">
+              <span>{{ formatNumber(channel.subscriberCount) }} subscribers</span>
+              <span>{{ formatNumber(channel.videoCount) }} videos</span>
+              <span>{{ formatNumber(channel.totalViews) }} views</span>
+            </div>
           </div>
         </div>
       </div>
       
-      <div class="channel-page__content">
-        <div class="channel-page__tabs">
-          <button 
-            class="channel-page__tab" 
-            :class="{ 'channel-page__tab--active': activeTab === 'videos' }"
-            @click="activeTab = 'videos'"
-          >
-            Videos
-          </button>
-          <button 
-            class="channel-page__tab" 
-            :class="{ 'channel-page__tab--active': activeTab === 'about' }"
-            @click="activeTab = 'about'"
-          >
-            About
-          </button>
-          <button 
-            v-if="isOwner"
-            class="channel-page__tab" 
-            :class="{ 'channel-page__tab--active': activeTab === 'analytics' }"
-            @click="activeTab = 'analytics'"
-          >
-            Analytics
-          </button>
-          <button 
-            v-if="isOwner"
-            class="channel-page__tab" 
-            :class="{ 'channel-page__tab--active': activeTab === 'settings' }"
-            @click="activeTab = 'settings'"
-          >
-            Settings
-          </button>
+      <div class="channel-tabs">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id"
+          :class="['tab-button', { active: activeTab === tab.id }]"
+          @click="activeTab = tab.id"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+      
+      <div class="tab-content">
+        <!-- Videos Tab -->
+        <div v-if="activeTab === 'videos'" class="videos-container">
+          <h2>Videos</h2>
+          
+          <div v-if="loadingVideos" class="loading-videos">
+            Loading videos...
+          </div>
+          
+          <div v-else-if="videos.length === 0" class="no-videos">
+            <p>No videos found for this channel.</p>
+          </div>
+          
+          <div v-else class="video-grid">
+            <div v-for="video in videos" :key="video.id" class="video-grid-item">
+              <VideoCard
+                :id="video.id"
+                :title="video.title"
+                :thumbnailUrl="video.thumbnailUrl || `https://picsum.photos/seed/${video.id}/640/360`"
+                :duration="video.duration"
+                :views="video.views"
+                :uploadDate="new Date(video.createdAt)"
+                :channelName="user?.username || ''"
+                :channelId="channel.id"
+                :userId="video.userId"
+                :channelAvatarUrl="avatarUrl"
+                :isNew="new Date(video.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000"
+                :isWatched="false"
+                @click="handleVideoClick"
+                @channelClick="handleChannelClick"
+              />
+            </div>
+          </div>
         </div>
         
-        <div v-if="activeTab === 'videos'" class="channel-page__videos">
-          <h2 class="channel-page__section-title">Videos</h2>
-          <div v-if="channelVideos.length === 0" class="channel-page__empty">
-            <p>No videos yet</p>
+        <!-- About Tab -->
+        <div v-if="activeTab === 'about'" class="about-container">
+          <h2>About</h2>
+          
+          <div class="about-content">
+            <div v-if="channel.description" class="channel-description">
+              {{ channel.description }}
+            </div>
+            <div v-else class="no-description">
+              This channel has no description.
+            </div>
+            
+            <div class="channel-details">
+              <div class="detail-item">
+                <strong>Custom URL:</strong> 
+                <span>{{ channel.customUrl || 'Not set' }}</span>
+              </div>
+              <div class="detail-item">
+                <strong>Created:</strong> 
+                <span>{{ formatDate(channel.createdAt) }}</span>
+              </div>
+            </div>
           </div>
-          <div v-else class="channel-page__video-grid">
-            <!-- Replace with actual video grid component when available -->
-            <p>Video grid would go here</p>
-          </div>
-        </div>
-        
-        <div v-if="activeTab === 'about'" class="channel-page__about">
-          <h2 class="channel-page__section-title">About</h2>
-          <p v-if="channel.description" class="channel-page__description">
-            {{ channel.description }}
-          </p>
-          <p v-else class="channel-page__empty">
-            No description available
-          </p>
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { onMounted, computed, ref, watch } from 'vue';
+<script setup>
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { channelStore } from '@/entities/channel';
-import { videoStore } from '@/entities/video';
-import Header from '@/widgets/header';
-import type { UpdateChannelRequest } from '@/entities/channel';
-
-// Declare localStorage for TypeScript
-declare const localStorage: Storage;
+import VideoCard from '@/entities/video/ui/VideoCard/VideoCard.vue';
 
 const route = useRoute();
 const router = useRouter();
-const channelId = computed(() => route.params.id as string);
-const isLoading = computed(() => channelStore.isLoading);
-const error = computed(() => channelStore.error);
-const channel = computed(() => channelStore.currentChannel);
-const isLoadingAnalytics = ref(false);
-const channelAnalytics = computed(() => channelStore.channelAnalytics);
+const loading = ref(true);
+const error = ref(null);
+const channel = ref(null);
+const user = ref(null);
+const videos = ref([]);
+const loadingVideos = ref(false);
 const activeTab = ref('videos');
-const channelVideos = ref<any[]>([]);
-const isUpdating = ref(false);
-const bannerInput = ref<HTMLInputElement | null>(null);
-const bannerFile = ref<File | null>(null);
-const bannerPreview = ref<string | null>(null);
 
-// Check if the current user is the owner of the channel
-const isOwner = computed(() => {
-  const userId = localStorage.getItem('userId');
-  return channel.value?.userId === userId;
+const apiUrl = import.meta.env.VITE_API_URL || '/api';
+
+const avatarUrl = computed(() => {
+  if (channel.value?.userId) {
+    return `${apiUrl}/users/${channel.value.userId}/avatar`;
+  }
+  return 'https://via.placeholder.com/80';
 });
 
-// Format channel stats
-const subscriberCount = computed(() => {
-  if (!channel.value) return '0';
+const tabs = [
+  { id: 'videos', label: 'Videos' },
+  { id: 'about', label: 'About' }
+];
+
+// Format a number with K and M suffixes
+const formatNumber = (value) => {
+  if (!value) return '0';
   
-  const count = channel.value.subscriberCount;
-  if (count >= 1000000) {
-    return `${(count / 1000000).toFixed(1)}M`;
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}M`;
+  } else if (value >= 1000) {
+    return `${(value / 1000).toFixed(1)}K`;
   }
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}K`;
-  }
-  return count.toString();
-});
-
-const videoCount = computed(() => {
-  if (!channel.value) return '0';
-  return channel.value.videoCount.toString();
-});
-
-const totalViews = computed(() => {
-  if (!channel.value) return '0';
   
-  const count = channel.value.totalViews;
-  if (count >= 1000000) {
-    return `${(count / 1000000).toFixed(1)}M`;
-  }
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}K`;
-  }
-  return count.toString();
-});
+  return value.toString();
+};
 
-// Get max values for charts
-const maxViews = computed(() => {
-  if (!channelAnalytics.value?.viewsPerDay) return 1000;
-  return Math.max(...channelAnalytics.value.viewsPerDay.map(item => item.views), 1000);
-});
+// Format a date to a readable format
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
 
-const maxSubscribers = computed(() => {
-  if (!channelAnalytics.value?.subscribersPerDay) return 20;
-  return Math.max(...channelAnalytics.value.subscribersPerDay.map(item => item.subscribers), 20);
-});
+// Handle video click
+const handleVideoClick = (videoId) => {
+  router.push({
+    name: 'video-watch',
+    query: { id: videoId }
+  });
+};
 
-// Channel settings form
-const channelSettings = ref<UpdateChannelRequest>({
-  name: '',
-  description: '',
-  customUrl: '',
-  themeColor: '#41A4FF',
-});
+// Handle channel click
+const handleChannelClick = () => {
+  // We're already on the channel page, so this is a no-op
+};
 
-// Initialize channel settings form
-watch(channel, (newChannel) => {
-  if (newChannel) {
-    channelSettings.value = {
-      name: newChannel.name,
-      description: newChannel.description || '',
-      customUrl: newChannel.customUrl || '',
-      themeColor: newChannel.themeColor || '#41A4FF',
-    };
-  }
-}, { immediate: true });
-
-// Fetch channel data
-onMounted(async () => {
+// Load channel data
+const loadChannelData = async (channelId) => {
   try {
-    console.log('Fetching channel with ID:', channelId.value);
-    await channelStore.fetchChannel(channelId.value);
+    console.log(`Fetching channel with ID: ${channelId}`);
     
-    // Fetch channel videos
-    if (channel.value) {
-      await videoStore.fetchVideos({ channelId: channel.value.id });
-      channelVideos.value = videoStore.videos.value || [];
+    const response = await fetch(`${apiUrl}/channels/${channelId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch channel: ${response.status}`);
     }
     
-    // Fetch analytics if owner
-    if (isOwner.value && channel.value) {
-      isLoadingAnalytics.value = true;
-      await channelStore.fetchChannelAnalytics(channel.value.id);
-      isLoadingAnalytics.value = false;
-    }
+    const data = await response.json();
+    console.log('Channel data:', data);
+    
+    return data;
   } catch (err) {
     console.error('Error fetching channel:', err);
+    throw err;
   }
-});
+};
 
-// Watch for tab changes
-watch(activeTab, async (newTab) => {
-  if (newTab === 'analytics' && isOwner.value && channel.value && !channelAnalytics.value) {
-    isLoadingAnalytics.value = true;
-    await channelStore.fetchChannelAnalytics(channel.value.id);
-    isLoadingAnalytics.value = false;
+// Load user data
+const loadUserData = async (userId) => {
+  try {
+    console.log(`Fetching user with ID: ${userId}`);
+    
+    const response = await fetch(`${apiUrl}/users/${userId}`);
+    
+    if (!response.ok) {
+      console.warn(`Failed to fetch user: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log('User data:', data);
+    
+    return data;
+  } catch (err) {
+    console.error('Error fetching user:', err);
+    return null;
   }
-});
+};
+
+// Load videos for a channel
+const loadChannelVideos = async (channelId) => {
+  loadingVideos.value = true;
+  
+  try {
+    console.log(`Fetching videos for channel: ${channelId}`);
+    
+    // Try both potential API endpoints for videos
+    const response = await fetch(`${apiUrl}/videos?channelId=${channelId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch videos: ${response.status}`);
+    }
+    
+    const responseText = await response.text();
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log('Videos data:', data);
+    } catch (parseError) {
+      console.error('Error parsing JSON:', parseError, 'Response text:', responseText);
+      throw new Error('Invalid response format from videos API');
+    }
+    
+    // Handle different API response formats
+    if (Array.isArray(data)) {
+      videos.value = data;
+    } else if (data && data.items && Array.isArray(data.items)) {
+      videos.value = data.items;
+    } else if (data && typeof data === 'object') {
+      // Try to extract an array from any property that looks like a video array
+      const possibleArrays = Object.values(data).filter(value => Array.isArray(value));
+      if (possibleArrays.length > 0) {
+        // Use the longest array found
+        videos.value = possibleArrays.reduce((longest, current) => 
+          current.length > longest.length ? current : longest, []);
+      } else {
+        console.warn('No video arrays found in response:', data);
+        videos.value = [];
+      }
+    } else {
+      console.warn('Unexpected video data format:', data);
+      videos.value = [];
+    }
+  } catch (err) {
+    console.error('Error fetching videos:', err);
+    videos.value = [];
+  } finally {
+    loadingVideos.value = false;
+  }
+};
+
+// Main load function
+const loadData = async () => {
+  const channelId = route.params.id;
+  
+  if (!channelId) {
+    error.value = 'No channel ID provided';
+    loading.value = false;
+    return;
+  }
+  
+  loading.value = true;
+  error.value = null;
+  
+  try {
+    // Load channel data
+    channel.value = await loadChannelData(channelId);
+    
+    // Load user data if userId is available
+    if (channel.value?.userId) {
+      user.value = await loadUserData(channel.value.userId);
+    }
+    
+    // Load videos for this channel
+    await loadChannelVideos(channelId);
+  } catch (err) {
+    error.value = err.message;
+    channel.value = null;
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(loadData);
 </script>
 
 <style scoped>
 .channel-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.channel-page__loading,
-.channel-page__error {
+.loading, .error {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 300px;
   text-align: center;
 }
 
-.channel-page__loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid rgba(65, 164, 255, 0.2);
-  border-radius: 50%;
-  border-top-color: var(--primary, #41A4FF);
-  animation: spin 1s ease-in-out infinite;
-  margin-bottom: 16px;
+.error {
+  color: #e53935;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.channel-page__error-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: var(--error, #FF677B);
+.error button {
+  background-color: #41A4FF;
   color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  margin-top: 16px;
+  cursor: pointer;
+}
+
+.channel-banner {
+  padding: 30px;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.channel-info {
   display: flex;
   align-items: center;
-  justify-content: center;
+}
+
+.channel-avatar {
+  margin-right: 24px;
+}
+
+.channel-avatar img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid white;
+  object-fit: cover;
+}
+
+.channel-details {
+  flex: 1;
+}
+
+.channel-name {
+  margin: 0;
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 16px;
 }
 
-.channel-page__back-button {
-  margin-top: 16px;
-  padding: 8px 16px;
-  background-color: var(--primary, #41A4FF);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
+.channel-username {
+  font-size: 16px;
+  margin: 4px 0 12px;
+  opacity: 0.9;
 }
 
-.channel-page__back-button:hover {
-  background-color: var(--secondary, #9067E6);
-}
-
-.channel-page__banner {
-  width: 100%;
-  height: 200px;
-  background-color: var(--primary, #41A4FF);
-  background-size: cover;
-  background-position: center;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  position: relative;
-}
-
-.channel-page__banner-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-  border-radius: 0 0 8px 8px;
-  color: white;
-}
-
-.channel-page__name {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0 0 8px;
-}
-
-.channel-page__stats {
+.channel-stats {
   display: flex;
   gap: 16px;
-  font-size: 14px;
 }
 
-.channel-page__content {
-  background-color: var(--panel-bg, #E6F0FB);
-  border-radius: 8px;
-  padding: 24px;
-}
-
-.channel-page__tabs {
+.channel-tabs {
   display: flex;
-  gap: 8px;
+  border-bottom: 1px solid #eee;
   margin-bottom: 24px;
-  border-bottom: 1px solid rgba(103, 116, 139, 0.2);
-  padding-bottom: 16px;
 }
 
-.channel-page__tab {
-  padding: 8px 16px;
-  background-color: transparent;
+.tab-button {
+  background: none;
   border: none;
-  border-radius: 4px;
+  padding: 12px 24px;
+  font-size: 16px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary, #67748B);
-  transition: all 0.2s;
+  color: #666;
+  border-bottom: 2px solid transparent;
 }
 
-.channel-page__tab:hover {
-  background-color: rgba(65, 164, 255, 0.1);
-  color: var(--primary, #41A4FF);
+.tab-button.active {
+  color: #41A4FF;
+  border-bottom-color: #41A4FF;
 }
 
-.channel-page__tab--active {
-  background-color: var(--primary, #41A4FF);
-  color: white;
+.tab-content {
+  min-height: 400px;
 }
 
-.channel-page__section-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 16px;
-  color: var(--text-primary, #1A2233);
+.videos-container h2,
+.about-container h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 22px;
 }
 
-.channel-page__empty {
+.loading-videos,
+.no-videos {
+  padding: 40px;
   text-align: center;
-  padding: 32px;
-  color: var(--text-secondary, #67748B);
-  background-color: rgba(103, 116, 139, 0.1);
+  color: #666;
+  background: #f8f8f8;
   border-radius: 8px;
 }
 
-.channel-page__description {
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--text-primary, #1A2233);
-  white-space: pre-wrap;
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
-</style>
+
+.video-grid-item {
+  width: 100%;
+}
+
+.about-container .channel-description {
+  background: #f8f8f8;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.no-description {
+  background: #f8f8f8;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  color: #666;
+  font-style: italic;
+}
+
+.channel-details .detail-item {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .channel-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .channel-avatar {
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+  
+  .channel-stats {
+    justify-content: center;
+  }
+  
+  .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style> 

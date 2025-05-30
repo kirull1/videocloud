@@ -63,72 +63,80 @@ class ChannelStore {
   }
 
   async fetchChannel(id: string): Promise<void> {
-    this.isLoading = true;
-    this.error = null;
+    runInAction(() => {
+      this.isLoading = true;
+      this.error = null;
+    });
+    
+    console.log(`ChannelStore: Fetching channel with ID: ${id}`);
 
     try {
       const channel = await channelApi.getChannel(id);
       
+      console.log(`ChannelStore: Channel data received:`, channel);
+      
       runInAction(() => {
         this.currentChannel = channel;
+        this.error = null;
+        this.isLoading = false;
       });
     } catch (error) {
+      console.error(`ChannelStore: Error fetching channel:`, error);
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Failed to fetch channel';
-      });
-    } finally {
-      runInAction(() => {
         this.isLoading = false;
       });
     }
   }
 
   async fetchChannelByCustomUrl(customUrl: string): Promise<void> {
-    this.isLoading = true;
-    this.error = null;
+    runInAction(() => {
+      this.isLoading = true;
+      this.error = null;
+    });
 
     try {
       const channel = await channelApi.getChannelByCustomUrl(customUrl);
       
       runInAction(() => {
         this.currentChannel = channel;
+        this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Failed to fetch channel';
-      });
-    } finally {
-      runInAction(() => {
         this.isLoading = false;
       });
     }
   }
 
   async fetchMyChannel(): Promise<void> {
-    this.isLoading = true;
-    this.error = null;
+    runInAction(() => {
+      this.isLoading = true;
+      this.error = null;
+    });
 
     try {
       const channel = await channelApi.getMyChannel();
       
       runInAction(() => {
         this.myChannel = channel;
+        this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Failed to fetch your channel';
         this.myChannel = null;
-      });
-    } finally {
-      runInAction(() => {
         this.isLoading = false;
       });
     }
   }
 
   async updateChannel(id: string, channelData: UpdateChannelRequest): Promise<void> {
-    this.isLoading = true;
-    this.error = null;
+    runInAction(() => {
+      this.isLoading = true;
+      this.error = null;
+    });
 
     try {
       const updatedChannel = await channelApi.updateChannel(id, channelData);
@@ -149,21 +157,22 @@ class ChannelStore {
         if (this.myChannel?.id === id) {
           this.myChannel = updatedChannel;
         }
+        
+        this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Failed to update channel';
-      });
-    } finally {
-      runInAction(() => {
         this.isLoading = false;
       });
     }
   }
 
   async uploadBanner(id: string, file: File): Promise<void> {
-    this.isLoading = true;
-    this.error = null;
+    runInAction(() => {
+      this.isLoading = true;
+      this.error = null;
+    });
 
     try {
       const updatedChannel = await channelApi.uploadBanner(id, file);
@@ -184,42 +193,43 @@ class ChannelStore {
         if (this.myChannel?.id === id) {
           this.myChannel = updatedChannel;
         }
+        
+        this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Failed to upload banner';
-      });
-    } finally {
-      runInAction(() => {
         this.isLoading = false;
       });
     }
   }
 
   async fetchChannelAnalytics(id: string): Promise<void> {
-    this.isLoading = true;
-    this.error = null;
+    runInAction(() => {
+      this.isLoading = true;
+      this.error = null;
+    });
 
     try {
       const analytics = await channelApi.getChannelAnalytics(id);
       
       runInAction(() => {
         this.channelAnalytics = analytics;
+        this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Failed to fetch channel analytics';
-      });
-    } finally {
-      runInAction(() => {
         this.isLoading = false;
       });
     }
   }
 
   async deleteChannel(id: string): Promise<void> {
-    this.isLoading = true;
-    this.error = null;
+    runInAction(() => {
+      this.isLoading = true;
+      this.error = null;
+    });
 
     try {
       await channelApi.deleteChannel(id);
@@ -237,13 +247,12 @@ class ChannelStore {
         if (this.myChannel?.id === id) {
           this.myChannel = null;
         }
+        
+        this.isLoading = false;
       });
     } catch (error) {
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Failed to delete channel';
-      });
-    } finally {
-      runInAction(() => {
         this.isLoading = false;
       });
     }

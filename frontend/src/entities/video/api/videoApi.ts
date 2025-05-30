@@ -1,5 +1,6 @@
 import { VideoStatus, VideoVisibility } from '../model/types';
 import type { Tag } from '@/entities/tag';
+import { appConfig } from '@/shared/config/app.config';
 
 interface CreateVideoRequest {
   title: string;
@@ -88,7 +89,10 @@ export interface StreamingOptions {
   startTime?: number;
 }
 
-const API_URL = '/api/videos';
+// Use the API URL from environment variable or config like in channel API
+const API_URL = `${import.meta.env.VITE_API_URL || appConfig.apiUrl || '/api'}/videos`;
+
+console.log('Video API initialized with API_URL:', API_URL);
 
 export const videoApi = {
   async uploadVideo(
@@ -220,39 +224,32 @@ export const videoApi = {
     });
   },
 
-  async getVideos(params: VideoQueryParams = {}): Promise<PaginatedVideosResponse> {
-    const token = localStorage.getItem('token');
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+  async getVideos(params: any = {}): Promise<any> {
+    console.log('VideoAPI: Fetching videos with params:', params);
     
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    // Build query string
     const queryParams = new URLSearchParams();
     
+    // Add all parameters to the query string
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
+      if (value !== null && value !== undefined) {
         queryParams.append(key, String(value));
       }
     });
     
-    const queryString = queryParams.toString();
-    const url = queryString ? `${API_URL}?${queryString}` : API_URL;
+    // Create the URL with query parameters
+    const url = `${API_URL}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    console.log('VideoAPI: Fetching from URL:', url);
     
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-    });
-
+    const response = await fetch(url);
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch videos');
+      console.error('VideoAPI: Error fetching videos:', response.status, response.statusText);
+      throw new Error(`Failed to fetch videos: ${response.status} ${response.statusText}`);
     }
-
-    return response.json();
+    
+    const data = await response.json();
+    console.log('VideoAPI: Received data:', data);
+    return data;
   },
 
   async getVideo(id: string): Promise<VideoResponse> {

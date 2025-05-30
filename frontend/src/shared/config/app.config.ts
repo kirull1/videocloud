@@ -4,7 +4,7 @@
 export const appConfig = {
   name: 'VideoCloud',
   version: '1.0.0',
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  apiUrl: import.meta.env.VITE_API_URL || '/api',
   environment: import.meta.env.MODE,
   isDevelopment: import.meta.env.MODE === 'development',
   isProduction: import.meta.env.MODE === 'production',

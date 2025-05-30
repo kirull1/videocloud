@@ -60,6 +60,9 @@ const handleLogout = async () => {
           
           <!-- Show Upload Video or Create Channel in menu based on whether user has a channel -->
           <template v-if="hasChannel">
+            <router-link :to="`/channel/${channelStore.myChannel?.id}`" class="menu-item" @click="toggleMenu">
+              My Channel
+            </router-link>
             <router-link to="/videos/upload" class="menu-item" @click="toggleMenu">Upload Video</router-link>
           </template>
           <template v-else>

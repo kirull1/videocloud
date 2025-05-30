@@ -63,16 +63,22 @@ async function fetchVideos(params = {}) {
     isLoading.value = true;
     error.value = null;
     
+    console.log('VideoStore: Fetching videos with params:', params);
+    
     const response = await videoApi.getVideos(params);
+    console.log('VideoStore: API response received:', response);
     
     // Transform each video in the response
     videos.value = response.items.map(transformVideoResponse);
+    console.log('VideoStore: Transformed videos:', videos.value);
+    
     totalVideos.value = response.total;
     currentPage.value = response.page;
     totalPages.value = response.totalPages;
     
     return response;
   } catch (err) {
+    console.error('VideoStore: Error fetching videos:', err);
     error.value = err instanceof Error ? err.message : 'Failed to fetch videos';
     throw err;
   } finally {

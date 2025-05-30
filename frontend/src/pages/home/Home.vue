@@ -62,7 +62,7 @@ const handleVideoClick = (videoId: string) => {
 
 // Handle channel click
 const handleChannelClick = (channelName: string) => {
-  console.log(`Clicked on channel: ${channelName}`);
+  // The VideoCard component now handles navigation directly
 };
 </script>
 
@@ -93,6 +93,8 @@ const handleChannelClick = (channelName: string) => {
             :views="video.views"
             :uploadDate="new Date(video.createdAt)"
             :channelName="video.username"
+            :channelId="video.channelId"
+            :userId="video.userId"
             :channelAvatarUrl="`/api/users/${video.userId}/avatar`"
             :isNew="new Date(video.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000"
             :isWatched="false"

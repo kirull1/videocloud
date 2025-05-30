@@ -4,8 +4,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { Channel } from './channel.entity';
 
 @Entity('users')
 export class User {
@@ -27,6 +30,13 @@ export class User {
 
   @Column({ name: 'avatarUrl', nullable: true })
   avatarUrl?: string;
+
+  @Column({ name: 'channelId', nullable: true, unique: true })
+  channelId?: string;
+
+  @OneToOne(() => Channel, channel => channel.user, { nullable: true })
+  @JoinColumn({ name: 'channelId' })
+  channel?: Channel;
 
   @CreateDateColumn({ name: 'createdAt' })
   createdAt!: Date;

@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Channel } from '../../entities/channel.entity';
 import { Video } from '../../entities/video.entity';
+import { User } from '../../entities/user.entity';
 import { CreateChannelDto, UpdateChannelDto, ChannelAnalyticsDto } from './dto';
 import { S3Service } from '../../shared/services/s3.service';
 
@@ -18,6 +19,8 @@ export class ChannelsService {
     private channelsRepository: Repository<Channel>,
     @InjectRepository(Video)
     private videosRepository: Repository<Video>,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
     private s3Service: S3Service,
   ) {}
 
@@ -48,7 +51,12 @@ export class ChannelsService {
       userId,
     });
 
-    return this.channelsRepository.save(channel);
+    const savedChannel = await this.channelsRepository.save(channel);
+
+    // Update user with the channelId
+    await this.usersRepository.update(userId, { channelId: savedChannel.id });
+
+    return savedChannel;
   }
 
   async findAll(): Promise<Channel[]> {

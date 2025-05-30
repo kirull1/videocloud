@@ -46,7 +46,7 @@ export class Channel {
   @Column({ name: 'user_id' })
   userId: string;
 
-  @OneToOne(() => User, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.channel, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

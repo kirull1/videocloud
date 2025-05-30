@@ -59,6 +59,10 @@ const props = defineProps({
   tags: {
     type: Array as () => Tag[],
     default: () => []
+  },
+  userId: {
+    type: String,
+    default: ''
   }
 });
 
@@ -123,12 +127,49 @@ const handleChannelClick = (event: Event) => {
   // Emit the channelClick event for backward compatibility
   emit('channelClick', props.channelName);
   
+  // Define channel interface for type safety
+  interface Channel {
+    id: string;
+    userId: string;
+    name: string;
+  }
+  
   // Navigate to the channel page if channelId is available
   if (props.channelId) {
-    console.log('Navigating to channel:', props.channelId);
+    router.push({
+      name: 'channel-detail',
+      params: { id: props.channelId }
+    });
+  } else if (props.userId) {
+    // If we have userId but no channelId, we need to first get the channel for this user
+    console.log('Looking for channel for user:', props.userId);
+    const baseUrl = import.meta.env.VITE_API_URL || '/api';
     
-    // Simplify the URL construction to ensure it works correctly
-    window.location.href = `/channel/${props.channelId}`;
+    // Get channels and filter by userId on the client side
+    fetch(`${baseUrl}/channels`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch channels');
+        }
+        return response.json() as Promise<Channel[]>;
+      })
+      .then(channels => {
+        // Find the channel that belongs to this user
+        const userChannel = channels.find((channel: Channel) => channel.userId === props.userId);
+        
+        if (userChannel) {
+          console.log('Found channel:', userChannel);
+          router.push({
+            name: 'channel-detail',
+            params: { id: userChannel.id }
+          });
+        } else {
+          console.error('No channel found for user:', props.userId);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching channel for user:', error);
+      });
   }
 };
 </script>

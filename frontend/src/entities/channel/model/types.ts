@@ -9,7 +9,7 @@ export interface Channel {
   totalViews: number;
   subscriberCount: number;
   videoCount: number;
-  userId: string;
+  userId?: string;
   createdAt: string;
   updatedAt: string;
 }

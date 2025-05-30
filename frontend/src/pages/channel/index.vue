@@ -34,7 +34,7 @@
           <div 
             class="channel-list-page__channel-banner"
             :style="{ 
-              backgroundImage: channel.bannerUrl ? `url(${channel.bannerUrl})` : null,
+              backgroundImage: channel.bannerUrl ? `url(${channel.bannerUrl})` : 'none',
               backgroundColor: channel.themeColor || '#41A4FF'
             }"
           />
@@ -67,7 +67,6 @@
 import { onMounted, computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { channelStore } from '@/entities/channel';
-import Header from '@/widgets/header';
 
 // Declare localStorage for TypeScript
 declare const localStorage: Storage;

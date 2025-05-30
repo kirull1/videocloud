@@ -294,4 +294,18 @@ export class UsersService {
       throw new Error('An error occurred while resetting your password. Please try again.');
     }
   }
+
+  async getUserPublicInfo(userId: string): Promise<{ id: string; username: string; }> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Return only public information
+    return {
+      id: user.id,
+      username: user.username
+    };
+  }
 }

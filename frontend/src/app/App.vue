@@ -1,17 +1,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { isDev } from '@/shared/lib/isDev';
-import Header from '@/widgets/header/Header.vue';
 import { RouterView } from 'vue-router';
-import { userStore } from '@/features/auth/model/userStore';
+import Header from '@/widgets/header/Header.vue';
 import { authApi } from '@/features/auth/api/authApi';
 
-if (isDev()) {
-  console.log('Running in development mode');
-}
-
 // Check authentication validity when the app is mounted
-onMounted(async () => {
+onMounted(async () => {  
   if (authApi.isAuthenticated()) {
     try {
       // Check if the authentication is valid
@@ -28,6 +22,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Header />
-  <RouterView />
+  <div>
+    <Header />
+    <RouterView />
+  </div>
 </template>
+
+<style>
+</style>

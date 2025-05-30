@@ -78,7 +78,7 @@ const router = createRouter({
       path: '/channel/:id',
       name: 'channel-detail',
       component: () => import('@/pages/channel/detail.vue')
-    },
+    }
   ],
 })
 

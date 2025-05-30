@@ -6,7 +6,10 @@ import type {
   ChannelAnalytics,
 } from '../model/types';
 
-const API_URL = appConfig.apiUrl;
+// Use the API URL from environment variable or config
+const API_URL = import.meta.env.VITE_API_URL || appConfig.apiUrl || '/api';
+
+console.log('Channel API initialized with API_URL:', API_URL);
 
 export const channelApi = {
   async createChannel(channelData: CreateChannelRequest): Promise<Channel> {
@@ -33,6 +36,7 @@ export const channelApi = {
   },
 
   async getChannels(): Promise<Channel[]> {
+    console.log(`Fetching all channels from ${API_URL}/channels`);
     const response = await fetch(`${API_URL}/channels`);
 
     if (!response.ok) {
@@ -40,21 +44,46 @@ export const channelApi = {
       throw new Error(error.message || 'Failed to fetch channels');
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log(`Fetched ${data.length} channels successfully`);
+    return data;
   },
 
   async getChannel(id: string): Promise<Channel> {
-    const response = await fetch(`${API_URL}/channels/${id}`);
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch channel');
+    console.log(`ChannelAPI: Fetching channel with ID: ${id} from ${API_URL}/channels/${id}`);
+    
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/channels/${id}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`ChannelAPI: Error fetching channel:`, { status: response.status, body: errorText });
+        throw new Error(`Failed to fetch channel: ${response.status} ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log(`ChannelAPI: Channel data received:`, data);
+      return data;
+    } catch (error) {
+      console.error(`ChannelAPI: Exception fetching channel:`, error);
+      throw error;
+    }
   },
 
   async getChannelByCustomUrl(customUrl: string): Promise<Channel> {
+    console.log(`Fetching channel with custom URL: ${customUrl} from ${API_URL}/channels/custom/${customUrl}`);
     const response = await fetch(`${API_URL}/channels/custom/${customUrl}`);
 
     if (!response.ok) {
@@ -71,6 +100,7 @@ export const channelApi = {
       throw new Error('Not authenticated');
     }
 
+    console.log(`Fetching my channel from ${API_URL}/channels/me`);
     const response = await fetch(`${API_URL}/channels/me`, {
       headers: {
         Authorization: `Bearer ${token}`,

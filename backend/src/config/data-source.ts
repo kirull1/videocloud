@@ -3,6 +3,7 @@ import { User } from '../entities/user.entity';
 import { Video } from '../entities/video.entity';
 import { Category } from '../entities/category.entity';
 import { Tag } from '../entities/tag.entity';
+import { Channel } from '../entities/channel.entity';
 import { AddIsEmailVerifiedToUsers1712500000000 } from '../migrations/1712500000000-AddIsEmailVerifiedToUsers';
 import { AddAvatarUrlToUsers1712500000001 } from '../migrations/1712500000001-AddAvatarUrlToUsers';
 import { AddTimestampsToUsers1712500000002 } from '../migrations/1712500000002-AddTimestampsToUsers';
@@ -15,6 +16,7 @@ import { AddFilePathToVideos1716043000000 } from '../migrations/1716043000000-Ad
 import { RenameUserColumnsToCamelCase1716650400000 } from '../migrations/1716650400000-RenameUserColumnsToCamelCase';
 import { RenameVideoColumnsToCamelCase1716650500000 } from '../migrations/1716650500000-RenameVideoColumnsToCamelCase';
 import { FixAvatarColumnName1716650600000 } from '../migrations/1716650600000-FixAvatarColumnName';
+import { UpdateUserChannelRelationship1748612571230 } from '../migrations/1748612571230-UpdateUserChannelRelationship';
 import fs from 'fs';
 import { homedir } from 'os';
 import path from 'path';
@@ -32,7 +34,7 @@ export const AppDataSource = new DataSource({
     rejectUnauthorized: true,
     ca: SSL_CERT,
   } : false,
-  entities: [User, Video, Category, Tag],
+  entities: [User, Video, Category, Tag, Channel],
   migrations: [
     AddIsEmailVerifiedToUsers1712500000000,
     AddAvatarUrlToUsers1712500000001,
@@ -46,6 +48,7 @@ export const AppDataSource = new DataSource({
     RenameUserColumnsToCamelCase1716650400000,
     RenameVideoColumnsToCamelCase1716650500000,
     FixAvatarColumnName1716650600000,
+    UpdateUserChannelRelationship1748612571230,
   ],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',

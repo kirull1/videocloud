@@ -176,4 +176,10 @@ export class UsersController {
       throw error;
     }
   }
+
+  @Get(':id')
+  async getUserById(@Param('id') userId: string) {
+    this.logger.log(`Getting public info for user: ${userId}`);
+    return await this.usersService.getUserPublicInfo(userId);
+  }
 }

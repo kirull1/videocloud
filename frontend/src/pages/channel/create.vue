@@ -107,7 +107,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { channelStore } from '@/entities/channel';
-import Header from '@/widgets/header';
 import type { CreateChannelRequest } from '@/entities/channel';
 
 // Declare localStorage for TypeScript
