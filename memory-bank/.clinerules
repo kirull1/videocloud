@@ -15,6 +15,12 @@ This file captures important patterns, preferences, and project intelligence tha
   - Frontend uses FSD-based aliases: @app, @pages, @widgets, @features, @entities, @shared
   - Backend uses domain-based aliases: @app, @modules, @common, @config, @utils, etc.
   - Documentation for path aliases is available in docs/path-aliases.md
+- **Page Components**: Each feature page has a standardized pattern:
+  - For major features, create a dedicated directory under pages (e.g., pages/channel/)
+  - Main implementation should be in detail.vue for entity detail pages
+  - Avoid creating multiple test/debug versions in production code
+  - Keep router configuration clean with only essential routes
+  - Use consistent naming conventions across all pages
 
 ## Coding Conventions
 
@@ -25,6 +31,8 @@ This file captures important patterns, preferences, and project intelligence tha
   - camelCase for variables, functions, and methods
   - kebab-case for file names
   - UPPER_SNAKE_CASE for constants
+  - For pages with parameters, use [param].vue format (e.g., [id].vue)
+  - For detail pages, prefer descriptive names like detail.vue instead of numeric versions like basic2.vue
 - **Import Order**: Imports should be organized in groups: external libraries, internal modules, types, assets.
 - **Component Structure**: Vue components follow the script-template-style structure with script setup. Each component should have:
   - ComponentName.vue - The component implementation
@@ -36,6 +44,11 @@ This file captures important patterns, preferences, and project intelligence tha
   - NOTE: Do NOT create README.md files for components
 - **Linting and Formatting**: ESLint and Prettier are used to enforce code style. Run `pnpm run style` to format code.
 - **Code Comments**: Code comments are strictly prohibited. The project follows a self-documenting code approach where variable names, function names, and code structure should be clear enough to understand without comments. All code should be written to be self-explanatory. If code requires explanation, it should be refactored to be more clear rather than adding comments.
+- **File Organization**: Keep related files together and remove unnecessary files:
+  - Delete test/debug versions of components when no longer needed
+  - Maintain only one implementation of each page component
+  - Standardize on descriptive, purpose-based naming (e.g., detail.vue, create.vue, index.vue)
+  - Update router configuration when cleaning up files
 
 ## Development Workflow
 
@@ -65,6 +78,12 @@ This file captures important patterns, preferences, and project intelligence tha
   - All PRs require at least one reviewer
   - CI checks must pass before merging
   - Documentation updates should be included when relevant
+- **Code Cleanup**:
+  - Regularly clean up test/debug implementations when features are stable
+  - Always update router configuration when removing files
+  - Standardize on consistent naming conventions
+  - Use descriptive, purpose-based names for components and files
+  - Maintain one clean implementation per feature
 
 ## Technical Decisions
 
@@ -78,6 +97,11 @@ This file captures important patterns, preferences, and project intelligence tha
   - Use FormData for file uploads in frontend
   - Don't set Content-Type header when using FormData in frontend
   - Validate file buffer exists and is not empty in backend
+- **Page Structure**:
+  - Keep related pages in feature-specific directories
+  - Standardize on consistent file naming (detail.vue, create.vue, index.vue)
+  - Maintain only one implementation of each page
+  - Remove test/debug versions when feature is stable
 
 ## User Preferences
 
@@ -85,6 +109,8 @@ This file captures important patterns, preferences, and project intelligence tha
 - **Code Organization**: Prefer smaller, focused files over large monolithic ones.
 - **Error Handling**: Comprehensive error handling with meaningful error messages.
 - **Performance Considerations**: Optimize for video playback performance and page load times.
+- **File Management**: Clean up unnecessary files and keep the codebase tidy.
+- **Naming Conventions**: Use descriptive, purpose-based names for components and files.
 
 ## Common Challenges
 
@@ -97,6 +123,10 @@ This file captures important patterns, preferences, and project intelligence tha
   - FormData handling in frontend
   - Content-Type headers with FormData
   - Buffer validation in backend
+- **Code Organization**:
+  - Managing multiple test/debug versions of components
+  - Ensuring router configuration stays in sync with file structure
+  - Maintaining consistent naming conventions across the project
 
 ## Project Evolution
 
@@ -140,6 +170,14 @@ This file captures important patterns, preferences, and project intelligence tha
   6. S3Service uploads file to S3 bucket with public-read ACL
   7. Public URL generated and stored in user profile
   8. Frontend displays new avatar
+- **Channel Page Flow**:
+  1. User navigates to /channel/:id route
+  2. Router loads the detail.vue component
+  3. Component fetches channel data, user data, and videos
+  4. Displays channel information with avatar, name, and statistics
+  5. Shows videos in a responsive grid using VideoCard components
+  6. Provides tabs for Videos and About sections
+  7. Handles error states and loading indicators
 
 ## Known Limitations
 
@@ -173,5 +211,33 @@ This file captures important patterns, preferences, and project intelligence tha
   - Set proper cache control headers for optimal caching behavior
   - Use different storage paths for different types of generated content
   - Preserve original user-uploaded content when generating alternatives
+
+## Channel Page Implementation
+
+- **File Structure**:
+  - Main channel directory: frontend/src/pages/channel/
+  - Core files: index.vue (listing), create.vue (creation), detail.vue (viewing)
+  - Removed test files: debug.vue, simple.vue, basic.vue, [id].vue, basic2.vue
+  - Standardized on detail.vue for the main channel view
+  
+- **Router Configuration**:
+  - Main listing: /channel → index.vue
+  - Channel creation: /channel/create → create.vue
+  - Channel viewing: /channel/:id → detail.vue
+  - Removed unnecessary test routes
+  
+- **Component Design**:
+  - Detail page includes channel header with avatar, name, and statistics
+  - Tabs for different sections (Videos, About)
+  - Responsive design with proper mobile breakpoints
+  - Error handling and loading states
+  - Interaction with VideoCard components
+  
+- **API Integration**:
+  - Fetches channel data from /api/channels/:id
+  - Loads user information from /api/users/:userId
+  - Gets videos from /api/videos?channelId=:channelId
+  - Handles different API response formats
+  - Uses avatar endpoint for channel owner avatar
 
 This file will be updated as new patterns and insights are discovered throughout the development process.
