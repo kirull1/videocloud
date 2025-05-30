@@ -7,6 +7,7 @@ import { Tag } from '../entities/tag.entity';
 import { Comment } from '../entities/comment.entity';
 import { Reaction } from '../entities/reaction.entity';
 import { Channel } from '../entities/channel.entity';
+import { Subscription } from '../entities/subscription.entity';
 import { AddIsEmailVerifiedToUsers1712500000000 } from '../migrations/1712500000000-AddIsEmailVerifiedToUsers';
 import { AddAvatarUrlToUsers1712500000001 } from '../migrations/1712500000001-AddAvatarUrlToUsers';
 import { AddTimestampsToUsers1712500000002 } from '../migrations/1712500000002-AddTimestampsToUsers';
@@ -21,6 +22,7 @@ import { RenameUserColumnsToCamelCase1716650400000 } from '../migrations/1716650
 import { RenameVideoColumnsToCamelCase1716650500000 } from '../migrations/1716650500000-RenameVideoColumnsToCamelCase';
 import { FixAvatarColumnName1716650600000 } from '../migrations/1716650600000-FixAvatarColumnName';
 import { AddChannelIdToUsers1716650700000 } from '../migrations/1716650700000-AddChannelIdToUsers';
+import { CreateSubscriptionsTable1625847500000 } from '../migrations/1625847500000-CreateSubscriptionsTable';
 import fs from 'fs';
 import { homedir } from 'os';
 import path from 'path';
@@ -38,7 +40,7 @@ const databaseConfig = (): DataSourceOptions => ({
     rejectUnauthorized: true,
     ca: SSL_CERT,
   } : false,
-  entities: [User, Video, Category, Tag, Comment, Reaction, Channel],
+  entities: [User, Video, Category, Tag, Comment, Reaction, Channel, Subscription],
   migrations: [
     AddIsEmailVerifiedToUsers1712500000000,
     AddAvatarUrlToUsers1712500000001,

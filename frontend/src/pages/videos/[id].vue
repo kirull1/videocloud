@@ -6,6 +6,8 @@ import { VideoPlayer } from '@/entities/video/ui';
 import { CommentSection } from '@/features/comments';
 import { ReactionButtons } from '@/features/reactions';
 import { getAvatarUrl } from '@/shared/lib/avatar';
+import { userStore } from '@/features/auth/model/userStore';
+import { subscriptionApi } from '@/features/subscriptions';
 
 // Declare localStorage for TypeScript
 declare const localStorage: Storage;
@@ -13,8 +15,13 @@ declare const localStorage: Storage;
 const route = useRoute();
 const router = useRouter();
 const videoId = computed(() => route.params.id as string);
-const isLoading = computed(() => videoStore.isLoading.value);
+const isLoading = ref(false);
 const error = ref<string | null>(null);
+
+// Subscription state
+const isSubscribed = ref(false);
+const isSubscribing = ref(false);
+const subscriberCount = ref(0);
 
 // Get the current video from the store
 const video = computed(() => videoStore.currentVideo.value);
@@ -69,6 +76,26 @@ const formattedViews = computed(() => {
   return `${(views / 1000000).toFixed(1)}M views`;
 });
 
+// Check if the user is authenticated
+const isAuthenticated = computed(() => userStore.isAuthenticated.value);
+
+// Check if the current user is the video owner
+const isVideoOwner = computed(() => {
+  if (!video.value || !isAuthenticated.value) return false;
+  return video.value.userId === localStorage.getItem('userId');
+});
+
+// Format numbers for display (views, subscribers)
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}K`;
+  }
+  return num.toString();
+};
+
 // Handle video deletion
 const handleDelete = async () => {
   if (!video.value) return;
@@ -80,6 +107,88 @@ const handleDelete = async () => {
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete video';
     }
+  }
+};
+
+// Fetch subscription status
+const fetchSubscriptionStatus = async () => {
+  if (!isAuthenticated.value || !video.value?.channelId) return;
+  
+  try {
+    const { isSubscribed: status } = await subscriptionApi.checkSubscriptionStatus(video.value.channelId);
+    isSubscribed.value = status;
+    
+    // Also fetch subscriber count
+    fetchSubscriberCount();
+  } catch (err) {
+    console.error('Failed to check subscription status:', err);
+  }
+};
+
+// Fetch subscriber count
+const fetchSubscriberCount = async () => {
+  if (!video.value?.channelId) return;
+  
+  try {
+    const count = await subscriptionApi.getSubscriberCount(video.value.channelId);
+    subscriberCount.value = count;
+  } catch (err) {
+    console.error('Failed to fetch subscriber count:', err);
+  }
+};
+
+// Handle subscription toggle
+const handleSubscribe = async (event: Event) => {
+  event.stopPropagation();
+  
+  if (!isAuthenticated.value) {
+    router.push('/auth/login');
+    return;
+  }
+  
+  if (!video.value?.channelId) {
+    console.error('No channel ID available');
+    return;
+  }
+  
+  try {
+    isSubscribing.value = true;
+    
+    if (isSubscribed.value) {
+      await subscriptionApi.unsubscribeFromChannel(video.value.channelId);
+      isSubscribed.value = false;
+      if (subscriberCount.value > 0) subscriberCount.value--;
+      
+      // Show unsubscribed message
+      const successMessage = document.createElement('div');
+      successMessage.className = 'video-detail__success-message';
+      successMessage.textContent = 'Unsubscribed from channel';
+      document.body.appendChild(successMessage);
+      
+      // Remove the success message after 3 seconds
+      setTimeout(() => {
+        document.body.removeChild(successMessage);
+      }, 3000);
+    } else {
+      await subscriptionApi.subscribeToChannel(video.value.channelId);
+      isSubscribed.value = true;
+      subscriberCount.value++;
+      
+      // Show success message
+      const successMessage = document.createElement('div');
+      successMessage.className = 'video-detail__success-message';
+      successMessage.textContent = 'Subscribed to channel';
+      document.body.appendChild(successMessage);
+      
+      // Remove the success message after 3 seconds
+      setTimeout(() => {
+        document.body.removeChild(successMessage);
+      }, 3000);
+    }
+  } catch (err) {
+    console.error('Failed to subscribe/unsubscribe:', err);
+  } finally {
+    isSubscribing.value = false;
   }
 };
 
@@ -125,12 +234,24 @@ const navigateToChannel = (event: Event) => {
   }
 };
 
-// Fetch the video when the component is mounted
+// Fetch the data when the component is mounted
 onMounted(async () => {
   try {
+    // Use a local variable instead of modifying computed value
+    const loading = true;
+    isLoading.value = loading;
+    
     await videoStore.fetchVideo(videoId.value);
+    
+    // Once we have the video, check subscription status
+    await fetchSubscriptionStatus();
+    
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load video';
+  } finally {
+    // Use a local variable instead of modifying computed value
+    const loading = false;
+    isLoading.value = loading;
   }
 });
 </script>
@@ -226,7 +347,19 @@ onMounted(async () => {
           />
           <div class="video-page__uploader-info">
             <h3 class="video-page__uploader-name" @click="navigateToChannel">{{ video.username }}</h3>
+            <div v-if="video.channelId" class="video-page__uploader-subscribers">
+              {{ formatNumber(subscriberCount) }} subscribers
+            </div>
           </div>
+          <button 
+            v-if="isAuthenticated && !isVideoOwner && video.channelId" 
+            class="video-page__subscribe-button"
+            :class="{ 'subscribed': isSubscribed }"
+            :disabled="isSubscribing"
+            @click="handleSubscribe"
+          >
+            {{ isSubscribed ? 'Unsubscribe' : 'Subscribe' }}
+          </button>
         </div>
         
         <div v-if="video.category" class="video-page__category">
@@ -468,6 +601,39 @@ onMounted(async () => {
 
 .video-page__uploader-name:hover {
   color: var(--primary, #41A4FF);
+}
+
+.video-page__uploader-subscribers {
+  font-size: 14px;
+  color: var(--text-secondary, #67748B);
+  margin-top: 4px;
+}
+
+.video-page__subscribe-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  background-color: var(--primary, #41A4FF);
+  color: white;
+}
+
+.video-page__subscribe-button:hover {
+  background-color: var(--secondary, #9067E6);
+}
+
+.video-page__subscribe-button.subscribed {
+  background-color: var(--panel-bg, #E6F0FB);
+  color: var(--text-primary, #1A2233);
+  border: 1px solid rgba(103, 116, 139, 0.3);
+}
+
+.video-page__subscribe-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .video-page__section-title {

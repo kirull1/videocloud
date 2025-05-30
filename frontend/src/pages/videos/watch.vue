@@ -5,12 +5,17 @@ import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
 import { CommentSection } from '@/features/comments/ui';
 import { getAvatarUrl } from '@/shared/lib/avatar';
+import { userStore } from '@/features/auth/model/userStore';
 
 const route = useRoute();
 const router = useRouter();
 const videoId = computed(() => route.query.id as string);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
+
+// Subscription state
+const isSubscribed = ref(false);
+const isSubscribing = ref(false);
 
 const video = computed(() => {
   return videoStore.currentVideo.value;
@@ -48,11 +53,105 @@ const avatarUrl = computed(() => {
   return getAvatarUrl(video.value.userAvatarUrl, video.value.username || video.value.channelName || 'User', 48);
 });
 
+// Check if the user is authenticated
+const isAuthenticated = computed(() => userStore.isAuthenticated.value);
+
+// Check if the current user is the video owner
+const isVideoOwner = computed(() => {
+  if (!video.value || !isAuthenticated.value) return false;
+  return video.value.userId === localStorage.getItem('userId');
+});
+
+// Format numbers for display (views, subscribers)
+const formatNumber = (num: number): string => {
+  if (!num) return '0';
+  
+  if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}K`;
+  }
+  return num.toString();
+};
+
+// Handle subscribe/unsubscribe
+const handleSubscribe = async (event: Event) => {
+  event.stopPropagation();
+  
+  if (!isAuthenticated.value) {
+    router.push('/auth/login');
+    return;
+  }
+  
+  if (!video.value?.channelId) {
+    console.error('No channel ID available');
+    return;
+  }
+  
+  try {
+    isSubscribing.value = true;
+    
+    // API call would go here
+    // await channelApi.subscribeToChannel(video.value.channelId);
+    
+    // For now, just toggle the state
+    isSubscribed.value = !isSubscribed.value;
+    
+    // Update channel subscriber count
+    if (video.value) {
+      if (isSubscribed.value) {
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.className = 'video-page__success-message';
+        successMessage.textContent = 'Subscribed to channel';
+        document.body.appendChild(successMessage);
+        
+        // Remove the success message after 3 seconds
+        setTimeout(() => {
+          document.body.removeChild(successMessage);
+        }, 3000);
+      } else {
+        // Show unsubscribed message
+        const successMessage = document.createElement('div');
+        successMessage.className = 'video-page__success-message';
+        successMessage.textContent = 'Unsubscribed from channel';
+        document.body.appendChild(successMessage);
+        
+        // Remove the success message after 3 seconds
+        setTimeout(() => {
+          document.body.removeChild(successMessage);
+        }, 3000);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to subscribe/unsubscribe:', err);
+  } finally {
+    isSubscribing.value = false;
+  }
+};
+
+// Fetch subscription status
+const fetchSubscriptionStatus = async () => {
+  if (!isAuthenticated.value || !video.value?.channelId) return;
+  
+  // In a real app, this would be an API call
+  // const response = await channelApi.getSubscriptionStatus(video.value.channelId);
+  // isSubscribed.value = response.isSubscribed;
+  
+  // For now, just set a default value
+  isSubscribed.value = false;
+};
+
 watch(videoId, async (newId, oldId) => {
   if (newId && newId !== oldId) {
     try {
       isLoading.value = true;
       await videoStore.fetchVideo(newId);
+      
+      // Once we have the video, check subscription status
+      await fetchSubscriptionStatus();
+      
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load video';
     } finally {
@@ -161,18 +260,27 @@ const navigateToChannel = (event: Event) => {
         <div class="video-page__uploader">
           <img
             :src="avatarUrl"
-            alt="Channel avatar"
+            alt="Uploader avatar"
             class="video-page__uploader-avatar"
             @click="navigateToChannel"
           />
           <div class="video-page__uploader-info">
             <h3 class="video-page__uploader-name" @click="navigateToChannel">
-              {{ video.channelName || video.username }}
+              {{ video.username }}
             </h3>
-            <div v-if="video.channelId" class="video-page__channel-link" @click="navigateToChannel">
-              View channel
+            <div v-if="video.channelId" class="video-page__uploader-subscribers">
+              {{ formatNumber(0) }} subscribers
             </div>
           </div>
+          <button 
+            v-if="isAuthenticated && !isVideoOwner && video.channelId" 
+            class="video-page__subscribe-button"
+            :class="{ 'subscribed': isSubscribed }"
+            :disabled="isSubscribing"
+            @click="handleSubscribe"
+          >
+            {{ isSubscribed ? 'Unsubscribe' : 'Subscribe' }}
+          </button>
         </div>
         
         <div v-if="video.description" class="video-page__description">
@@ -305,31 +413,32 @@ const navigateToChannel = (event: Event) => {
 .video-page__uploader {
   display: flex;
   align-items: center;
-  gap: 16px;
+  margin-top: 24px;
   margin-bottom: 24px;
   padding-bottom: 24px;
-  border-bottom: 1px solid rgba(103, 116, 139, 0.2);
+  border-bottom: 1px solid var(--border-color, rgba(26, 34, 51, 0.1));
 }
 
 .video-page__uploader-avatar {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  object-fit: cover;
+  margin-right: 16px;
   cursor: pointer;
-  transition: transform 0.2s ease;
 }
 
 .video-page__uploader-avatar:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
   box-shadow: 0 0 8px rgba(65, 164, 255, 0.5);
 }
 
+.video-page__uploader-info {
+  flex-grow: 1;
+}
+
 .video-page__uploader-name {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 4px;
-  color: var(--text-primary, #1A2233);
+  font-weight: 600;
+  margin: 0;
   cursor: pointer;
 }
 
@@ -337,14 +446,60 @@ const navigateToChannel = (event: Event) => {
   color: var(--primary, #41A4FF);
 }
 
-.video-page__channel-link {
+.video-page__uploader-subscribers {
   font-size: 14px;
-  color: var(--primary, #41A4FF);
-  cursor: pointer;
+  color: var(--text-secondary, #67748B);
+  margin-top: 4px;
 }
 
-.video-page__channel-link:hover {
-  text-decoration: underline;
+.video-page__subscribe-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  background-color: var(--primary, #41A4FF);
+  color: white;
+}
+
+.video-page__subscribe-button:hover {
+  background-color: var(--secondary, #9067E6);
+}
+
+.video-page__subscribe-button.subscribed {
+  background-color: var(--panel-bg, #E6F0FB);
+  color: var(--text-primary, #1A2233);
+  border: 1px solid rgba(103, 116, 139, 0.3);
+}
+
+.video-page__subscribe-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Success message */
+.video-page__success-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--success, #8FF6E9);
+  color: #155724;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(20px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
 }
 
 .video-page__description-title {

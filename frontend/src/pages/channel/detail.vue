@@ -22,8 +22,24 @@
               <span>{{ formatNumber(channel.videoCount) }} videos</span>
               <span>{{ formatNumber(channel.totalViews) }} views</span>
             </div>
+            <button 
+              v-if="isAuthenticated && !isChannelOwner" 
+              class="channel-subscribe-button"
+              :class="{ 'subscribed': isSubscribed }"
+              :disabled="isSubscribing"
+              @click="handleSubscribe"
+            >
+              {{ isSubscribed ? 'Unsubscribe' : 'Subscribe' }}
+            </button>
+            <div v-else-if="isChannelOwner" class="owner-indicator">
+              This is your channel
+            </div>
           </div>
         </div>
+      </div>
+      
+      <div v-if="subscriptionError" class="error-message">
+        {{ subscriptionError }}
       </div>
       
       <div class="channel-tabs">
@@ -106,6 +122,8 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import VideoCard from '@/entities/video/ui/VideoCard/VideoCard.vue';
 import { getAvatarUrl } from '@/shared/lib/avatar';
+import { userStore } from '@/features/auth/model/userStore';
+import { subscriptionApi } from '@/features/subscriptions';
 
 const route = useRoute();
 const router = useRouter();
@@ -116,6 +134,11 @@ const user = ref(null);
 const videos = ref([]);
 const loadingVideos = ref(false);
 const activeTab = ref('videos');
+
+// Subscription state
+const isSubscribed = ref(false);
+const isSubscribing = ref(false);
+const subscriptionError = ref(null);
 
 const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
@@ -165,6 +188,127 @@ const handleVideoClick = (videoId) => {
 // Handle channel click
 const handleChannelClick = () => {
   // We're already on the channel page, so this is a no-op
+};
+
+// Check if the user is authenticated
+const isAuthenticated = computed(() => userStore.isAuthenticated.value);
+
+// Check if the current user is the channel owner
+const isChannelOwner = computed(() => {
+  if (!channel.value || !isAuthenticated.value) return false;
+  
+  const currentUserId = localStorage.getItem('userId');
+  if (!currentUserId) return false;
+  
+  return channel.value.userId === currentUserId;
+});
+
+// Fetch subscription status
+const fetchSubscriptionStatus = async () => {
+  if (!isAuthenticated.value || !channel.value) return;
+  
+  // Don't check subscription status for own channel
+  if (isChannelOwner.value) {
+    isSubscribed.value = false;
+    return;
+  }
+  
+  try {
+    const { isSubscribed: status } = await subscriptionApi.checkSubscriptionStatus(channel.value.id);
+    isSubscribed.value = status;
+  } catch (err) {
+    console.error('Failed to check subscription status:', err);
+    // Don't show this error to the user as it's not critical
+  }
+};
+
+// Fetch subscriber count
+const fetchSubscriberCount = async () => {
+  if (!channel.value) return;
+  
+  try {
+    const count = await subscriptionApi.getSubscriberCount(channel.value.id);
+    if (count !== null && count !== undefined) {
+      // Update the channel object with the real subscriber count
+      channel.value.subscriberCount = count;
+    }
+  } catch (err) {
+    console.error('Failed to fetch subscriber count:', err);
+  }
+};
+
+// Handle subscription toggle
+const handleSubscribe = async () => {
+  if (!isAuthenticated.value) {
+    router.push('/auth/login');
+    return;
+  }
+  
+  if (!channel.value) {
+    console.error('No channel data available');
+    return;
+  }
+  
+  // Clear any previous errors
+  subscriptionError.value = null;
+  
+  try {
+    isSubscribing.value = true;
+    
+    if (isSubscribed.value) {
+      await subscriptionApi.unsubscribeFromChannel(channel.value.id);
+      isSubscribed.value = false;
+      
+      // Update local subscriber count
+      if (channel.value.subscriberCount > 0) {
+        channel.value.subscriberCount--;
+      }
+      
+      // Show unsubscribed message
+      const successMessage = document.createElement('div');
+      successMessage.className = 'channel-page__success-message';
+      successMessage.textContent = 'Unsubscribed from channel';
+      document.body.appendChild(successMessage);
+      
+      // Remove the success message after 3 seconds
+      setTimeout(() => {
+        document.body.removeChild(successMessage);
+      }, 3000);
+    } else {
+      await subscriptionApi.subscribeToChannel(channel.value.id);
+      isSubscribed.value = true;
+      
+      // Update local subscriber count
+      channel.value.subscriberCount++;
+      
+      // Show success message
+      const successMessage = document.createElement('div');
+      successMessage.className = 'channel-page__success-message';
+      successMessage.textContent = 'Subscribed to channel';
+      document.body.appendChild(successMessage);
+      
+      // Remove the success message after 3 seconds
+      setTimeout(() => {
+        document.body.removeChild(successMessage);
+      }, 3000);
+    }
+  } catch (err) {
+    console.error('Failed to subscribe/unsubscribe:', err);
+    subscriptionError.value = err.message || 'Failed to process subscription request';
+    
+    // Show error message
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'channel-page__error-message';
+    errorMessage.textContent = subscriptionError.value;
+    document.body.appendChild(errorMessage);
+    
+    // Remove the error message after 5 seconds
+    setTimeout(() => {
+      document.body.removeChild(errorMessage);
+    }, 5000);
+  } finally {
+    isSubscribing.value = false;
+  }
 };
 
 // Load channel data
@@ -274,31 +418,33 @@ const loadChannelVideos = async (channelId) => {
 
 // Main load function
 const loadData = async () => {
-  const channelId = route.params.id;
-  
-  if (!channelId) {
-    error.value = 'No channel ID provided';
-    loading.value = false;
-    return;
-  }
-  
   loading.value = true;
   error.value = null;
   
   try {
+    const channelId = route.params.id;
+    
+    if (!channelId) {
+      throw new Error('No channel ID provided');
+    }
+    
     // Load channel data
     channel.value = await loadChannelData(channelId);
     
-    // Load user data if userId is available
-    if (channel.value?.userId) {
+    // Load user data if we have a userId
+    if (channel.value && channel.value.userId) {
       user.value = await loadUserData(channel.value.userId);
     }
     
-    // Load videos for this channel
+    // Load videos for the channel
     await loadChannelVideos(channelId);
+    
+    // Check subscription status
+    await fetchSubscriptionStatus();
+    await fetchSubscriberCount();
+    
   } catch (err) {
-    error.value = err.message;
-    channel.value = null;
+    error.value = err.message || 'Failed to load channel data';
   } finally {
     loading.value = false;
   }
@@ -348,39 +494,96 @@ onMounted(loadData);
 .channel-info {
   display: flex;
   align-items: center;
+  padding: 24px;
+  color: white;
 }
 
 .channel-avatar {
-  margin-right: 24px;
-}
-
-.channel-avatar img {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  border: 3px solid white;
+  overflow: hidden;
+  margin-right: 24px;
+  border: 4px solid rgba(255, 255, 255, 0.8);
+}
+
+.channel-avatar img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
 .channel-details {
-  flex: 1;
+  flex-grow: 1;
 }
 
 .channel-name {
   margin: 0;
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 
 .channel-username {
   font-size: 16px;
-  margin: 4px 0 12px;
+  margin-bottom: 8px;
   opacity: 0.9;
 }
 
 .channel-stats {
   display: flex;
   gap: 16px;
+  font-size: 14px;
+}
+
+.channel-subscribe-button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  background-color: var(--primary, #41A4FF);
+  color: white;
+}
+
+.channel-subscribe-button:hover {
+  background-color: var(--secondary, #9067E6);
+}
+
+.channel-subscribe-button.subscribed {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.channel-subscribe-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Success message */
+.channel-page__success-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--success, #8FF6E9);
+  color: #155724;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(20px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
 }
 
 .channel-tabs {
@@ -479,5 +682,59 @@ onMounted(loadData);
   .video-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px 15px;
+  margin: 10px 0;
+  border-radius: 5px;
+  text-align: center;
+  max-width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.owner-indicator {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #e0e0e0;
+  color: #555;
+  border-radius: 4px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.channel-page__error-message,
+.channel-page__success-message {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border-radius: 4px;
+  z-index: 1000;
+  animation: fadeInOut 5s ease-in-out;
+  max-width: 80%;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.channel-page__success-message {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.channel-page__error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
 }
 </style> 

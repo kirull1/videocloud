@@ -1,44 +1,45 @@
 import { authApi } from '@/features/auth/api/authApi';
 
 /**
- * Handle API response and return data or throw error
+ * Handles API response and automatically handles authentication errors
+ * @param response - Fetch response object
  */
-export async function handleApiResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    // Try to parse the error response as JSON
-    try {
-      const errorData = await response.json();
-      throw new Error(errorData.message || errorData.error || `HTTP error ${response.status}`);
-    } catch (e) {
-      // If parsing fails, throw a generic error with the status
-      throw new Error(`HTTP error ${response.status}`);
-    }
+export const handleApiResponse = async (response: Response): Promise<Response> => {
+  if (response.status === 401) {
+    // Clear auth token and redirect to login
+    localStorage.removeItem('token');
+    
+    // Clear cookies related to authentication
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    
+    // Redirect to login
+    window.location.href = '/auth/login';
+    throw new Error('Authentication required');
   }
   
-  return response.json() as Promise<T>;
-}
+  return response;
+};
 
 /**
- * Perform an authenticated fetch request
+ * Authenticated fetch function that adds authorization header
+ * @param url - Request URL
+ * @param options - Fetch options
  */
-export async function authenticatedFetch<T = any>(url: string, options: RequestInit = {}): Promise<T> {
+export const authenticatedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   const token = localStorage.getItem('token');
   
-  if (!token) {
-    throw new Error('Not authenticated');
+  const headers = new Headers(options.headers || {});
+  headers.set('Content-Type', 'application/json');
+  
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
   
-  // Add authorization header
-  const headers = {
-    ...options.headers,
-    'Authorization': `Bearer ${token}`
-  };
-  
-  // Make the request
   const response = await fetch(url, {
     ...options,
-    headers
+    headers,
   });
   
-  return handleApiResponse<T>(response);
-}
+  return handleApiResponse(response);
+};

@@ -14,6 +14,7 @@ import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import s3Config from './config/s3.config';
 import { DataSourceOptions } from 'typeorm';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { DataSourceOptions } from 'typeorm';
     ReactionsModule,
     ChannelsModule,
     S3Module,
+    SubscriptionsModule,
   ],
 })
 export class AppModule {}

@@ -57,6 +57,7 @@ const handleLogout = async () => {
       <transition name="menu-fade">
         <div v-if="isMenuOpen" class="menu">
           <router-link to="/profile" class="menu-item" @click="toggleMenu">Profile</router-link>
+          <router-link to="/subscriptions" class="menu-item" @click="toggleMenu">Subscriptions</router-link>
           
           <!-- Show Upload Video or Create Channel in menu based on whether user has a channel -->
           <template v-if="hasChannel">

@@ -78,6 +78,13 @@ const router = createRouter({
       path: '/channel/:id',
       name: 'channel-detail',
       component: () => import('@/pages/channel/detail.vue')
+    },
+    // Subscription routes
+    {
+      path: '/subscriptions',
+      name: 'subscriptions',
+      component: () => import('@/pages/subscriptions/index.vue'),
+      meta: { requiresAuth: true }
     }
   ],
 })
