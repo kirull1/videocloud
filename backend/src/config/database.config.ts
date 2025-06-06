@@ -22,6 +22,7 @@ import { RenameUserColumnsToCamelCase1716650400000 } from '../migrations/1716650
 import { RenameVideoColumnsToCamelCase1716650500000 } from '../migrations/1716650500000-RenameVideoColumnsToCamelCase';
 import { FixAvatarColumnName1716650600000 } from '../migrations/1716650600000-FixAvatarColumnName';
 import { AddChannelIdToUsers1716650700000 } from '../migrations/1716650700000-AddChannelIdToUsers';
+import { AddCountColumnsToComments1716650700000 } from '../migrations/1716650700000-AddCountColumnsToComments';
 import { CreateSubscriptionsTable1625847500000 } from '../migrations/1625847500000-CreateSubscriptionsTable';
 import fs from 'fs';
 import { homedir } from 'os';
@@ -56,6 +57,7 @@ const databaseConfig = (): DataSourceOptions => ({
     RenameVideoColumnsToCamelCase1716650500000,
     FixAvatarColumnName1716650600000,
     AddChannelIdToUsers1716650700000,
+    AddCountColumnsToComments1716650700000,
   ],
   migrationsRun: true, // Set to true to run migrations automatically
   synchronize: false, // Set to false to prevent automatic schema synchronization

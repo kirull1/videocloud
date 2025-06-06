@@ -3,8 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import ffmpeg from 'fluent-ffmpeg';
 import * as ffprobeStatic from '@ffprobe-installer/ffprobe';
 // Import ffmpeg-static as a string path
-// @ts-ignore
-import ffmpegPath from 'ffmpeg-static';
+// Import ffmpeg-static with error handling
+let ffmpegPath: string | null = null;
+try {
+  // @ts-ignore
+  ffmpegPath = require('ffmpeg-static');
+} catch (error) {
+  console.error('Failed to import ffmpeg-static:', error);
+}
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -66,22 +72,75 @@ export class VideoProcessingService {
     try {
       // Check if ffmpegPath exists
       if (ffmpegPath) {
+        this.logger.log(`ffmpeg-static path: ${ffmpegPath}`);
+        
         // Check if the file exists
         if (fs.existsSync(ffmpegPath)) {
           // Set execute permissions on the ffmpeg binary
-          fs.chmodSync(ffmpegPath, 0o755);
+          try {
+            fs.chmodSync(ffmpegPath, 0o755);
+            this.logger.log(`Set execute permissions on ffmpeg binary`);
+          } catch (chmodError: any) {
+            this.logger.warn(`Could not set permissions on ffmpeg binary: ${chmodError.message}`);
+          }
+          
           ffmpeg.setFfmpegPath(ffmpegPath);
           this.logger.log(`Using ffmpeg from: ${ffmpegPath}`);
         } else {
           this.logger.warn(`ffmpeg-static path exists but file not found at: ${ffmpegPath}`);
-          this.logger.warn('Using system ffmpeg if available');
+          this.logger.warn('The ffmpeg binary was not downloaded during package installation.');
+          this.logger.warn('Will try to use system ffmpeg if available');
+          
+          // Try to find ffmpeg in system PATH
+          try {
+            const { execSync } = require('child_process');
+            const systemFfmpegPath = execSync('which ffmpeg', { encoding: 'utf8' }).trim();
+            
+            if (systemFfmpegPath) {
+              this.logger.log(`Found system ffmpeg at: ${systemFfmpegPath}`);
+              ffmpeg.setFfmpegPath(systemFfmpegPath);
+            }
+          } catch (e: any) {
+            this.logger.warn(`Could not find system ffmpeg: ${e.message}`);
+            this.logger.warn('To fix this issue, you can:');
+            this.logger.warn('1. Install ffmpeg globally on your system, or');
+            this.logger.warn('2. Reinstall the ffmpeg-static package: npm remove ffmpeg-static && npm install ffmpeg-static');
+          }
         }
       } else {
-        this.logger.warn('ffmpeg-static path not found, using system ffmpeg if available');
+        this.logger.warn('ffmpeg-static path not found, will try to use system ffmpeg if available');
+        
+        // Try to find ffmpeg in system PATH
+        try {
+          const { execSync } = require('child_process');
+          const systemFfmpegPath = execSync('which ffmpeg', { encoding: 'utf8' }).trim();
+          
+          if (systemFfmpegPath) {
+            this.logger.log(`Found system ffmpeg at: ${systemFfmpegPath}`);
+            ffmpeg.setFfmpegPath(systemFfmpegPath);
+          }
+        } catch (e: any) {
+          this.logger.warn(`Could not find system ffmpeg: ${e.message}`);
+          this.logger.warn('To fix this issue, please install ffmpeg globally on your system');
+        }
       }
     } catch (error: any) {
       this.logger.error(`Error setting ffmpeg path: ${error.message}`);
-      this.logger.warn('Using system ffmpeg if available');
+      this.logger.warn('Will try to use system ffmpeg if available');
+      
+      // Try to find ffmpeg in system PATH as a last resort
+      try {
+        const { execSync } = require('child_process');
+        const systemFfmpegPath = execSync('which ffmpeg', { encoding: 'utf8' }).trim();
+        
+        if (systemFfmpegPath) {
+          this.logger.log(`Found system ffmpeg at: ${systemFfmpegPath}`);
+          ffmpeg.setFfmpegPath(systemFfmpegPath);
+        }
+      } catch (e: any) {
+        this.logger.warn(`Could not find system ffmpeg: ${e.message}`);
+        this.logger.warn('To fix this issue, please install ffmpeg globally on your system');
+      }
     }
 
     // Create a temporary directory for video processing
@@ -363,10 +422,8 @@ export class VideoProcessingService {
         
         let ffmpegCommand = ffmpeg(inputPath);
         
-        // Set ffmpeg path if available
-        if (ffmpegPath) {
-          ffmpegCommand = ffmpegCommand.setFfmpegPath(ffmpegPath);
-        }
+        // We don't need to set ffmpeg path here as it's already set in the constructor
+        // This avoids the ENOENT error when ffmpegPath exists but the file doesn't
         
         // Configure transcoding options based on format and resolution
         ffmpegCommand = ffmpegCommand
@@ -395,15 +452,36 @@ export class VideoProcessingService {
           .on('error', (err) => {
             this.logger.error(`Error transcoding video: ${err.message}`);
             
-            // Fall back to copying the original file if ffmpeg fails
-            this.logger.log(`Falling back to copying original file`);
-            try {
-              fs.copyFileSync(inputPath, outputPath);
-              this.logger.log(`Created fallback copy at: ${outputPath}`);
-              resolve();
-            } catch (copyErr: any) {
-              this.logger.error(`Error creating fallback copy: ${copyErr.message}`);
-              reject(copyErr);
+            // Check if the error is ENOENT (ffmpeg not found)
+            if (err.message.includes('ENOENT')) {
+              this.logger.error('ffmpeg executable not found. Please install ffmpeg or check the ffmpeg-static package.');
+              this.logger.error('To fix this issue:');
+              this.logger.error('1. Install ffmpeg globally on your system, or');
+              this.logger.error('2. Reinstall the ffmpeg-static package:');
+              this.logger.error('   cd /Users/kivahnin/github/video-cloud && pnpm remove ffmpeg-static && pnpm add ffmpeg-static');
+              this.logger.error('3. Make sure the ffmpeg binary is downloaded during installation');
+              
+              // Fall back to copying the original file if ffmpeg fails
+              this.logger.log(`Falling back to copying original file`);
+              try {
+                fs.copyFileSync(inputPath, outputPath);
+                this.logger.log(`Created fallback copy at: ${outputPath}`);
+                resolve();
+              } catch (copyErr: any) {
+                this.logger.error(`Error creating fallback copy: ${copyErr.message}`);
+                reject(copyErr);
+              }
+            } else {
+              // For other errors, also fall back to copying
+              this.logger.log(`Falling back to copying original file due to transcoding error`);
+              try {
+                fs.copyFileSync(inputPath, outputPath);
+                this.logger.log(`Created fallback copy at: ${outputPath}`);
+                resolve();
+              } catch (copyErr: any) {
+                this.logger.error(`Error creating fallback copy: ${copyErr.message}`);
+                reject(copyErr);
+              }
             }
           })
           .run();

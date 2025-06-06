@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import type { Comment } from '../../model/types';
 import { commentStore } from '../../model/commentStore';
-import { getMe } from '@/shared/lib/getMe';
+import { userStore } from '@/features/auth/model/userStore';
 
 const props = defineProps({
   comment: {
@@ -21,6 +21,7 @@ const isEditing = ref(false);
 const editContent = ref('');
 const showReplies = ref(false);
 const isReplying = ref(false);
+const isLoadingReplies = ref(false);
 
 const formattedDate = computed(() => {
   try {
@@ -47,12 +48,19 @@ const formattedDate = computed(() => {
 });
 
 const hasReplies = computed(() => {
-  // Handle the case where repliesCount is undefined
-  return props.comment.repliesCount !== undefined && props.comment.repliesCount > 0;
+  console.log('Checking if comment has replies:', props.comment.id, 'repliesCount:', props.comment.repliesCount);
+  // Ensure we handle undefined, null, or zero cases properly
+  const count = props.comment.repliesCount;
+  return count !== undefined && count !== null && count > 0;
+});
+
+const replyCount = computed(() => {
+  return props.comment.repliesCount || 0;
 });
 
 const replies = computed(() => {
   if (!props.comment.id || !showReplies.value) return [];
+  console.log('Getting replies for comment:', props.comment.id, commentStore.replies.value[props.comment.id]);
   return commentStore.replies.value[props.comment.id] || [];
 });
 
@@ -90,6 +98,8 @@ const toggleReplies = async () => {
   
   if (showReplies.value && (!commentStore.replies.value[props.comment.id] || commentStore.replies.value[props.comment.id].length === 0)) {
     try {
+      isLoadingReplies.value = true;
+      console.log('Loading replies for comment:', props.comment.id);
       await commentStore.fetchReplies(props.comment.videoId, props.comment.id);
     } catch (error) {
       console.error('Failed to fetch replies:', error);
@@ -99,6 +109,8 @@ const toggleReplies = async () => {
       
       // Hide the replies section since we couldn't load them
       showReplies.value = false;
+    } finally {
+      isLoadingReplies.value = false;
     }
   }
 };
@@ -129,19 +141,51 @@ const handleDelete = () => {
   }
 };
 
-const isCurrentUser = computed(() => {
-  const userId = getMe().sub;
-  return userId === props.comment.userId;
+const isAuthenticated = computed(() => {
+  return !!localStorage.getItem('token');
 });
+
+const isCurrentUser = computed(() => {
+  try {
+    if (!isAuthenticated.value) return false;
+    
+    // Use userStore instead of getMe directly
+    const userId = userStore.user.value?.id;
+    return userId === props.comment.userId;
+  } catch (error) {
+    console.error('Error checking if current user:', error);
+    return false;
+  }
+});
+
+const getCommentAvatarUrl = (user: { id?: string; username?: string } | null | undefined): string => {
+  // First try to get the avatar from the API if user and id exist
+  if (user && user.id) {
+    return `/api/users/${user.id}/avatar`;
+  }
+  
+  // If that's not possible, use the DiceBear fallback
+  return `https://api.dicebear.com/9.x/thumbs/svg?seed=${user ? user.username : 'User'}`;
+};
+
+const handleImageError = (event: Event): void => {
+  const target = event.target as HTMLImageElement;
+  if (target) {
+    // If the avatar API fails, use DiceBear
+    const username = props.comment.user ? props.comment.user.username : 'User';
+    target.src = `https://api.dicebear.com/9.x/thumbs/svg?seed=${username}`;
+  }
+};
 </script>
 
 <template>
   <div class="comment" :class="{ 'comment--reply': isReply }">
     <div class="comment__avatar">
       <img 
-        :src="comment.userAvatarUrl || `/api/users/${comment.userId}/avatar`" 
-        :alt="comment.user.username" 
+        :src="getCommentAvatarUrl(comment.user)"
+        :alt="comment.user ? comment.user.username : 'User'" 
         class="comment__avatar-img"
+        @error="handleImageError"
       />
     </div>
     
@@ -152,7 +196,13 @@ const isCurrentUser = computed(() => {
       </div>
       
       <div v-if="!isEditing" class="comment__text">
-        {{ comment.content }}
+        <span v-if="comment.user">
+          <router-link 
+            :to="`/channel/${comment.userId}`" 
+            class="comment__mention"
+          >@{{ comment.user.username }},</router-link> {{ comment.content }}
+        </span>
+        <span v-else>{{ comment.content }}</span>
       </div>
       
       <div v-else class="comment__edit-form">
@@ -181,13 +231,13 @@ const isCurrentUser = computed(() => {
       </div>
       
       <div class="comment__actions">
-        <!-- <button 
-          v-if="!isReply"
+        <button 
+          v-if="isAuthenticated"
           class="comment__action-button"
           @click="toggleReplyForm"
         >
           Reply
-        </button> -->
+        </button>
         
         <button 
           v-if="isCurrentUser"
@@ -215,13 +265,13 @@ const isCurrentUser = computed(() => {
           class="comment__replies-button"
           @click="toggleReplies"
         >
-          <span v-if="!showReplies">Show {{ comment.repliesCount || 0 }} {{ (comment.repliesCount === 1) ? 'reply' : 'replies' }}</span>
+          <span v-if="!showReplies">Show {{ replyCount }} {{ (replyCount === 1) ? 'reply' : 'replies' }}</span>
           <span v-else>Hide replies</span>
         </button>
       </div>
       
       <div v-if="showReplies && !isReply" class="comment__replies">
-        <div v-if="commentStore.isLoading.value" class="comment__replies-loading">
+        <div v-if="isLoadingReplies" class="comment__replies-loading">
           Loading replies...
         </div>
         
@@ -236,7 +286,11 @@ const isCurrentUser = computed(() => {
             @delete="$emit('delete', $event)"
           >
             <template #reply-form>
-              <slot name="reply-form" :parent-id="reply.id" :on-cancel="toggleReplyForm"/>
+              <slot 
+                name="reply-form" 
+                :parent-id="reply.id" 
+                :on-cancel="() => showReplies = false"
+              />
             </template>
           </CommentItem>
         </template>
@@ -253,39 +307,47 @@ const isCurrentUser = computed(() => {
 }
 
 .comment--reply {
-  margin-left: 24px;
-  margin-bottom: 16px;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 2px solid var(--panel-bg, #E6F0FB);
 }
 
 .comment__avatar {
   flex-shrink: 0;
+  width: 40px;
+  height: 40px;
   margin-right: 16px;
 }
 
 .comment__avatar-img {
-  width: 40px;
-  height: 40px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
   background-color: var(--panel-bg, #E6F0FB);
 }
 
 .comment__content {
-  flex-grow: 1;
+  flex: 1;
   min-width: 0;
 }
 
 .comment__header {
   display: flex;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .comment__username {
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: 600;
   color: var(--text-primary, #1A2233);
   margin-right: 8px;
+  text-decoration: none;
+}
+
+.comment__username:hover {
+  color: var(--primary, #41A4FF);
+  text-decoration: underline;
 }
 
 .comment__date {
@@ -294,52 +356,25 @@ const isCurrentUser = computed(() => {
 }
 
 .comment__text {
-  font-size: 14px;
-  line-height: 1.5;
+  margin-bottom: 12px;
   color: var(--text-primary, #1A2233);
-  margin-bottom: 8px;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.comment__actions {
-  display: flex;
-  gap: 16px;
-  margin-top: 8px;
-}
-
-.comment__action-button {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 12px;
-  color: var(--text-secondary, #67748B);
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.comment__action-button:hover {
-  color: var(--primary, #41A4FF);
-}
-
-.comment__action-button--delete:hover {
-  color: var(--error, #FF677B);
-}
-
 .comment__edit-form {
-  margin-top: 8px;
+  margin-bottom: 12px;
 }
 
 .comment__edit-textarea {
   width: 100%;
-  padding: 8px 12px;
+  padding: 12px;
   border: 1px solid var(--panel-bg, #E6F0FB);
   border-radius: 4px;
   font-family: 'Rubik', sans-serif;
   font-size: 14px;
   resize: vertical;
-  background-color: white;
-  color: var(--text-primary, #1A2233);
+  margin-bottom: 8px;
 }
 
 .comment__edit-textarea:focus {
@@ -351,7 +386,6 @@ const isCurrentUser = computed(() => {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 8px;
 }
 
 .comment__button {
@@ -360,7 +394,6 @@ const isCurrentUser = computed(() => {
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .comment__button--cancel {
@@ -389,27 +422,51 @@ const isCurrentUser = computed(() => {
   cursor: not-allowed;
 }
 
-.comment__reply-form {
-  margin-top: 16px;
-  margin-bottom: 16px;
+.comment__actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
-.comment__replies-toggle {
-  margin-top: 8px;
-}
-
-.comment__replies-button {
-  background: none;
+.comment__action-button {
+  background-color: transparent;
   border: none;
   padding: 0;
   font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary, #67748B);
+  cursor: pointer;
+}
+
+.comment__action-button:hover {
+  color: var(--primary, #41A4FF);
+}
+
+.comment__action-button--delete:hover {
+  color: var(--error, #FF677B);
+}
+
+.comment__reply-form {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.comment__replies-toggle {
+  margin-bottom: 12px;
+}
+
+.comment__replies-button {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--primary, #41A4FF);
   cursor: pointer;
-  transition: color 0.2s;
 }
 
 .comment__replies-button:hover {
-  color: var(--secondary, #9067E6);
+  text-decoration: underline;
 }
 
 .comment__replies {
@@ -417,35 +474,53 @@ const isCurrentUser = computed(() => {
 }
 
 .comment__replies-loading {
+  padding: 12px;
   font-size: 12px;
   color: var(--text-secondary, #67748B);
-  margin-left: 24px;
-  margin-bottom: 16px;
+  background-color: var(--panel-bg, #E6F0FB);
+  border-radius: 4px;
+}
+
+.comment__mention {
+  color: var(--primary, #41A4FF);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.comment__mention:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {
   .comment--reply {
-    margin-left: 16px;
-  }
-  
-  .comment__avatar-img {
-    width: 32px;
-    height: 32px;
+    margin-left: 12px;
+    padding-left: 12px;
   }
   
   .comment__avatar {
+    width: 32px;
+    height: 32px;
     margin-right: 12px;
   }
-}
-
-@media (max-width: 480px) {
-  .comment--reply {
-    margin-left: 8px;
+  
+  .comment__username {
+    font-size: 14px;
   }
   
-  .comment__actions {
-    flex-wrap: wrap;
-    gap: 12px;
+  .comment__date {
+    font-size: 10px;
+  }
+  
+  .comment__text {
+    font-size: 14px;
+  }
+  
+  .comment__action-button {
+    font-size: 10px;
+  }
+  
+  .comment__replies-button {
+    font-size: 10px;
   }
 }
 </style>

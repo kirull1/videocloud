@@ -15,12 +15,14 @@ const error = ref<string | null>(null);
 
 // Load comments when component is mounted
 onMounted(async () => {
+  console.log('Comment section mounted, loading comments for video:', props.videoId);
   await loadComments();
 });
 
 // Watch for changes in videoId and reload comments
 watch(() => props.videoId, async (newVideoId) => {
   if (newVideoId) {
+    console.log('Video ID changed, loading comments for new video:', newVideoId);
     await loadComments();
   }
 });
@@ -30,7 +32,9 @@ const loadComments = async () => {
   try {
     isLoading.value = true;
     error.value = null;
+    console.log('Loading comments for video:', props.videoId);
     await commentStore.fetchComments(props.videoId);
+    console.log('Comments loaded successfully, count:', commentStore.comments.value.length);
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load comments';
     console.error('Failed to load comments:', err);
@@ -59,15 +63,7 @@ const handleDelete = async (commentId: string) => {
     isLoading.value = true;
     await commentStore.deleteComment(commentId);
     // Show a success message
-    const successMessage = document.createElement('div');
-    successMessage.className = 'comment-section__success-message';
-    successMessage.textContent = 'Comment deleted successfully';
-    document.body.appendChild(successMessage);
-    
-    // Remove the success message after 3 seconds
-    setTimeout(() => {
-      document.body.removeChild(successMessage);
-    }, 3000);
+    showSuccessMessage('Comment deleted successfully');
   } catch (err) {
     console.error('Failed to delete comment:', err);
     error.value = err instanceof Error ? err.message : 'Failed to delete comment';
@@ -84,27 +80,53 @@ const handleDelete = async (commentId: string) => {
   }
 };
 
+// Add success message function
+const showSuccessMessage = (message: string) => {
+  const successMessage = document.createElement('div');
+  successMessage.className = 'comment-section__success-message';
+  successMessage.textContent = message;
+  document.body.appendChild(successMessage);
+  
+  // Remove the success message after 3 seconds
+  setTimeout(() => {
+    document.body.removeChild(successMessage);
+  }, 3000);
+};
+
 // Handle comment form submission
-const handleCommentSubmit = () => {
+const handleCommentSubmit = (isReply = false) => {
   // The comment is already added to the store by the CommentForm component
-  console.log('Comment submitted');
+  if (!isReply) {
+    showSuccessMessage('Comment posted successfully');
+  }
+  // No success message for replies
 };
 
 // Check if user is authenticated
-const isAuthenticated = computed(() => userStore.isAuthenticated.value);
+const isAuthenticated = computed(() => {
+  const isAuth = !!localStorage.getItem('token');
+  console.log('Authentication status:', isAuth ? 'Authenticated' : 'Not authenticated');
+  return isAuth;
+});
 </script>
 
 <template>
   <div class="comment-section">
     <h2 class="comment-section__title">Comments</h2>
     
-    <div class="comment-section__form">
+    <!-- Show comment form only for authenticated users -->
+    <div v-if="isAuthenticated" class="comment-section__form">
       <CommentForm
         :video-id="videoId"
         placeholder="Add a comment..."
         submit-label="Comment"
         @submit="handleCommentSubmit"
       />
+    </div>
+    
+    <!-- Show login message for unauthenticated users -->
+    <div v-else class="comment-section__auth-message">
+      <p>Sign in to leave a comment</p>
     </div>
     
     <div v-if="isLoading" class="comment-section__loading">
@@ -121,8 +143,7 @@ const isAuthenticated = computed(() => userStore.isAuthenticated.value);
     </div>
     
     <div v-else-if="commentStore.comments.value.length === 0" class="comment-section__empty">
-      <span v-if="isAuthenticated">No comments yet. Be the first to comment!</span>
-      <span v-else>No comments</span>
+      <span>No comments yet</span>
     </div>
     
     <div v-else class="comment-section__list">
@@ -144,7 +165,7 @@ const isAuthenticated = computed(() => userStore.isAuthenticated.value);
             :show-cancel="true"
             @cancel="onCancel"
             @submit="() => {
-              handleCommentSubmit();
+              handleCommentSubmit(true);
               onCancel();
             }"
           />
@@ -169,6 +190,15 @@ const isAuthenticated = computed(() => userStore.isAuthenticated.value);
 
 .comment-section__form {
   margin-bottom: 32px;
+}
+
+.comment-section__auth-message {
+  margin-bottom: 24px;
+  padding: 12px;
+  background-color: var(--panel-bg, #E6F0FB);
+  border-radius: 4px;
+  text-align: center;
+  color: var(--text-secondary, #67748B);
 }
 
 .comment-section__loading,
@@ -237,7 +267,7 @@ const isAuthenticated = computed(() => userStore.isAuthenticated.value);
   flex-direction: column;
 }
 
-/* Success message */
+/* Success message animation */
 .comment-section__success-message {
   position: fixed;
   bottom: 20px;
@@ -248,9 +278,9 @@ const isAuthenticated = computed(() => userStore.isAuthenticated.value);
   border-radius: 4px;
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  animation: fadeInOut 3s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: fadeInOut 3s ease-in-out forwards;
 }
 
 @keyframes fadeInOut {

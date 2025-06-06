@@ -27,8 +27,6 @@ export class Comment {
   @Column({ name: 'video_id' })
   videoId: string;
 
-  // Temporarily comment out these fields until the database schema is updated
-  /*
   @Column({ name: 'likes_count', default: 0 })
   likesCount: number;
 
@@ -37,7 +35,6 @@ export class Comment {
 
   @Column({ name: 'replies_count', default: 0 })
   repliesCount: number;
-  */
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

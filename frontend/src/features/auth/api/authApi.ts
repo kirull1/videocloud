@@ -81,6 +81,7 @@ export const authApi = {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
       });
       
@@ -92,7 +93,15 @@ export const authApi = {
         return false;
       }
       
-      return true;
+      // Make sure we can parse the response as JSON
+      try {
+        await response.json();
+        return true;
+      } catch (parseError) {
+        console.error('Error parsing profile response:', parseError);
+        await this.logout();
+        return false;
+      }
     } catch (error) {
       console.error('Error validating token:', error);
       // In case of an error, assume the token is invalid

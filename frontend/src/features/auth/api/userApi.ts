@@ -44,30 +44,21 @@ const API_URL = `${appConfig.apiUrl}/users`;
 
 export const userApi = {
   async getProfile(): Promise<ProfileResponse> {
-    return authenticatedFetch(`${API_URL}/profile`, {
+    return authenticatedFetch<ProfileResponse>(`${API_URL}/profile`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
   },
 
   async updateProfile(data: UpdateProfileRequest): Promise<ProfileResponse> {
-    return authenticatedFetch(`${API_URL}/profile`, {
+    return authenticatedFetch<ProfileResponse>(`${API_URL}/profile`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     });
   },
 
   async changePassword(data: ChangePasswordRequest): Promise<MessageResponse> {
-    return authenticatedFetch(`${API_URL}/password`, {
+    return authenticatedFetch<MessageResponse>(`${API_URL}/password`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     });
   },
@@ -93,19 +84,11 @@ export const userApi = {
     });
     
     try {
-      // Make the request with the correct headers
-      // Important: Do NOT set Content-Type header when using FormData
-      const response = await fetch(`${API_URL}/avatar`, {
+      // Use authenticatedFetch but don't set Content-Type header
+      return authenticatedFetch<AvatarResponse>(`${API_URL}/avatar`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-          // Let the browser set the Content-Type header with boundary
-        },
         body: formData,
       });
-  
-      // Use our handleApiResponse function to handle the response
-      return handleApiResponse(response);
     } catch (error) {
       console.error('Avatar upload error:', error);
       throw error;
@@ -113,39 +96,32 @@ export const userApi = {
   },
 
   async requestEmailVerification(): Promise<MessageResponse> {
-    return authenticatedFetch(`${API_URL}/verify-email`, {
+    return authenticatedFetch<MessageResponse>(`${API_URL}/verify-email`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
   },
 
   async verifyEmail(verificationToken: string): Promise<MessageResponse> {
-    const response = await fetch(`${API_URL}/verify-email/${verificationToken}`, {
+    return fetch(`${API_URL}/verify-email/${verificationToken}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ token: verificationToken }),
-    });
-
-    return handleApiResponse(response);
+    }).then(response => handleApiResponse<MessageResponse>(response));
   },
 
   async requestPasswordReset(data: RequestPasswordResetRequest): Promise<MessageResponse> {
     try {
       console.log('Sending password reset request:', data);
       
-      const response = await fetch(`${API_URL}/password-reset/request`, {
+      return fetch(`${API_URL}/password-reset/request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      });
-
-      return handleApiResponse(response);
+      }).then(response => handleApiResponse<MessageResponse>(response));
     } catch (error: any) {
       console.error('Password reset request error:', error);
       throw error;
@@ -156,15 +132,13 @@ export const userApi = {
     try {
       console.log('Sending password reset:', data);
       
-      const response = await fetch(`${API_URL}/password-reset/reset`, {
+      return fetch(`${API_URL}/password-reset/reset`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      });
-
-      return handleApiResponse(response);
+      }).then(response => handleApiResponse<MessageResponse>(response));
     } catch (error: any) {
       console.error('Password reset error:', error);
       throw error;

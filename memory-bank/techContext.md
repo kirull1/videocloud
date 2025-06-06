@@ -205,6 +205,25 @@ CREATE INDEX IDX_subscriptions_subscriber_id ON subscriptions (subscriber_id);
 CREATE INDEX IDX_subscriptions_channel_id ON subscriptions (channel_id);
 ```
 
+### Comments Table
+```sql
+CREATE TABLE comments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  content TEXT NOT NULL,
+  parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  video_id UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+  likes_count INTEGER NOT NULL DEFAULT 0,
+  dislikes_count INTEGER NOT NULL DEFAULT 0,
+  replies_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IDX_comments_user_id ON comments (user_id);
+CREATE INDEX IDX_comments_video_id ON comments (video_id);
+```
+
 ## File Storage
 
 ### S3 Integration

@@ -1,34 +1,106 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { userStore } from '../model/userStore'
 import { channelStore } from '@/entities/channel'
+import { generateAvatarUrl } from '@/shared/lib/avatar'
+
+const props = defineProps({
+  isAuthenticated: {
+    type: Boolean,
+    required: true
+  },
+  userName: {
+    type: String,
+    default: ''
+  },
+  userAvatar: {
+    type: String,
+    default: ''
+  }
+});
 
 const router = useRouter()
 const isMenuOpen = ref(false)
-const isAuthenticated = computed(() => userStore.isAuthenticated.value)
-const username = computed(() => userStore.username.value)
-const userAvatar = computed(() => userStore.avatarUrl.value)
 const hasChannel = ref(false)
 const isCheckingChannel = ref(false)
+const isLoadingUser = ref(false)
+const fallbackAvatar = ref(generateAvatarUrl(props.userName || 'User'))
 
-onMounted(async () => {
-  userStore.init()
-  
-  // Check if user has a channel
-  if (isAuthenticated.value) {
-    try {
-      isCheckingChannel.value = true
-      await channelStore.fetchMyChannel()
-      hasChannel.value = !!channelStore.myChannel
-    } catch (error) {
-      console.error('Error checking for channel:', error)
-      hasChannel.value = false
-    } finally {
-      isCheckingChannel.value = false
+// Watch for changes in authentication state
+watch(() => props.isAuthenticated, async (newValue) => {
+  if (newValue) {
+    await checkUserAndChannel();
+  }
+});
+
+// Update fallback avatar when username changes
+watch(() => props.userName, (newName) => {
+  if (newName) {
+    fallbackAvatar.value = generateAvatarUrl(newName);
+  }
+});
+
+// Watch for avatar URL changes
+watch(() => props.userAvatar, (newAvatarUrl) => {
+  console.log('Avatar URL updated:', newAvatarUrl);
+});
+
+const handleImageError = (event: Event) => {
+  const target = event.target as HTMLImageElement;
+  if (target) {
+    console.log('Avatar image failed to load, using fallback');
+    // Use our computed fallback
+    target.src = fallbackAvatar.value;
+    
+    // Also add an onerror handler to prevent infinite error loops
+    target.onerror = null;
+    
+    // Force a refresh of the avatar URL in the userStore
+    if (userStore.user.value) {
+      userStore.fetchUserProfile();
     }
   }
-})
+};
+
+onMounted(async () => {  
+  if (props.isAuthenticated) {
+    await checkUserAndChannel();
+  }
+});
+
+const checkUserAndChannel = async () => {
+  // Load user profile if not already loaded
+  if (!userStore.user.value) {
+    try {
+      isLoadingUser.value = true;
+      await userStore.fetchUserProfile();
+      console.log('User profile loaded in Auth component:', userStore.user.value);
+      
+      // Update fallback avatar with username from store
+      const username = userStore.username.value;
+      if (username) {
+        fallbackAvatar.value = generateAvatarUrl(username);
+      }
+    } catch (error) {
+      console.error('Failed to load user profile in Auth component:', error);
+    } finally {
+      isLoadingUser.value = false;
+    }
+  }
+  
+  // Check if user has a channel
+  try {
+    isCheckingChannel.value = true
+    await channelStore.fetchMyChannel()
+    hasChannel.value = !!channelStore.myChannel
+  } catch (error) {
+    console.error('Error checking for channel:', error)
+    hasChannel.value = false
+  } finally {
+    isCheckingChannel.value = false
+  }
+}
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
@@ -50,8 +122,11 @@ const handleLogout = async () => {
     <div v-else class="user-menu">
       
       <button class="user-button" @click="toggleMenu">
-        <img :src="userAvatar" alt="User avatar" class="avatar" />
-        <span class="username">{{ username }}</span>
+        <img :src="userAvatar"
+             alt="User avatar"
+             class="avatar"
+             @error="handleImageError" />
+        <span class="username">{{ userName }}</span>
       </button>
       
       <transition name="menu-fade">

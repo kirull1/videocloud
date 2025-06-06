@@ -1,6 +1,6 @@
 import type { Comment, CreateCommentRequest, UpdateCommentRequest } from '../model/types';
-
 import { appConfig } from '@/shared/config/app.config';
+import { authenticatedFetch } from '@/shared/lib/apiUtils';
 
 const API_URL = `${appConfig.apiUrl}/comments`;
 
@@ -12,19 +12,24 @@ export const commentApi = {
       url += `&parentId=${parentId}`;
     }
     
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch comments');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to fetch comments' }));
+        throw new Error(error.message || 'Failed to fetch comments');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      throw error;
     }
-
-    return response.json();
   },
 
   async getComment(id: string): Promise<Comment> {
@@ -36,7 +41,7 @@ export const commentApi = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({ message: 'Failed to fetch comment' }));
       throw new Error(error.message || 'Failed to fetch comment');
     }
 
@@ -44,47 +49,39 @@ export const commentApi = {
   },
 
   async createComment(data: CreateCommentRequest): Promise<Comment> {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-    
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
+    try {
+      console.log('Creating comment with data:', data);
+      const response = await authenticatedFetch(`${API_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create comment');
-    }
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to create comment' }));
+        throw new Error(error.message || 'Failed to create comment');
+      }
 
-    return response.json();
+      return response.json();
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      throw error;
+    }
   },
 
   async updateComment(id: string, data: UpdateCommentRequest): Promise<Comment> {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-    
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({ message: 'Failed to update comment' }));
       throw new Error(error.message || 'Failed to update comment');
     }
 
@@ -92,21 +89,12 @@ export const commentApi = {
   },
 
   async deleteComment(id: string): Promise<void> {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-    
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({ message: 'Failed to delete comment' }));
       throw new Error(error.message || 'Failed to delete comment');
     }
   },

@@ -1,20 +1,43 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import { computed, onMounted, watch } from 'vue';
 import Search from '@/features/search';
 import Auth from '@/features/auth';
 import Logo from '@/shared/ui/Logo';
+import { userStore } from '@/features/auth/model/userStore';
 
 const router = useRouter();
 
+// Get authentication state from userStore
+const isAuthenticated = computed(() => userStore.isAuthenticated.value);
+const userName = computed(() => userStore.username.value);
+const userAvatar = computed(() => userStore.avatarUrl.value);
+
+// Ensure user profile is loaded if authenticated
+onMounted(async () => {
+  if (isAuthenticated.value) {
+    try {
+      await userStore.fetchUserProfile();
+      console.log('User profile loaded in Header:', userStore.user.value);
+    } catch (error) {
+      console.error('Failed to load user profile in Header:', error);
+    }
+  }
+});
+
+// Watch for authentication changes to reload user profile
+watch(() => isAuthenticated.value, async (newValue: boolean) => {
+  if (newValue) {
+    try {
+      await userStore.fetchUserProfile();
+      console.log('User profile reloaded after auth change:', userStore.user.value);
+    } catch (error) {
+      console.error('Failed to reload user profile after auth change:', error);
+    }
+  }
+});
+
 defineProps({
-  isAuthenticated: {
-    type: Boolean,
-    default: false
-  },
-  userName: {
-    type: String,
-    default: ''
-  },
   isSearchLoading: {
     type: Boolean,
     default: false
@@ -64,6 +87,7 @@ const handleLogout = () => {
         <Auth 
           :is-authenticated="isAuthenticated"
           :user-name="userName"
+          :user-avatar="userAvatar"
           @login="handleLogin"
           @signup="handleSignup"
           @logout="handleLogout"

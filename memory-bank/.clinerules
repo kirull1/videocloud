@@ -87,6 +87,13 @@ This file captures important patterns, preferences, and project intelligence tha
 
 ## Technical Decisions
 
+- **Video Processing**:
+  - ffmpeg is used for video transcoding, thumbnail generation, and metadata extraction
+  - Prefer system-installed ffmpeg (via Homebrew on macOS) for reliability
+  - Use ffmpeg-static as a fallback with proper error handling
+  - Implement robust fallback mechanisms to handle missing ffmpeg binary
+  - Provide clear error messages with specific fix instructions
+
 - **State Management**: MobX is preferred over Vuex/Pinia for state management.
 - **API Design**: RESTful API is the current approach, with potential for GraphQL later.
 - **Authentication**: JWT-based authentication with refresh tokens.
@@ -114,7 +121,11 @@ This file captures important patterns, preferences, and project intelligence tha
 
 ## Common Challenges
 
-- **Video Processing**: Transcoding is resource-intensive and requires careful optimization.
+- **Video Processing**:
+  - Transcoding is resource-intensive and requires careful optimization.
+  - ffmpeg dependency is critical for video processing functionality.
+  - The ffmpeg-static package may fail to download the binary during installation.
+  - System-installed ffmpeg can be used as a fallback when the package fails.
 - **Real-time Features**: WebSockets implementation needs careful consideration for scaling.
 - **State Synchronization**: Keeping UI state in sync with backend changes.
 - **Large File Uploads**: Handling video uploads requires chunked uploading and progress tracking.
@@ -161,6 +172,20 @@ This file captures important patterns, preferences, and project intelligence tha
   6. Frontend uses full page reloads when navigating to video pages to ensure fresh thumbnails
   7. Original thumbnails are preserved if provided during upload
 - **Video Playback Flow**: Request → Authorization check → CDN delivery → Adaptive streaming → Analytics tracking
+
+- **Video Processing with ffmpeg Flow**:
+  1. User uploads video file to the platform
+  2. VideoProcessingService attempts to load ffmpeg from the ffmpeg-static package
+  3. If ffmpeg-static fails, system checks for globally installed ffmpeg
+  4. VideoProcessingService uses ffmpeg to:
+     - Transcode video to different formats (MP4, WebM)
+     - Create different quality variants (720p, 480p, 360p)
+     - Generate thumbnails at different timestamps
+     - Extract metadata like duration
+  5. Processing status is updated in real-time via SSE
+  6. Processed videos and thumbnails are stored in S3
+  7. Video status is updated to "processed" when complete
+  8. Frontend displays the processed video with adaptive streaming options
 - **Avatar Upload Flow**: 
   1. User selects avatar image in profile page
   2. Frontend validates file type and size
@@ -178,6 +203,18 @@ This file captures important patterns, preferences, and project intelligence tha
   5. Shows videos in a responsive grid using VideoCard components
   6. Provides tabs for Videos and About sections
   7. Handles error states and loading indicators
+- **Comment Reply Flow**:
+  1. User clicks "Reply" button on a comment
+  2. The CommentItem component shows the reply form via toggleReplyForm()
+  3. User enters reply text and submits the form
+  4. CommentForm component calls the commentStore.createComment method with parentId
+  5. The comment API sends a POST request to /api/comments with videoId, content and parentId
+  6. Backend creates a new comment with a reference to the parent comment
+  7. Parent comment's repliesCount is incremented in the database
+  8. UI displays a success message "Reply posted successfully"
+  9. The reply appears in the nested comments list when parent comment's "Show replies" is clicked
+  10. UI ensures replies are properly indented and visually distinguished from parent comments
+  11. Replies persist across page reloads due to proper database storage and retrieval
 
 ### Subscription System Flow
 1. User clicks "Subscribe" button on a channel page

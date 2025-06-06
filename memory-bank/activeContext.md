@@ -25,6 +25,34 @@ The VideoCloud project is currently in the initial development phase, focusing o
 
 ## Recent Changes
 
+### Video Processing ffmpeg Fix
+- Fixed issue with video uploads failing due to missing ffmpeg binary
+- Installed ffmpeg globally on the system using Homebrew
+- Enhanced the VideoProcessingService to better handle missing ffmpeg binary
+- Added fallback mechanisms to use system ffmpeg if the ffmpeg-static package fails
+- Improved error messages with specific instructions on how to fix the issue
+- Added better error handling for the ffmpeg-static package import
+- Implemented robust fallback to ensure videos can still be processed even without ffmpeg
+
+### Comment Reply Persistence Fix
+- Fixed issue with comment replies not persisting after page reload
+- Added missing database columns (likes_count, dislikes_count, replies_count) to comments table
+- Uncommented entity fields and DTO properties related to comment counters
+- Re-enabled code to update repliesCount when adding or removing replies
+- Ensured proper nested comment structure persistence
+- Applied previously disabled database migration for comment counter columns
+
+### Comment Reply Functionality
+- Implemented ability to reply to comments
+- Enabled reply button in the CommentItem component
+- Enhanced styling for comment replies with better visual hierarchy
+- Improved reply form handling in the CommentSection component
+- Added success messages for comment and reply operations
+- Updated comment API to use proper authentication handling
+- Added better error handling for API responses
+- Enhanced the visual display of nested comment threads
+- Added indentation and border styling for comment replies
+
 ### Subscription System Fix
 - Fixed database schema issue where the channel_id foreign key in the subscriptions table was pointing to the users table instead of the channels table
 - Added missing updated_at column to the subscriptions table

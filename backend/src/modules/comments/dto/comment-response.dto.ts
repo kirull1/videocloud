@@ -25,8 +25,6 @@ export class CommentResponseDto {
   @Transform(({ obj }) => obj.user?.avatarUrl || null)
   userAvatarUrl: string | null;
 
-  // Temporarily disable these fields until the database schema is updated
-  /*
   @Expose()
   likesCount: number;
 
@@ -35,7 +33,6 @@ export class CommentResponseDto {
 
   @Expose()
   repliesCount: number;
-  */
 
   @Expose()
   createdAt: Date;

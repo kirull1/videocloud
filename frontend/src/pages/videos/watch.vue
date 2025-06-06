@@ -243,6 +243,7 @@ const navigateToChannel = (event: Event) => {
         </div>
         
         <VideoPlayer
+          :video-id="video.id"
           :poster="video.thumbnailUrl"
         />
       </div>

@@ -45,9 +45,17 @@ const handleSubmit = async () => {
     const commentData = {
       content: content.value.trim(),
       videoId: props.videoId,
-      ...(props.parentId ? { parentId: props.parentId } : {})
     };
     
+    // Add parentId if it's a reply
+    if (props.parentId) {
+      console.log('Creating a reply to parent:', props.parentId);
+      Object.assign(commentData, { parentId: props.parentId });
+    } else {
+      console.log('Creating a new top-level comment');
+    }
+    
+    console.log('Submitting comment data:', commentData);
     await commentStore.createComment(commentData);
     content.value = '';
     emit('submit');

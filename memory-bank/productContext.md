@@ -127,6 +127,8 @@ VideoCloud was created to address several key challenges in the current video ho
 3. **Meaningful Engagement**: Facilitate interaction with content and creators
 
    - Timestamped comments
+   - Nested comment replies
+   - Threaded discussions
    - Reaction options
    - Sharing tools
    - Creator connections

@@ -20,9 +20,22 @@ const error = ref<string | null>(null)
 
 // Create computed properties
 const isAuthenticated = computed(() => authApi.isAuthenticated())
-const username = computed(() => user.value?.username || 'User')
+const username = computed(() => {
+  if (user.value && user.value.username) {
+    return user.value.username
+  }
+  return 'User'
+})
 const avatarUrl = computed(() => {
-  return getAvatarUrl(user.value?.avatarUrl, username.value)
+  // Check if we have a user with an ID
+  if (user.value && user.value.id) {
+    // Use the API endpoint with a cache-busting parameter to prevent caching issues
+    const baseUrl = `${import.meta.env.VITE_API_URL || '/api'}/users/${user.value.id}/avatar`;
+    return `${baseUrl}?t=${Date.now()}`;
+  }
+  
+  // If no user ID is available, use DiceBear as a fallback
+  return getAvatarUrl(undefined, username.value);
 })
 
 // Actions
