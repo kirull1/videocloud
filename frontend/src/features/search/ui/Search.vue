@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 defineProps({
   placeholder: {
     type: String,
-    default: 'Search videos...'
+    default: ''
   },
   isLoading: {
     type: Boolean,
@@ -36,13 +40,14 @@ const handleSearchButtonClick = () => {
         ref="searchInput"
         type="text"
         class="search__input"
-        :placeholder="placeholder"
+        :placeholder="placeholder || t('header.searchPlaceholder')"
         @keyup.enter="handleSearch"
       />
       <button
         class="search__button"
         :class="{ 'search__button--loading': isLoading }"
         @click="handleSearchButtonClick"
+        :aria-label="t('common.search')"
       >
         <svg
           v-if="!isLoading"

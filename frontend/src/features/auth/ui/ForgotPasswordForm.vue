@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { userApi } from '../api/userApi';
+
+const { t } = useI18n();
 
 const email = ref('');
 const isLoading = ref(false);
@@ -11,7 +14,7 @@ const emit = defineEmits(['success', 'cancel']);
 
 const handleSubmit = async () => {
   if (!email.value) {
-    error.value = 'Please enter your email address';
+    error.value = t('auth.pleaseEnterEmail');
     return;
   }
 
@@ -25,11 +28,11 @@ const handleSubmit = async () => {
     
     console.log('Password reset response:', response);
     
-    successMessage.value = response.message;
+    successMessage.value = response.message || t('auth.resetRequestSuccess');
     emit('success');
   } catch (err: any) {
     console.error('Password reset error:', err);
-    error.value = err.message || 'Failed to request password reset';
+    error.value = err.message || t('auth.resetRequestError');
   } finally {
     isLoading.value = false;
   }
@@ -42,10 +45,10 @@ const handleCancel = () => {
 
 <template>
   <div class="forgot-password-form">
-    <h2 class="form-title">Forgot Password</h2>
+    <h2 class="form-title">{{ $t('auth.forgotPasswordPage') }}</h2>
     
     <p class="form-description">
-      Enter your email address and we'll send you a link to reset your password.
+      {{ $t('auth.forgotPasswordDescription') }}
     </p>
     
     <div v-if="successMessage" class="success-message">
@@ -54,13 +57,13 @@ const handleCancel = () => {
     
     <form v-else class="form" @submit.prevent="handleSubmit">
       <div class="form-group">
-        <label for="email" class="form-label">Email</label>
+        <label for="email" class="form-label">{{ $t('auth.emailAddress') }}</label>
         <input
           id="email"
           v-model="email"
           type="email"
           class="form-input"
-          placeholder="Enter your email"
+          :placeholder="$t('auth.enterEmail')"
           :disabled="isLoading"
         />
       </div>
@@ -76,7 +79,7 @@ const handleCancel = () => {
           :disabled="isLoading"
           @click="handleCancel"
         >
-          Cancel
+          {{ $t('auth.cancel') }}
         </button>
         
         <button
@@ -85,7 +88,7 @@ const handleCancel = () => {
           :disabled="isLoading"
         >
           <span v-if="isLoading" class="loading-spinner"/>
-          <span v-else>Reset Password</span>
+          <span v-else>{{ $t('auth.sendResetLink') }}</span>
         </button>
       </div>
     </form>

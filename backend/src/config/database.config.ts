@@ -22,13 +22,14 @@ import { RenameUserColumnsToCamelCase1716650400000 } from '../migrations/1716650
 import { RenameVideoColumnsToCamelCase1716650500000 } from '../migrations/1716650500000-RenameVideoColumnsToCamelCase';
 import { FixAvatarColumnName1716650600000 } from '../migrations/1716650600000-FixAvatarColumnName';
 import { AddChannelIdToUsers1716650700000 } from '../migrations/1716650700000-AddChannelIdToUsers';
-import { AddCountColumnsToComments1716650700000 } from '../migrations/1716650700000-AddCountColumnsToComments';
+import { AddCountColumnsToComments1716650800000 } from '../migrations/1716650800000-AddCountColumnsToComments';
 import { CreateSubscriptionsTable1625847500000 } from '../migrations/1625847500000-CreateSubscriptionsTable';
+import { UpdateUserChannelRelationship1748612571230 } from '../migrations/1748612571230-UpdateUserChannelRelationship';
 import fs from 'fs';
 import { homedir } from 'os';
 import path from 'path';
 
-const SSL_CERT = fs.readFileSync(path.join(homedir(), 'video-cloud/.postgresql/root.crt')).toString();
+const SSL_CERT = process.env.DATABASE_SSL ? fs.readFileSync(path.join(homedir(), 'video-cloud/.postgresql/root.crt')).toString() : undefined;
 
 const databaseConfig = (): DataSourceOptions => ({
   type: 'postgres',
@@ -37,6 +38,7 @@ const databaseConfig = (): DataSourceOptions => ({
   username: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'videocloud',
+  schema: process.env.DATABASE_SCHEMA || 'public',
   ssl: process.env.DATABASE_SSL === 'true' ? {
     rejectUnauthorized: true,
     ca: SSL_CERT,
@@ -57,10 +59,12 @@ const databaseConfig = (): DataSourceOptions => ({
     RenameVideoColumnsToCamelCase1716650500000,
     FixAvatarColumnName1716650600000,
     AddChannelIdToUsers1716650700000,
-    AddCountColumnsToComments1716650700000,
+    AddCountColumnsToComments1716650800000,
+    CreateSubscriptionsTable1625847500000,
+    UpdateUserChannelRelationship1748612571230,
   ],
-  migrationsRun: true, // Set to true to run migrations automatically
-  synchronize: false, // Set to false to prevent automatic schema synchronization
+  migrationsRun: false, // Отключаем автоматический запуск миграций
+  synchronize: false, // Отключаем автоматическое создание таблиц
   logging: process.env.NODE_ENV === 'development',
 });
 

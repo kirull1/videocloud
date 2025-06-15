@@ -24,12 +24,27 @@ async function bootstrap() {
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
 
+  // Добавляем middleware для логирования запросов с информацией о языке
+  app.use((req, res, next) => {
+    const start = Date.now();
+    
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      logger.debug(
+        `${req.method} ${req.originalUrl} [${res.statusCode}] ${duration}ms, Language: ${req.language || 'unknown'}`,
+      );
+    });
+    
+    next();
+  });
+
   // Start the server
   await app.listen(appConfig.port);
 
   logger.info(
     `${appConfig.name} v${appConfig.version} is running on port ${appConfig.port} in ${appConfig.environment} mode`,
   );
+  logger.info(`Default language: ${appConfig.i18n.defaultLanguage}, Supported languages: ${appConfig.i18n.supportedLanguages.join(', ')}`);
 }
 
 bootstrap().catch((error) => {

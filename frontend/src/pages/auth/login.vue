@@ -1,7 +1,7 @@
 <template>
   <div class="auth-page">
     <div class="auth-container">
-      <h1>Sign In</h1>
+      <h1>{{ $t('auth.signIn') }}</h1>
       <LoginForm />
     </div>
   </div>
@@ -9,6 +9,9 @@
 
 <script setup lang="ts">
 import LoginForm from '@/features/auth/ui/LoginForm.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 </script>
 
 <style scoped>

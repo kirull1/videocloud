@@ -20,4 +20,10 @@ export const appConfig = {
   logging: {
     level: process.env.LOG_LEVEL || 'info',
   },
+  i18n: {
+    defaultLanguage: 'ru', // Русский язык по умолчанию
+    supportedLanguages: ['ru', 'en'], // Поддерживаемые языки
+    fallbackLanguage: 'ru', // Язык для запроса, если нужный не найден
+    headerName: 'accept-language', // Заголовок для определения языка
+  },
 };

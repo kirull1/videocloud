@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import VideoCard from '@/entities/video/ui/VideoCard';
 import { videoStore, VideoVisibility, VideoStatus } from '@/entities/video';
 import { isDev } from '@/shared/lib/isDev';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const isLoading = ref(true);
 const videos = ref<any[]>([]);
 const error = ref<string | null>(null);
@@ -53,7 +55,7 @@ async function fetchSearchResults() {
     totalResults.value = response.total;
   } catch (err) {
     console.error('Failed to fetch search results:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to fetch search results';
+    error.value = err instanceof Error ? err.message : t('home.fetchError');
   } finally {
     isLoading.value = false;
   }
@@ -78,7 +80,7 @@ onMounted(async () => {
     await fetchSearchResults();
   } catch (err) {
     console.error('Failed to fetch initial data:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to fetch initial data';
+    error.value = err instanceof Error ? err.message : t('home.fetchDataError');
     isLoading.value = false;
   }
 });
@@ -89,11 +91,11 @@ onMounted(async () => {
     <div class="container">
       <div class="search-header">
         <h1 class="page-title">
-          <span v-if="searchQuery">Search results for "{{ searchQuery }}"</span>
-          <span v-else>Search videos</span>
+          <span v-if="searchQuery">{{ t('search.searchResults', { query: searchQuery }) }}</span>
+          <span v-else>{{ t('search.searchPage') }}</span>
         </h1>
         <div v-if="!isLoading && searchQuery" class="search-results-count">
-          {{ totalResults }} results found
+          {{ t('search.resultsCount', { count: totalResults }) }}
         </div>
       </div>
       
@@ -104,16 +106,16 @@ onMounted(async () => {
       
       <div v-if="isLoading" class="loading-spinner">
         <div class="spinner"/>
-        <p>Searching videos...</p>
+        <p>{{ t('search.searching') }}</p>
       </div>
       
       <div v-else-if="videos.length === 0" class="empty-message">
         <div v-if="searchQuery">
-          No videos found for "{{ searchQuery }}"
-          <p class="empty-message-suggestion">Try different keywords</p>
+          {{ t('search.noResultsFound', { query: searchQuery }) }}
+          <p class="empty-message-suggestion">{{ t('search.tryDifferentKeywords') }}</p>
         </div>
         <div v-else>
-          Enter a search term to find videos
+          {{ t('search.enterSearchTerm') }}
         </div>
       </div>
       

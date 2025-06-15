@@ -1,7 +1,7 @@
 <template>
   <div class="auth-page">
     <div class="auth-container">
-      <h1>Create Account</h1>
+      <h1>{{ $t('auth.createAccount') }}</h1>
       <RegisterForm />
     </div>
   </div>
@@ -9,6 +9,9 @@
 
 <script setup lang="ts">
 import RegisterForm from '@/features/auth/ui/RegisterForm.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 </script>
 
 <style scoped>

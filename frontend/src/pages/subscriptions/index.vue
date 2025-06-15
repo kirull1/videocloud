@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { SubscriptionList } from '@/features/subscriptions';
 import { userStore } from '@/features/auth/model/userStore';
 
 const router = useRouter();
+const { t } = useI18n();
 
 // Check if user is authenticated
 onMounted(() => {
@@ -16,7 +18,7 @@ onMounted(() => {
 
 <template>
   <div class="subscriptions-page">
-    <h1 class="subscriptions-page__title">Your Subscriptions</h1>
+    <h1 class="subscriptions-page__title">{{ t('subscriptions.yourSubscriptions') }}</h1>
     <SubscriptionList />
   </div>
 </template>

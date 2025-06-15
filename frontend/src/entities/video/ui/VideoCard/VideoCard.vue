@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import type { Category } from '@/entities/category/model/types';
 import type { Tag } from '@/entities/tag/model/types';
 import { getAvatarUrl } from '@/shared/lib/avatar';
 
 // Get router instance
 const router = useRouter();
+const { t } = useI18n();
 
 const props = defineProps({
   id: {
@@ -85,11 +87,11 @@ const formattedDuration = computed(() => {
 
 const formattedViews = computed(() => {
   if (props.views >= 1000000) {
-    return `${(props.views / 1000000).toFixed(1)}M views`;
+    return `${(props.views / 1000000).toFixed(1)}M ${t('video.views')}`;
   } else if (props.views >= 1000) {
-    return `${(props.views / 1000).toFixed(1)}K views`;
+    return `${(props.views / 1000).toFixed(1)}K ${t('video.views')}`;
   }
-  return `${props.views} views`;
+  return `${props.views} ${t('video.views')}`;
 });
 
 const formattedDate = computed(() => {
@@ -99,20 +101,26 @@ const formattedDate = computed(() => {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
   if (diffDays < 1) {
-    return 'Today';
+    return t('video.today');
   } else if (diffDays === 1) {
-    return 'Yesterday';
+    return t('video.yesterday');
   } else if (diffDays < 7) {
-    return `${diffDays} days ago`;
+    return t('video.daysAgo', { count: diffDays });
+  } else if (diffDays < 14) {
+    return t('video.weekAgo');
   } else if (diffDays < 30) {
     const weeks = Math.floor(diffDays / 7);
-    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    return t('video.weeksAgo', { count: weeks });
+  } else if (diffDays < 60) {
+    return t('video.monthAgo');
   } else if (diffDays < 365) {
     const months = Math.floor(diffDays / 30);
-    return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+    return t('video.monthsAgo', { count: months });
+  } else if (diffDays < 730) {
+    return t('video.yearAgo');
   } else {
     const years = Math.floor(diffDays / 365);
-    return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+    return t('video.yearsAgo', { count: years });
   }
 });
 
@@ -193,7 +201,7 @@ const handleChannelClick = (event: Event) => {
         class="video-card__thumbnail"
       />
       <div class="video-card__duration">{{ formattedDuration }}</div>
-      <div v-if="isNew" class="video-card__badge">NEW</div>
+      <div v-if="isNew" class="video-card__badge">{{ $t('video.new') }}</div>
       <div v-if="isWatched" class="video-card__progress-bar"/>
     </div>
     

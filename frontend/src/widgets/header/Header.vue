@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { computed, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Search from '@/features/search';
 import Auth from '@/features/auth';
 import Logo from '@/shared/ui/Logo';
+import LanguageSwitcher from '@/features/language';
 import { userStore } from '@/features/auth/model/userStore';
 
 const router = useRouter();
+const { t } = useI18n();
 
 // Get authentication state from userStore
 const isAuthenticated = computed(() => userStore.isAuthenticated.value);
@@ -78,20 +81,26 @@ const handleLogout = () => {
       <div class="header__search">
         <Search 
           :is-loading="isSearchLoading" 
-          placeholder="Search videos..." 
+          :placeholder="t('header.searchPlaceholder')" 
           @search="handleSearch"
         />
       </div>
       
-      <div class="header__auth">
-        <Auth 
-          :is-authenticated="isAuthenticated"
-          :user-name="userName"
-          :user-avatar="userAvatar"
-          @login="handleLogin"
-          @signup="handleSignup"
-          @logout="handleLogout"
-        />
+      <div class="header__right">
+        <div class="header__language">
+          <LanguageSwitcher />
+        </div>
+        
+        <div class="header__auth">
+          <Auth 
+            :is-authenticated="isAuthenticated"
+            :user-name="userName"
+            :user-avatar="userAvatar"
+            @login="handleLogin"
+            @signup="handleSignup"
+            @logout="handleLogout"
+          />
+        </div>
       </div>
     </div>
   </header>
@@ -145,9 +154,17 @@ const handleLogout = () => {
   width: 100%;
 }
 
+.header__right {
+  display: flex;
+  align-items: center;
+}
+
+.header__language {
+  margin-right: 16px;
+}
+
 .header__auth {
   flex: 0 0 auto;
-  margin-left: 32px;
   display: flex;
   align-items: center;
 }
@@ -160,10 +177,6 @@ const handleLogout = () => {
   .header__logo {
     margin-right: 24px;
   }
-  
-  .header__auth {
-    margin-left: 24px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -175,12 +188,12 @@ const handleLogout = () => {
     margin-right: 16px;
   }
   
-  .header__auth {
-    margin-left: 16px;
-  }
-  
   .header__search {
     max-width: 400px;
+  }
+  
+  .header__language {
+    margin-right: 12px;
   }
 }
 
@@ -199,8 +212,8 @@ const handleLogout = () => {
     margin-right: 8px;
   }
   
-  .header__auth {
-    margin-left: 8px;
+  .header__language {
+    margin-right: 8px;
   }
 }
 </style>

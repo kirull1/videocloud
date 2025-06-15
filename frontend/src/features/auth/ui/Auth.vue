@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { userStore } from '../model/userStore'
 import { channelStore } from '@/entities/channel'
 import { generateAvatarUrl } from '@/shared/lib/avatar'
+
+const { t } = useI18n()
 
 const props = defineProps({
   isAuthenticated: {
@@ -116,8 +119,8 @@ const handleLogout = async () => {
 <template>
   <div class="auth">
     <div v-if="!isAuthenticated" class="auth-buttons">
-      <router-link to="/auth/login" class="auth-button login">Sign In</router-link>
-      <router-link to="/auth/register" class="auth-button register">Sign Up</router-link>
+      <router-link to="/auth/login" class="auth-button login">{{ t('common.login') }}</router-link>
+      <router-link to="/auth/register" class="auth-button register">{{ t('common.signup') }}</router-link>
     </div>
     <div v-else class="user-menu">
       
@@ -131,23 +134,23 @@ const handleLogout = async () => {
       
       <transition name="menu-fade">
         <div v-if="isMenuOpen" class="menu">
-          <router-link to="/profile" class="menu-item" @click="toggleMenu">Profile</router-link>
-          <router-link to="/subscriptions" class="menu-item" @click="toggleMenu">Subscriptions</router-link>
+          <router-link to="/profile" class="menu-item" @click="toggleMenu">{{ t('common.profile') }}</router-link>
+          <router-link to="/subscriptions" class="menu-item" @click="toggleMenu">{{ t('channel.subscribed') }}</router-link>
           
           <!-- Show Upload Video or Create Channel in menu based on whether user has a channel -->
           <template v-if="hasChannel">
             <router-link :to="`/channel/${channelStore.myChannel?.id}`" class="menu-item" @click="toggleMenu">
-              My Channel
+              {{ t('channel.yourChannel') }}
             </router-link>
-            <router-link to="/videos/upload" class="menu-item" @click="toggleMenu">Upload Video</router-link>
+            <router-link to="/videos/upload" class="menu-item" @click="toggleMenu">{{ t('video.upload') }}</router-link>
           </template>
           <template v-else>
             <router-link to="/channel/create" class="menu-item create-channel" @click="toggleMenu">
-              Create Channel
+              {{ t('channel.createChannel') }}
             </router-link>
           </template>
           
-          <button class="menu-item logout" @click="handleLogout">Logout</button>
+          <button class="menu-item logout" @click="handleLogout">{{ t('common.logout') }}</button>
         </div>
       </transition>
     </div>
@@ -250,13 +253,11 @@ const handleLogout = async () => {
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 1rem;
   color: #dc3545;
 }
 
 .logout:hover {
-  background-color: #dc3545;
-  color: white;
+  background-color: #fff5f5;
 }
 
 .create-channel {

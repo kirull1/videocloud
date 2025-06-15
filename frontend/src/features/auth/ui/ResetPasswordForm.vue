@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { userApi } from '../api/userApi';
+
+const { t } = useI18n();
 
 const props = defineProps({
   token: {
@@ -32,17 +35,17 @@ const isPasswordValid = computed(() => {
 const handleSubmit = async () => {
   // Validate inputs
   if (!password.value) {
-    error.value = 'Please enter a password';
+    error.value = t('auth.pleaseEnterPassword');
     return;
   }
   
   if (!isPasswordValid.value) {
-    error.value = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number';
+    error.value = t('auth.passwordInvalid');
     return;
   }
   
   if (!passwordsMatch.value) {
-    error.value = 'Passwords do not match';
+    error.value = t('auth.passwordsDoNotMatch');
     return;
   }
 
@@ -56,10 +59,10 @@ const handleSubmit = async () => {
       confirmPassword: confirmPassword.value
     });
     
-    successMessage.value = response.message;
+    successMessage.value = response.message || t('auth.resetPasswordSuccess');
     emit('success');
   } catch (err: any) {
-    error.value = err.message || 'Failed to reset password';
+    error.value = err.message || t('auth.resetPasswordError');
   } finally {
     isLoading.value = false;
   }
@@ -72,49 +75,49 @@ const handleCancel = () => {
 
 <template>
   <div class="reset-password-form">
-    <h2 class="form-title">Reset Password</h2>
+    <h2 class="form-title">{{ $t('auth.resetPasswordPage') }}</h2>
     
     <p class="form-description">
-      Enter your new password below.
+      {{ $t('auth.resetPasswordDescription') }}
     </p>
     
     <div v-if="successMessage" class="success-message">
       {{ successMessage }}
       <div class="success-actions">
         <button class="login-button" @click="emit('success')">
-          Go to Login
+          {{ $t('auth.goToLogin') }}
         </button>
       </div>
     </div>
     
     <form v-else class="form" @submit.prevent="handleSubmit">
       <div class="form-group">
-        <label for="password" class="form-label">New Password</label>
+        <label for="password" class="form-label">{{ $t('auth.newPassword') }}</label>
         <input
           id="password"
           v-model="password"
           type="password"
           class="form-input"
-          placeholder="Enter new password"
+          :placeholder="$t('auth.enterNewPassword')"
           :disabled="isLoading"
         />
         <div v-if="password && !isPasswordValid" class="input-error">
-          Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number
+          {{ $t('auth.passwordInvalid') }}
         </div>
       </div>
       
       <div class="form-group">
-        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <label for="confirmPassword" class="form-label">{{ $t('auth.confirmPassword') }}</label>
         <input
           id="confirmPassword"
           v-model="confirmPassword"
           type="password"
           class="form-input"
-          placeholder="Confirm new password"
+          :placeholder="$t('auth.confirmNewPassword')"
           :disabled="isLoading"
         />
         <div v-if="confirmPassword && !passwordsMatch" class="input-error">
-          Passwords do not match
+          {{ $t('auth.passwordsDoNotMatch') }}
         </div>
       </div>
       
@@ -129,7 +132,7 @@ const handleCancel = () => {
           :disabled="isLoading"
           @click="handleCancel"
         >
-          Cancel
+          {{ $t('auth.cancel') }}
         </button>
         
         <button
@@ -138,7 +141,7 @@ const handleCancel = () => {
           :disabled="isLoading || !isPasswordValid || !passwordsMatch"
         >
           <span v-if="isLoading" class="loading-spinner"/>
-          <span v-else>Reset Password</span>
+          <span v-else>{{ $t('auth.resetPasswordButton') }}</span>
         </button>
       </div>
     </form>

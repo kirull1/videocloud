@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import VideoCard from '@/entities/video/ui/VideoCard';
 import { videoStore, VideoVisibility, VideoStatus } from '@/entities/video';
 import { isDev } from '@/shared/lib/isDev';
 
 const router = useRouter();
+const { t } = useI18n();
 const isLoading = ref(true);
 const videos = ref<any[]>([]);
 const error = ref<string | null>(null);
@@ -44,7 +46,7 @@ async function fetchVideos() {
     }
   } catch (err) {
     console.error('Failed to fetch videos:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to fetch videos';
+    error.value = err instanceof Error ? err.message : t('home.fetchError');
   } finally {
     isLoading.value = false;
   }
@@ -56,7 +58,7 @@ onMounted(async () => {
     await fetchVideos();
   } catch (err) {
     console.error('Failed to fetch initial data:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to fetch initial data';
+    error.value = err instanceof Error ? err.message : t('home.fetchDataError');
     isLoading.value = false;
   }
 });
@@ -78,18 +80,18 @@ const handleChannelClick = (channelName: string) => {
 <template>
   <main>
     <div class="container">
-      <h1 class="page-title">Discover Videos</h1>
+      <h1 class="page-title">{{ t('home.discoverVideos') }}</h1>
       
       <div v-if="error" class="error-message">
         {{ error }}
       </div>
       
       <div v-if="isLoading" class="loading-spinner">
-        Loading videos...
+        {{ t('home.loadingVideos') }}
       </div>
       
       <div v-else-if="videos.length === 0" class="empty-message">
-        No videos found
+        {{ t('home.noVideosFound') }}
       </div>
       
       <div v-else class="video-grid">

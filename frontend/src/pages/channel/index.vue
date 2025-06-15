@@ -1,11 +1,11 @@
 <template>
   <div class="channel-list-page">    
     <div class="channel-list-page__content">
-      <h1 class="channel-list-page__title">Channels</h1>
+      <h1 class="channel-list-page__title">{{ $t('channel.channelsPage') }}</h1>
       
       <div v-if="isLoading" class="channel-list-page__loading">
         <div class="channel-list-page__loading-spinner"/>
-        <p>Loading channels...</p>
+        <p>{{ $t('channel.loadingChannels') }}</p>
       </div>
       
       <div v-else-if="error" class="channel-list-page__error">
@@ -14,13 +14,13 @@
       </div>
       
       <div v-else-if="channels.length === 0" class="channel-list-page__empty">
-        <p>No channels found</p>
+        <p>{{ $t('channel.noChannelsFound') }}</p>
         <button 
           v-if="isAuthenticated"
           class="channel-list-page__create-button"
           @click="createChannel"
         >
-          Create Your Channel
+          {{ $t('channel.createYourChannel') }}
         </button>
       </div>
       
@@ -41,8 +41,10 @@
           <div class="channel-list-page__channel-info">
             <h2 class="channel-list-page__channel-name">{{ channel.name }}</h2>
             <p class="channel-list-page__channel-stats">
-              {{ formatSubscriberCount(channel.subscriberCount) }} subscribers • 
-              {{ formatVideoCount(channel.videoCount) }} videos
+              {{ $t('channel.channelStats', {
+                subscribers: formatSubscriberCount(channel.subscriberCount),
+                videos: formatVideoCount(channel.videoCount)
+              }) }}
             </p>
             <p v-if="channel.description" class="channel-list-page__channel-description">
               {{ truncateDescription(channel.description) }}
@@ -56,7 +58,7 @@
           class="channel-list-page__create-button"
           @click="createChannel"
         >
-          Create Your Channel
+          {{ $t('channel.createYourChannel') }}
         </button>
       </div>
     </div>
@@ -66,12 +68,14 @@
 <script setup lang="ts">
 import { onMounted, computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { channelStore } from '@/entities/channel';
 
 // Declare localStorage for TypeScript
 declare const localStorage: Storage;
 
 const router = useRouter();
+const { t } = useI18n();
 const isLoading = computed(() => channelStore.isLoading);
 const error = computed(() => channelStore.error);
 const channels = computed(() => channelStore.channels);

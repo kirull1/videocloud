@@ -1,20 +1,20 @@
 <template>
   <div class="create-channel-page">
     <div class="create-channel-page__content">
-      <h1 class="create-channel-page__title">Create Your Channel</h1>
+      <h1 class="create-channel-page__title">{{ $t('channel.createChannelPage') }}</h1>
       
       <div v-if="isLoading" class="create-channel-page__loading">
         <div class="create-channel-page__loading-spinner"/>
-        <p>Checking channel status...</p>
+        <p>{{ $t('channel.loadingChannels') }}</p>
       </div>
       
       <div v-else-if="!isAuthenticated" class="create-channel-page__auth-required">
-        <p>You need to be logged in to create a channel.</p>
+        <p>{{ $t('errors.unauthorized') }}</p>
         <button 
           class="create-channel-page__login-button"
           @click="router.push('/auth/login')"
         >
-          Log In
+          {{ $t('common.login') }}
         </button>
       </div>
       
@@ -24,7 +24,7 @@
         @submit.prevent="createChannel"
       >
         <div class="create-channel-page__form-group">
-          <label for="channelName" class="create-channel-page__form-label">Channel Name *</label>
+          <label for="channelName" class="create-channel-page__form-label">{{ $t('channel.channelName') }} *</label>
           <input 
             id="channelName"
             v-model="channelData.name"
@@ -34,12 +34,12 @@
             maxlength="100"
           />
           <p class="create-channel-page__form-help">
-            This is the name that will be displayed on your channel page.
+            {{ $t('channel.nameHelp') }}
           </p>
         </div>
         
         <div class="create-channel-page__form-group">
-          <label for="channelDescription" class="create-channel-page__form-label">Description</label>
+          <label for="channelDescription" class="create-channel-page__form-label">{{ $t('channel.channelDescription') }}</label>
           <textarea 
             id="channelDescription"
             v-model="channelData.description"
@@ -47,30 +47,30 @@
             maxlength="255"
           />
           <p class="create-channel-page__form-help">
-            Tell viewers about your channel. This will appear on your channel page.
+            {{ $t('channel.descriptionHelp') }}
           </p>
         </div>
         
         <div class="create-channel-page__form-group">
-          <label for="channelCustomUrl" class="create-channel-page__form-label">Custom URL</label>
+          <label for="channelCustomUrl" class="create-channel-page__form-label">{{ $t('channel.customUrl') }}</label>
           <div class="create-channel-page__custom-url-input">
-            <span class="create-channel-page__custom-url-prefix">/channel/</span>
+            <span class="create-channel-page__custom-url-prefix">{{ $t('channel.customUrlPrefix') }}</span>
             <input 
               id="channelCustomUrl"
               v-model="channelData.customUrl"
               type="text"
               class="create-channel-page__form-input create-channel-page__custom-url"
               pattern="[a-zA-Z0-9_-]+"
-              title="Custom URL can only contain letters, numbers, underscores, and hyphens"
+              :title="$t('channel.customUrlInvalid')"
             />
           </div>
           <p class="create-channel-page__form-help">
-            Create a custom URL for your channel. Only letters, numbers, underscores, and hyphens are allowed.
+            {{ $t('channel.customUrlHelp') }}
           </p>
         </div>
         
         <div class="create-channel-page__form-group">
-          <label for="channelThemeColor" class="create-channel-page__form-label">Theme Color</label>
+          <label for="channelThemeColor" class="create-channel-page__form-label">{{ $t('channel.channelThemeColor') }}</label>
           <input 
             id="channelThemeColor"
             v-model="channelData.themeColor"
@@ -78,7 +78,7 @@
             class="create-channel-page__form-color"
           />
           <p class="create-channel-page__form-help">
-            Choose a theme color for your channel.
+            {{ $t('channel.themeColorHelp') }}
           </p>
         </div>
         
@@ -88,14 +88,14 @@
             class="create-channel-page__form-submit"
             :disabled="isCreating"
           >
-            {{ isCreating ? 'Creating...' : 'Create Channel' }}
+            {{ isCreating ? $t('common.loading') : $t('channel.createChannel') }}
           </button>
           <button 
             type="button"
             class="create-channel-page__form-cancel"
             @click="router.push('/channel')"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
         </div>
       </form>
@@ -106,6 +106,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { channelStore } from '@/entities/channel';
 import type { CreateChannelRequest } from '@/entities/channel';
 
@@ -113,6 +114,7 @@ import type { CreateChannelRequest } from '@/entities/channel';
 declare const localStorage: Storage;
 
 const router = useRouter();
+const { t } = useI18n();
 const isLoading = ref(true);
 const isCreating = computed(() => channelStore.isLoading);
 const error = computed(() => channelStore.error);
@@ -163,7 +165,7 @@ const createChannel = async () => {
     router.push('/videos/upload');
   } catch (err) {
     console.error('Error creating channel:', err);
-    alert('Failed to create channel. Please try again.');
+    alert(t('channel.channelCreateError'));
   }
 };
 

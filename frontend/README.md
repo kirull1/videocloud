@@ -138,3 +138,60 @@ Continuous Integration and Continuous Deployment (CI/CD) are crucial for maintai
 3. **Deployment**:
    - If tests pass, the application is automatically deployed to our staging environment.
    - Manual approval is required to deploy to the production environment.
+
+## Internationalization (i18n)
+
+This project supports multiple languages through Vue I18n. Currently, English and Russian languages are implemented.
+
+### Setup
+
+1. Install the Vue I18n package:
+
+```bash
+pnpm install vue-i18n@9.10.5
+```
+
+2. The following files have been created/modified to support i18n:
+
+- `frontend/src/shared/config/i18n.config.ts` - Main i18n configuration
+- `frontend/src/shared/locales/en.ts` - English translations
+- `frontend/src/shared/locales/ru.ts` - Russian translations
+- `frontend/src/features/language/ui/LanguageSwitcher.vue` - Language switcher component
+- `frontend/src/features/language/index.ts` - Export for the language switcher
+- `frontend/src/app/main.ts` - Updated to include the i18n plugin
+- `frontend/src/app/App.vue` - Updated to set initial language
+- `frontend/src/widgets/header/Header.vue` - Updated to include the language switcher
+- `frontend/src/features/auth/ui/Auth.vue` - Updated to use i18n translations
+- `frontend/src/features/search/ui/Search.vue` - Updated to use i18n translations
+
+### Usage
+
+To use translations in your components:
+
+```vue
+<script setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+</script>
+
+<template>
+  <div>{{ t('common.hello') }}</div>
+</template>
+```
+
+### Adding New Translations
+
+To add new translations:
+
+1. Add the translation key and text to `frontend/src/shared/locales/en.ts`
+2. Add the corresponding translation to `frontend/src/shared/locales/ru.ts`
+3. Use the key in your components with the `t()` function
+
+### Adding New Languages
+
+To add support for additional languages:
+
+1. Create a new locale file in `frontend/src/shared/locales/` (e.g., `de.ts` for German)
+2. Add the language to the `availableLocales` array in `frontend/src/shared/config/i18n.config.ts`
+3. Import and add the language to the `messages` object in the i18n configuration

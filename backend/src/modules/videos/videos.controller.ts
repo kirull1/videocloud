@@ -26,6 +26,8 @@ import { Observable, interval, map, filter, takeWhile } from 'rxjs';
 import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Language } from '../../shared/decorators/language.decorator';
+import { I18nService } from '../../shared/services/i18n/i18n.service';
 import { User } from '../../entities/user.entity';
 import { VideosService } from './videos.service';
 import { ProcessingProgressService, ProcessingStage } from '../../shared/services/video-processing/processing-progress.service';
@@ -58,7 +60,8 @@ export class VideosController {
     private readonly videosService: VideosService,
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
-    private readonly processingProgressService: ProcessingProgressService
+    private readonly processingProgressService: ProcessingProgressService,
+    private readonly i18nService: I18nService
   ) {}
 
   @Post()
@@ -109,12 +112,15 @@ export class VideosController {
     @Body() createVideoDto: CreateVideoDto,
     @UploadedFiles() files: { file?: Express.Multer.File[], thumbnail?: Express.Multer.File[] },
     @Res({ passthrough: true }) response: Response,
+    @Language() language: string,
   ): Promise<VideoResponseDto> {
     this.logger.log(`Uploading video for user: ${user.username} (${user.id})`);
     
     if (!files.file || files.file.length === 0) {
       this.logger.error('No file uploaded');
-      throw new BadRequestException('Video file is required');
+      throw new BadRequestException(
+        this.i18nService.translate('videos', 'fileRequired', language)
+      );
     }
     
     const videoFile = files.file[0];
@@ -130,7 +136,9 @@ export class VideosController {
     try {
       // Ensure we have a buffer
       if (!videoFile.buffer || videoFile.buffer.length === 0) {
-        throw new BadRequestException('Empty file or missing buffer');
+        throw new BadRequestException(
+          this.i18nService.translate('videos', 'emptyFile', language)
+        );
       }
       
       // Create the video
@@ -144,7 +152,7 @@ export class VideosController {
         video.id,
         ProcessingStage.ANALYZING,
         50,
-        'Video uploaded successfully, now processing'
+        this.i18nService.translate('videos', 'processing', language)
       );
       
       // Add a custom header to indicate that this is a newly uploaded video

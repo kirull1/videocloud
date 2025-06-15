@@ -1,7 +1,7 @@
 <template>
   <form class="login-form" @submit.prevent="handleSubmit">
     <div class="form-group">
-      <label for="emailOrUsername">Email or Username</label>
+      <label for="emailOrUsername">{{ $t('auth.emailOrUsername') }}</label>
       <input
         id="emailOrUsername"
         v-model="form.emailOrUsername"
@@ -13,7 +13,7 @@
     </div>
 
     <div class="form-group">
-      <label for="password">Password</label>
+      <label for="password">{{ $t('auth.password') }}</label>
       <input
         id="password"
         v-model="form.password"
@@ -33,12 +33,12 @@
 
     <button type="submit" :disabled="isLoading" class="submit-button">
       <span v-if="isLoading" class="spinner"/>
-      <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>
+      <span>{{ isLoading ? $t('auth.signingIn') : $t('auth.signIn') }}</span>
     </button>
 
     <div class="form-footer">
-      <router-link to="/auth/register">Don't have an account? Sign up</router-link>
-      <router-link to="/auth/forgot-password">Forgot password?</router-link>
+      <router-link to="/auth/register">{{ $t('auth.dontHaveAccount') }} {{ $t('auth.signUp') }}</router-link>
+      <router-link to="/auth/forgot-password">{{ $t('auth.forgotPassword') }}</router-link>
     </div>
   </form>
 </template>
@@ -46,10 +46,12 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { authApi } from '../api/authApi';
 import { userStore } from '../model/userStore';
 
 const router = useRouter();
+const { t } = useI18n();
 
 const form = reactive({
   emailOrUsername: '',
@@ -68,12 +70,12 @@ const validateForm = () => {
   let isValid = true;
 
   if (!form.emailOrUsername) {
-    errors.emailOrUsername = 'Email or username is required';
+    errors.emailOrUsername = t('auth.emailRequired');
     isValid = false;
   }
 
   if (!form.password) {
-    errors.password = 'Password is required';
+    errors.password = t('auth.passwordRequired');
     isValid = false;
   }
 
@@ -102,7 +104,7 @@ const handleSubmit = async () => {
     const redirectPath = router.currentRoute.value.query.redirect as string || '/';
     window.location.href = redirectPath; // Use window.location for full page refresh
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'An error occurred';
+    error.value = err instanceof Error ? err.message : t('auth.loginError');
   } finally {
     isLoading.value = false;
   }

@@ -1,7 +1,7 @@
 <template>
   <form class="register-form" @submit.prevent="handleSubmit">
     <div class="form-group">
-      <label for="email">Email</label>
+      <label for="email">{{ $t('auth.emailPlaceholder') }}</label>
       <input
         id="email"
         v-model="form.email"
@@ -13,7 +13,7 @@
     </div>
 
     <div class="form-group">
-      <label for="username">Username</label>
+      <label for="username">{{ $t('auth.usernamePlaceholder') }}</label>
       <input
         id="username"
         v-model="form.username"
@@ -25,7 +25,7 @@
     </div>
 
     <div class="form-group">
-      <label for="password">Password</label>
+      <label for="password">{{ $t('auth.password') }}</label>
       <input
         id="password"
         v-model="form.password"
@@ -37,7 +37,7 @@
     </div>
 
     <div class="form-group">
-      <label for="confirmPassword">Confirm Password</label>
+      <label for="confirmPassword">{{ $t('auth.confirmPassword') }}</label>
       <input
         id="confirmPassword"
         v-model="form.confirmPassword"
@@ -57,11 +57,11 @@
 
     <button type="submit" :disabled="isLoading" class="submit-button">
       <span v-if="isLoading" class="spinner"/>
-      <span>{{ isLoading ? 'Creating account...' : 'Create Account' }}</span>
+      <span>{{ isLoading ? $t('auth.creatingAccount') : $t('auth.signUp') }}</span>
     </button>
 
     <div class="form-footer">
-      <router-link to="/auth/login">Already have an account? Sign in</router-link>
+      <router-link to="/auth/login">{{ $t('auth.alreadyHaveAccount') }} {{ $t('auth.signIn') }}</router-link>
     </div>
   </form>
 </template>
@@ -69,10 +69,12 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { authApi } from '../api/authApi';
 import { userStore } from '../model/userStore';
 
 const router = useRouter();
+const { t } = useI18n();
 
 const form = reactive({
   email: '',
@@ -91,38 +93,54 @@ const errors = reactive({
 const error = ref('');
 const isLoading = ref(false);
 
+const validateEmail = (email: string): boolean => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+};
+
+const validateUsername = (username: string): boolean => {
+  const re = /^[a-zA-Z0-9_-]{3,20}$/;
+  return re.test(username);
+};
+
+const validatePassword = (password: string): boolean => {
+  // Minimum 8 characters, at least one uppercase letter, one lowercase letter, and one number
+  const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,32}$/;
+  return re.test(password);
+};
+
 const validateForm = () => {
   let isValid = true;
 
   if (!form.email) {
-    errors.email = 'Email is required';
+    errors.email = t('errors.required');
     isValid = false;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'Invalid email format';
+  } else if (!validateEmail(form.email)) {
+    errors.email = t('auth.emailInvalid');
     isValid = false;
   }
 
   if (!form.username) {
-    errors.username = 'Username is required';
+    errors.username = t('errors.required');
     isValid = false;
-  } else if (!/^[a-zA-Z0-9_-]{3,20}$/.test(form.username)) {
-    errors.username = 'Username must be 3-20 characters and can only contain letters, numbers, underscores and dashes';
+  } else if (!validateUsername(form.username)) {
+    errors.username = t('auth.usernameInvalid');
     isValid = false;
   }
 
   if (!form.password) {
-    errors.password = 'Password is required';
+    errors.password = t('errors.required');
     isValid = false;
-  } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,32}$/.test(form.password)) {
-    errors.password = 'Password must be 8-32 characters and contain at least one uppercase letter, one lowercase letter, and one number';
+  } else if (!validatePassword(form.password)) {
+    errors.password = t('auth.passwordInvalid');
     isValid = false;
   }
 
   if (!form.confirmPassword) {
-    errors.confirmPassword = 'Please confirm your password';
+    errors.confirmPassword = t('auth.confirmPasswordRequired');
     isValid = false;
   } else if (form.password !== form.confirmPassword) {
-    errors.confirmPassword = 'Passwords do not match';
+    errors.confirmPassword = t('auth.passwordsDoNotMatch');
     isValid = false;
   }
 
@@ -152,10 +170,10 @@ const handleSubmit = async () => {
     // Initialize user store to fetch user data
     await userStore.fetchUserProfile();
     
-    // Use window.location.href for full page refresh after registration
+    // Redirect to home page with page refresh
     window.location.href = '/';
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'An error occurred';
+    error.value = err instanceof Error ? err.message : t('auth.registerError');
   } finally {
     isLoading.value = false;
   }

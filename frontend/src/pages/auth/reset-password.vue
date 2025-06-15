@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router';
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ResetPasswordForm } from '@/features/auth/ui';
 
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 const token = ref<string>('');
 const error = ref<string | null>(null);
 
@@ -15,7 +17,7 @@ onMounted(() => {
   } else if (route.query.token) {
     token.value = route.query.token as string;
   } else {
-    error.value = 'Invalid or missing reset token. Please request a new password reset link.';
+    error.value = t('auth.invalidToken');
   }
 });
 
@@ -37,7 +39,7 @@ const handleCancel = () => {
       </div>
       <div class="error-actions">
         <router-link to="/auth/forgot-password" class="request-link">
-          Request a new reset link
+          {{ $t('auth.requestNewLink') }}
         </router-link>
       </div>
     </div>
@@ -51,7 +53,7 @@ const handleCancel = () => {
     
     <div class="auth-links">
       <router-link to="/auth/login" class="auth-link">
-        Back to Login
+        {{ $t('auth.backToLogin') }}
       </router-link>
     </div>
   </div>
