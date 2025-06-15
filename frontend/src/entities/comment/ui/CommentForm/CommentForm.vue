@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { commentStore } from '../../model/commentStore';
+
+const { t } = useI18n();
 
 const props = defineProps({
   videoId: {
@@ -60,7 +63,7 @@ const handleSubmit = async () => {
     content.value = '';
     emit('submit');
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to post comment';
+    error.value = err instanceof Error ? err.message : t('comments.postError');
     console.error('Failed to post comment:', err);
     
     // Auto-retry after 2 seconds if it's a network error
@@ -88,7 +91,7 @@ const isAuthenticated = computed(() => {
 <template>
   <div class="comment-form">
     <div v-if="!isAuthenticated" class="comment-form__auth-message">
-      Please sign in to post comments.
+      {{ t('comments.signInToPost') }}
     </div>
     
     <form v-else class="comment-form__form" @submit.prevent="handleSubmit">
@@ -120,7 +123,7 @@ const isAuthenticated = computed(() => {
           class="comment-form__button comment-form__button--submit"
           :disabled="content.trim() === '' || isSubmitting"
         >
-          <span v-if="isSubmitting">Posting...</span>
+          <span v-if="isSubmitting">{{ t('comments.posting') }}</span>
           <span v-else>{{ submitLabel }}</span>
         </button>
       </div>

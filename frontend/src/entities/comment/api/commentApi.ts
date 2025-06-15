@@ -51,20 +51,10 @@ export const commentApi = {
   async createComment(data: CreateCommentRequest): Promise<Comment> {
     try {
       console.log('Creating comment with data:', data);
-      const response = await authenticatedFetch(`${API_URL}`, {
+      return await authenticatedFetch<Comment>(`${API_URL}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to create comment' }));
-        throw new Error(error.message || 'Failed to create comment');
-      }
-
-      return response.json();
     } catch (error) {
       console.error('Error creating comment:', error);
       throw error;
@@ -72,30 +62,25 @@ export const commentApi = {
   },
 
   async updateComment(id: string, data: UpdateCommentRequest): Promise<Comment> {
-    const response = await authenticatedFetch(`${API_URL}/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Failed to update comment' }));
-      throw new Error(error.message || 'Failed to update comment');
+    try {
+      return await authenticatedFetch<Comment>(`${API_URL}/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      throw error;
     }
-
-    return response.json();
   },
 
   async deleteComment(id: string): Promise<void> {
-    const response = await authenticatedFetch(`${API_URL}/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Failed to delete comment' }));
-      throw new Error(error.message || 'Failed to delete comment');
+    try {
+      await authenticatedFetch<void>(`${API_URL}/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      throw error;
     }
   },
 };

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { userStore } from '@/features/auth/model/userStore';
 import { videoStore } from '@/entities/video/model/videoStore';
 import { VideoVisibility } from '@/entities/video/model/types';
@@ -9,6 +10,7 @@ import { tagStore } from '@/entities/tag';
 
 // Router
 const router = useRouter();
+const { t } = useI18n();
 
 // State
 const videoFile = ref<File | null>(null);
@@ -114,7 +116,7 @@ const formatUploadSpeed = (): string => {
   if (uploadSpeed.value === 0) return '';
   
   const mbps = uploadSpeed.value / (1024 * 1024);
-  return `${mbps.toFixed(2)} MB/s`;
+  return t('video.uploadSpeed', { speed: mbps.toFixed(2) });
 };
 
 // Methods
@@ -206,14 +208,14 @@ const handleFileChange = async (event: Event) => {
     // Validate file type
     const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
     if (!validVideoTypes.includes(file.type)) {
-      videoStore.error.value = 'Please select a valid video file (MP4, WebM, OGG, or QuickTime)';
+      videoStore.error.value = t('video.videoUploadError');
       return;
     }
     
     // Validate file size (max 500MB for now)
     const maxSize = 500 * 1024 * 1024;
     if (file.size > maxSize) {
-      videoStore.error.value = 'Video size should be less than 500MB';
+      videoStore.error.value = t('video.videoUploadError');
       return;
     }
     
@@ -243,14 +245,14 @@ const handleCustomThumbnailChange = (event: Event) => {
     // Validate file type
     const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     if (!validImageTypes.includes(file.type)) {
-      videoStore.error.value = 'Please select a valid image file (JPEG or PNG)';
+      videoStore.error.value = t('video.videoUploadError');
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      videoStore.error.value = 'Thumbnail size should be less than 5MB';
+      videoStore.error.value = t('video.videoUploadError');
       return;
     }
     
@@ -303,12 +305,12 @@ const resetForm = () => {
 
 const uploadVideo = async () => {
   if (!videoFile.value || !title.value) {
-    videoStore.error.value = 'Please provide a video file and title';
+    videoStore.error.value = t('video.videoUploadError');
     return;
   }
   
   if (!isAuthenticated.value) {
-    videoStore.error.value = 'You must be logged in to upload videos';
+    videoStore.error.value = t('video.loginRequired');
     return;
   }
   
@@ -319,7 +321,7 @@ const uploadVideo = async () => {
     
     // Record start time for calculating upload speed
     startTime.value = Date.now();
-    estimatedTimeRemaining.value = 'Calculating...';
+    estimatedTimeRemaining.value = t('video.calculatingTime');
     
     // Map isPrivate to VideoVisibility enum
     const visibility = isPrivate.value ? VideoVisibility.PRIVATE : VideoVisibility.PUBLIC;
@@ -366,7 +368,7 @@ const uploadVideo = async () => {
       thumbnail: getActiveThumbnail.value.blob || undefined
     });
     
-    successMessage.value = 'Video uploaded successfully! It will be processed shortly.';
+    successMessage.value = t('video.uploadSuccess');
     
     // If upload is successful, redirect to the processing page with a full page reload
     if (uploadedVideo) {
@@ -410,11 +412,11 @@ watch(tagsInput, processTags);
 
 <template>
   <div class="video-upload-form">
-    <h2>Upload Video</h2>
+    <h2>{{ t('video.upload') }}</h2>
     
     <div v-if="!isAuthenticated" class="auth-required">
-      <p>You need to be logged in to upload videos.</p>
-      <router-link to="/auth/login" class="login-btn">Log In</router-link>
+      <p>{{ t('video.loginRequired') }}</p>
+      <router-link to="/auth/login" class="login-btn">{{ t('video.loginButton') }}</router-link>
     </div>
     
     <div v-else class="upload-container">
@@ -460,8 +462,8 @@ watch(tagsInput, processTags);
                     y2="15"/>
             </svg>
           </div>
-          <p class="upload-text">Click to select a video file or drag and drop</p>
-          <p class="upload-hint">MP4, WebM, OGG, or QuickTime (max 500MB)</p>
+          <p class="upload-text">{{ t('video.selectVideo') }}</p>
+          <p class="upload-hint">{{ t('video.videoFileTypes') }}</p>
         </div>
         
         <div v-else class="file-preview">
@@ -470,13 +472,13 @@ watch(tagsInput, processTags);
             <div class="file-size">{{ formatFileSize(videoFile.size) }}</div>
             <div class="file-type">{{ videoFile.type }}</div>
           </div>
-          <button class="change-file-btn" @click.stop="triggerFileInput">Change Video</button>
+          <button class="change-file-btn" @click.stop="triggerFileInput">{{ t('video.changeVideo') }}</button>
         </div>
       </div>
       
       <!-- Thumbnail Preview -->
       <div v-if="getActiveThumbnail.url" class="thumbnail-preview">
-        <h3>Video Thumbnail</h3>
+        <h3>{{ t('video.videoThumbnail') }}</h3>
         
         <div class="thumbnail-options">
           <div class="thumbnail-option">
@@ -488,7 +490,7 @@ watch(tagsInput, processTags);
               :value="false"
               :disabled="!thumbnailUrl"
             />
-            <label for="auto-thumbnail">Auto-generated thumbnail</label>
+            <label for="auto-thumbnail">{{ t('video.autoThumbnail') }}</label>
           </div>
           
           <div class="thumbnail-option">
@@ -499,7 +501,7 @@ watch(tagsInput, processTags);
               name="thumbnail-type"
               :value="true"
             />
-            <label for="custom-thumbnail">Custom thumbnail</label>
+            <label for="custom-thumbnail">{{ t('video.customThumbnail') }}</label>
           </div>
         </div>
         
@@ -507,13 +509,13 @@ watch(tagsInput, processTags);
           <img :src="getActiveThumbnail.url" alt="Video thumbnail" class="thumbnail-image" />
           <div v-if="isGeneratingThumbnail" class="thumbnail-loading">
             <div class="thumbnail-spinner"/>
-            <span>Generating thumbnail...</span>
+            <span>{{ t('video.generatingThumbnail') }}</span>
           </div>
         </div>
         
         <div v-if="useCustomThumbnail" class="custom-thumbnail-upload">
           <label for="custom-thumbnail-input" class="custom-thumbnail-btn">
-            {{ customThumbnailUrl ? 'Change custom thumbnail' : 'Upload custom thumbnail' }}
+            {{ customThumbnailUrl ? t('video.changeCustomThumbnail') : t('video.uploadCustomThumbnail') }}
           </label>
           <input
             id="custom-thumbnail-input"
@@ -522,41 +524,41 @@ watch(tagsInput, processTags);
             class="file-input"
             @change="handleCustomThumbnailChange"
           />
-          <p class="thumbnail-hint">JPEG or PNG (max 5MB)</p>
+          <p class="thumbnail-hint">{{ t('video.thumbnailImageTypes') }}</p>
         </div>
         
-        <p class="thumbnail-hint">This thumbnail will be used for your video</p>
+        <p class="thumbnail-hint">{{ t('video.thumbnailHint') }}</p>
       </div>
       
       <div class="form-fields">
         <div class="form-group">
-          <label for="title">Title <span class="required">*</span></label>
+          <label for="title">{{ t('video.videoTitle') }} <span class="required">*</span></label>
           <input
             id="title"
             v-model="title"
             type="text"
             class="form-control"
-            placeholder="Enter video title"
+            :placeholder="t('video.enterTitle')"
             required
           />
         </div>
         
         <div class="form-group">
-          <label for="description">Description</label>
+          <label for="description">{{ t('video.videoDescription') }}</label>
           <textarea
             id="description"
             v-model="description"
             class="form-control"
-            placeholder="Enter video description"
+            :placeholder="t('video.enterDescription')"
             rows="4"
           />
         </div>
         
         <div class="form-row">
           <div class="form-group">
-            <label for="category">Category</label>
+            <label for="category">{{ t('video.videoCategory') }}</label>
             <select id="category" v-model="categoryId" class="form-control">
-              <option value="">Select a category</option>
+              <option value="">{{ t('video.selectCategory') }}</option>
               <option
                 v-for="category in categoryStore.categories.value"
                 :key="category.id"
@@ -568,7 +570,7 @@ watch(tagsInput, processTags);
           </div>
           
           <div class="form-group">
-            <label for="privacy">Privacy</label>
+            <label for="privacy">{{ t('video.videoPrivacy') }}</label>
             <div class="privacy-toggle">
               <input
                 id="privacy"
@@ -577,21 +579,21 @@ watch(tagsInput, processTags);
                 class="toggle-input"
               />
               <label for="privacy" class="toggle-label"/>
-              <span class="privacy-label">{{ isPrivate ? 'Private' : 'Public' }}</span>
+              <span class="privacy-label">{{ isPrivate ? t('video.private') : t('video.public') }}</span>
             </div>
           </div>
         </div>
         
         <div class="form-group">
-          <label for="tags">Tags</label>
+          <label for="tags">{{ t('video.videoTags') }}</label>
           <input
             id="tags"
             v-model="tagsInput"
             type="text"
             class="form-control"
-            placeholder="Enter tags separated by commas"
+            :placeholder="t('video.enterTags')"
           />
-          <small class="form-text">Separate tags with commas (e.g., music, rock, live)</small>
+          <small class="form-text">{{ t('video.tagsHint') }}</small>
         </div>
         
         <div v-if="tagIds.length > 0" class="selected-tags">
@@ -608,19 +610,19 @@ watch(tagsInput, processTags);
         <div class="progress-details">
           <div class="progress-text">
             <span v-if="uploadStatus === 'uploading'">
-              {{ uploadProgress }}% Uploaded
+              {{ t('video.uploadProgress', { progress: uploadProgress }) }}
             </span>
             <span v-else-if="uploadStatus === 'processing'">
-              Processing...
+              {{ t('video.processing') }}
             </span>
             <span v-else-if="uploadStatus === 'complete'">
-              Upload Complete!
+              {{ t('video.uploadComplete') }}
             </span>
           </div>
           <div v-if="uploadStatus === 'uploading' && uploadProgress > 0" class="upload-stats">
             <span v-if="uploadSpeed > 0" class="upload-speed">{{ formatUploadSpeed() }}</span>
             <span v-if="estimatedTimeRemaining" class="time-remaining">
-              {{ estimatedTimeRemaining }} remaining
+              {{ t('video.timeRemaining', { time: estimatedTimeRemaining }) }}
             </span>
           </div>
         </div>
@@ -632,14 +634,14 @@ watch(tagsInput, processTags);
           :disabled="!canSubmit || isUploading"
           @click="uploadVideo"
         >
-          {{ isUploading ? 'Uploading...' : 'Upload Video' }}
+          {{ isUploading ? t('video.uploadingButton') : t('video.uploadButton') }}
         </button>
         <button
           class="cancel-btn"
           :disabled="isUploading"
           @click="resetForm"
         >
-          Cancel
+          {{ t('video.cancelButton') }}
         </button>
       </div>
     </div>

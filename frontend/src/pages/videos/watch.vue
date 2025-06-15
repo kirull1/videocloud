@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { videoStore, VideoStatus, VideoVisibility } from '@/entities/video';
 import { VideoPlayer } from '@/entities/video/ui';
 import { CommentSection } from '@/features/comments/ui';
@@ -9,6 +10,7 @@ import { userStore } from '@/features/auth/model/userStore';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const videoId = computed(() => route.query.id as string);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
@@ -36,15 +38,15 @@ const formattedDate = computed(() => {
 
 // Format the video views
 const formattedViews = computed(() => {
-  if (!video.value) return '0 views';
+  if (!video.value) return `0 ${t('video.views')}`;
   
   const views = video.value.views;
-  if (views === 0) return '0 views';
-  if (views === 1) return '1 view';
+  if (views === 0) return `0 ${t('video.views')}`;
+  if (views === 1) return `1 ${t('video.view', 1)}`;
   
-  if (views < 1000) return `${views} views`;
-  if (views < 1000000) return `${(views / 1000).toFixed(1)}K views`;
-  return `${(views / 1000000).toFixed(1)}M views`;
+  if (views < 1000) return `${views} ${t('video.views')}`;
+  if (views < 1000000) return `${(views / 1000).toFixed(1)}K ${t('video.views')}`;
+  return `${(views / 1000000).toFixed(1)}M ${t('video.views')}`;
 });
 
 // Calculate avatar URL using the shared utility
@@ -104,7 +106,7 @@ const handleSubscribe = async (event: Event) => {
         // Show success message
         const successMessage = document.createElement('div');
         successMessage.className = 'video-page__success-message';
-        successMessage.textContent = 'Subscribed to channel';
+        successMessage.textContent = t('channel.subscribeSuccess');
         document.body.appendChild(successMessage);
         
         // Remove the success message after 3 seconds
@@ -115,7 +117,7 @@ const handleSubscribe = async (event: Event) => {
         // Show unsubscribed message
         const successMessage = document.createElement('div');
         successMessage.className = 'video-page__success-message';
-        successMessage.textContent = 'Unsubscribed from channel';
+        successMessage.textContent = t('channel.unsubscribeSuccess');
         document.body.appendChild(successMessage);
         
         // Remove the success message after 3 seconds
@@ -153,7 +155,7 @@ watch(videoId, async (newId, oldId) => {
       await fetchSubscriptionStatus();
       
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to load video';
+      error.value = err instanceof Error ? err.message : t('video.loadError');
     } finally {
       isLoading.value = false;
     }
@@ -177,7 +179,7 @@ const navigateToChannel = (event: Event) => {
     fetch(`${baseUrl}/channels`)
       .then(response => {
         if (!response.ok) {
-          throw new Error('Failed to fetch channels');
+          throw new Error(t('channel.fetchError'));
         }
         return response.json();
       })
@@ -206,14 +208,14 @@ const navigateToChannel = (event: Event) => {
   <div class="video-page">
     <div v-if="isLoading && !video" class="video-page__loading">
       <div class="video-page__loading-spinner"/>
-      <p>Loading video...</p>
+      <p>{{ t('video.loadingVideo') }}</p>
     </div>
     
     <div v-else-if="error" class="video-page__error">
       <div class="video-page__error-icon">!</div>
       <p>{{ error }}</p>
       <button class="video-page__back-button" @click="router.push('/')">
-        Back to Home
+        {{ t('video.goBackToHome') }}
       </button>
     </div>
     
@@ -238,8 +240,8 @@ const navigateToChannel = (event: Event) => {
                     stroke-linejoin="round"/>
             </svg>
           </div>
-          <h3>Video Processing</h3>
-          <p>Your video is currently being processed. This may take a few minutes.</p>
+          <h3>{{ t('video.videoProcessing') }}</h3>
+          <p>{{ t('video.processingDetails') }}</p>
         </div>
         
         <VideoPlayer
@@ -261,7 +263,7 @@ const navigateToChannel = (event: Event) => {
         <div class="video-page__uploader">
           <img
             :src="avatarUrl"
-            alt="Uploader avatar"
+            :alt="t('video.uploaderAvatar')"
             class="video-page__uploader-avatar"
             @click="navigateToChannel"
           />
@@ -270,7 +272,7 @@ const navigateToChannel = (event: Event) => {
               {{ video.username }}
             </h3>
             <div v-if="video.channelId" class="video-page__uploader-subscribers">
-              {{ formatNumber(0) }} subscribers
+              {{ formatNumber(0) }} {{ t('channel.subscribers') }}
             </div>
           </div>
           <button 
@@ -280,12 +282,12 @@ const navigateToChannel = (event: Event) => {
             :disabled="isSubscribing"
             @click="handleSubscribe"
           >
-            {{ isSubscribed ? 'Unsubscribe' : 'Subscribe' }}
+            {{ isSubscribed ? t('video.unsubscribe') : t('video.subscribe') }}
           </button>
         </div>
         
         <div v-if="video.description" class="video-page__description">
-          <h3 class="video-page__description-title">Description</h3>
+          <h3 class="video-page__description-title">{{ t('video.description') }}</h3>
           <p class="video-page__description-text">{{ video.description }}</p>
         </div>
         

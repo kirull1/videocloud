@@ -1,26 +1,26 @@
 <template>
   <div class="channel-page">
-    <div v-if="loading" class="loading">Loading channel data...</div>
+    <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
     
     <div v-else-if="error" class="error">
-      <h2>Error loading channel</h2>
+      <h2>{{ t('channel.fetchError') }}</h2>
       <p>{{ error }}</p>
-      <button @click="loadData">Retry</button>
+      <button @click="loadData">{{ t('common.retry') }}</button>
     </div>
     
     <div v-else-if="channel" class="channel-content">
       <div class="channel-banner" :style="{ backgroundColor: channel.themeColor || '#41A4FF' }">
         <div class="channel-info">
           <div v-if="channel.userId" class="channel-avatar">
-            <img :src="avatarUrl" alt="Channel Avatar"/>
+            <img :src="avatarUrl" alt="{{ t('profile.avatar') }}"/>
           </div>
           <div class="channel-details">
             <h1 class="channel-name">{{ channel.name }}</h1>
             <div v-if="user" class="channel-username">{{ user.username }}</div>
             <div class="channel-stats">
-              <span>{{ formatNumber(channel.subscriberCount) }} subscribers</span>
-              <span>{{ formatNumber(channel.videoCount) }} videos</span>
-              <span>{{ formatNumber(channel.totalViews) }} views</span>
+              <span>{{ formatNumber(channel.subscriberCount) }} {{ t('channel.subscribers') }}</span>
+              <span>{{ formatNumber(channel.videoCount) }} {{ t('video.videos') }}</span>
+              <span>{{ formatNumber(channel.totalViews) }} {{ t('video.views') }}</span>
             </div>
             <button 
               v-if="isAuthenticated && !isChannelOwner" 
@@ -29,10 +29,10 @@
               :disabled="isSubscribing"
               @click="handleSubscribe"
             >
-              {{ isSubscribed ? 'Unsubscribe' : 'Subscribe' }}
+              {{ isSubscribed ? t('channel.unsubscribe') : t('channel.subscribe') }}
             </button>
             <div v-else-if="isChannelOwner" class="owner-indicator">
-              This is your channel
+              {{ t('channel.thisIsYourChannel') }}
             </div>
           </div>
         </div>
@@ -56,14 +56,14 @@
       <div class="tab-content">
         <!-- Videos Tab -->
         <div v-if="activeTab === 'videos'" class="videos-container">
-          <h2>Videos</h2>
+          <h2>{{ t('channel.videos') }}</h2>
           
           <div v-if="loadingVideos" class="loading-videos">
-            Loading videos...
+            {{ t('videoGrid.loading') }}
           </div>
           
           <div v-else-if="videos.length === 0" class="no-videos">
-            <p>No videos found for this channel.</p>
+            <p>{{ t('channel.noVideosYet') }}</p>
           </div>
           
           <div v-else class="video-grid">
@@ -90,23 +90,23 @@
         
         <!-- About Tab -->
         <div v-if="activeTab === 'about'" class="about-container">
-          <h2>About</h2>
+          <h2>{{ t('channel.about') }}</h2>
           
           <div class="about-content">
             <div v-if="channel.description" class="channel-description">
               {{ channel.description }}
             </div>
             <div v-else class="no-description">
-              This channel has no description.
+              {{ t('channel.noDescription') }}
             </div>
             
             <div class="channel-details">
               <div class="detail-item">
-                <strong>Custom URL:</strong> 
-                <span>{{ channel.customUrl || 'Not set' }}</span>
+                <strong>{{ t('channel.customUrl') }}:</strong> 
+                <span>{{ channel.customUrl || t('channel.notSet') }}</span>
               </div>
               <div class="detail-item">
-                <strong>Created:</strong> 
+                <strong>{{ t('channel.channelCreatedOn') }}:</strong> 
                 <span>{{ formatDate(channel.createdAt) }}</span>
               </div>
             </div>
@@ -120,11 +120,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import VideoCard from '@/entities/video/ui/VideoCard/VideoCard.vue';
 import { getAvatarUrl } from '@/shared/lib/avatar';
 import { userStore } from '@/features/auth/model/userStore';
 import { subscriptionApi } from '@/features/subscriptions';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
@@ -147,10 +149,10 @@ const avatarUrl = computed(() => {
   return getAvatarUrl(undefined, user.value.username, 100);
 });
 
-const tabs = [
-  { id: 'videos', label: 'Videos' },
-  { id: 'about', label: 'About' }
-];
+const tabs = computed(() => [
+  { id: 'videos', label: t('channel.videos') },
+  { id: 'about', label: t('channel.about') }
+]);
 
 // Format a number with K and M suffixes
 const formatNumber = (value) => {
@@ -170,11 +172,7 @@ const formatDate = (dateString) => {
   if (!dateString) return '';
   
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return new Intl.DateTimeFormat(navigator.language).format(date);
 };
 
 // Handle video click
@@ -267,7 +265,7 @@ const handleSubscribe = async () => {
       // Show unsubscribed message
       const successMessage = document.createElement('div');
       successMessage.className = 'channel-page__success-message';
-      successMessage.textContent = 'Unsubscribed from channel';
+      successMessage.textContent = t('channel.unsubscribeSuccess');
       document.body.appendChild(successMessage);
       
       // Remove the success message after 3 seconds
@@ -284,7 +282,7 @@ const handleSubscribe = async () => {
       // Show success message
       const successMessage = document.createElement('div');
       successMessage.className = 'channel-page__success-message';
-      successMessage.textContent = 'Subscribed to channel';
+      successMessage.textContent = t('channel.subscribeSuccess');
       document.body.appendChild(successMessage);
       
       // Remove the success message after 3 seconds
@@ -294,7 +292,7 @@ const handleSubscribe = async () => {
     }
   } catch (err) {
     console.error('Failed to subscribe/unsubscribe:', err);
-    subscriptionError.value = err.message || 'Failed to process subscription request';
+    subscriptionError.value = err.message || t('subscriptions.unsubscribeError');
     
     // Show error message
     const errorMessage = document.createElement('div');
@@ -319,7 +317,7 @@ const loadChannelData = async (channelId) => {
     const response = await fetch(`${apiUrl}/channels/${channelId}`);
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch channel: ${response.status}`);
+      throw new Error(`${t('channel.fetchError')}: ${response.status}`);
     }
     
     const data = await response.json();
@@ -365,7 +363,7 @@ const loadChannelVideos = async (channelId) => {
     const response = await fetch(`${apiUrl}/videos?channelId=${channelId}&sortBy=createdAt&sortOrder=DESC`);
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch videos: ${response.status}`);
+      throw new Error(`${t('videoGrid.loadError')}: ${response.status}`);
     }
     
     const responseText = await response.text();
@@ -376,7 +374,7 @@ const loadChannelVideos = async (channelId) => {
       console.log('Videos data:', data);
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError, 'Response text:', responseText);
-      throw new Error('Invalid response format from videos API');
+      throw new Error(t('errors.serverError'));
     }
     
     // Handle different API response formats
@@ -425,7 +423,7 @@ const loadData = async () => {
     const channelId = route.params.id;
     
     if (!channelId) {
-      throw new Error('No channel ID provided');
+      throw new Error(t('errors.notFound'));
     }
     
     // Load channel data
@@ -444,7 +442,7 @@ const loadData = async () => {
     await fetchSubscriberCount();
     
   } catch (err) {
-    error.value = err.message || 'Failed to load channel data';
+    error.value = err.message || t('channel.fetchError');
   } finally {
     loading.value = false;
   }

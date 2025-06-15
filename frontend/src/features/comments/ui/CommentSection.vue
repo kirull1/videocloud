@@ -2,6 +2,9 @@
 import { onMounted, ref, watch, computed } from 'vue';
 import { commentStore, CommentItem, CommentForm } from '@/entities/comment';
 import { userStore } from '@/features/auth/model/userStore';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   videoId: {
@@ -36,7 +39,7 @@ const loadComments = async () => {
     await commentStore.fetchComments(props.videoId);
     console.log('Comments loaded successfully, count:', commentStore.comments.value.length);
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load comments';
+    error.value = err instanceof Error ? err.message : t('comments.loadError');
     console.error('Failed to load comments:', err);
   } finally {
     isLoading.value = false;
@@ -57,16 +60,16 @@ const handleEdit = (commentId: string) => {
 
 // Handle delete comment
 const handleDelete = async (commentId: string) => {
-  if (!confirm('Are you sure you want to delete this comment?')) return;
+  if (!confirm(t('comments.deleteConfirmation'))) return;
   
   try {
     isLoading.value = true;
     await commentStore.deleteComment(commentId);
     // Show a success message
-    showSuccessMessage('Comment deleted successfully');
+    showSuccessMessage(t('comments.commentDeleted'));
   } catch (err) {
     console.error('Failed to delete comment:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to delete comment';
+    error.value = err instanceof Error ? err.message : t('comments.deleteError');
     
     // Scroll to the error message
     setTimeout(() => {
@@ -97,7 +100,7 @@ const showSuccessMessage = (message: string) => {
 const handleCommentSubmit = (isReply = false) => {
   // The comment is already added to the store by the CommentForm component
   if (!isReply) {
-    showSuccessMessage('Comment posted successfully');
+    showSuccessMessage(t('comments.commentPosted'));
   }
   // No success message for replies
 };
@@ -112,38 +115,38 @@ const isAuthenticated = computed(() => {
 
 <template>
   <div class="comment-section">
-    <h2 class="comment-section__title">Comments</h2>
+    <h2 class="comment-section__title">{{ t('comments.comments') }}</h2>
     
     <!-- Show comment form only for authenticated users -->
     <div v-if="isAuthenticated" class="comment-section__form">
       <CommentForm
         :video-id="videoId"
-        placeholder="Add a comment..."
-        submit-label="Comment"
+        :placeholder="t('comments.writeComment')"
+        :submit-label="t('comments.comment')"
         @submit="handleCommentSubmit"
       />
     </div>
     
     <!-- Show login message for unauthenticated users -->
     <div v-else class="comment-section__auth-message">
-      <p>Sign in to leave a comment</p>
+      <p>{{ t('comments.signInToComment') }}</p>
     </div>
     
     <div v-if="isLoading" class="comment-section__loading">
       <div class="comment-section__loading-spinner"/>
-      <p>Loading comments...</p>
+      <p>{{ t('comments.loadingComments') }}</p>
     </div>
     
     <div v-else-if="error" class="comment-section__error">
       <div class="comment-section__error-icon">!</div>
       <p>{{ error }}</p>
       <button class="comment-section__retry-button" @click="loadComments">
-        Retry
+        {{ t('common.retry') }}
       </button>
     </div>
     
     <div v-else-if="commentStore.comments.value.length === 0" class="comment-section__empty">
-      <span>No comments yet</span>
+      <span>{{ t('comments.noComments') }}</span>
     </div>
     
     <div v-else class="comment-section__list">
@@ -159,9 +162,9 @@ const isAuthenticated = computed(() => {
           <CommentForm
             :video-id="videoId"
             :parent-id="parentId"
-            placeholder="Add a reply..."
-            submit-label="Reply"
-            cancel-label="Cancel"
+            :placeholder="t('comments.writeReply')"
+            :submit-label="t('comments.reply')"
+            :cancel-label="t('common.cancel')"
             :show-cancel="true"
             @cancel="onCancel"
             @submit="() => {

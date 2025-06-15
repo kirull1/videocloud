@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { userStore } from '../model/userStore'
@@ -29,6 +29,8 @@ const hasChannel = ref(false)
 const isCheckingChannel = ref(false)
 const isLoadingUser = ref(false)
 const fallbackAvatar = ref(generateAvatarUrl(props.userName || 'User'))
+const menuRef = ref<HTMLElement | null>(null)
+const buttonRef = ref<HTMLElement | null>(null)
 
 // Watch for changes in authentication state
 watch(() => props.isAuthenticated, async (newValue) => {
@@ -70,7 +72,26 @@ onMounted(async () => {
   if (props.isAuthenticated) {
     await checkUserAndChannel();
   }
+  
+  // Add click event listener to document to close menu when clicking outside
+  document.addEventListener('click', handleClickOutside);
 });
+
+onBeforeUnmount(() => {
+  // Remove event listener when component is unmounted
+  document.removeEventListener('click', handleClickOutside);
+});
+
+const handleClickOutside = (event: MouseEvent) => {
+  // Check if click was outside menu and button
+  if (isMenuOpen.value && 
+      menuRef.value && 
+      buttonRef.value && 
+      !menuRef.value.contains(event.target as Node) && 
+      !buttonRef.value.contains(event.target as Node)) {
+    isMenuOpen.value = false;
+  }
+};
 
 const checkUserAndChannel = async () => {
   // Load user profile if not already loaded
@@ -124,7 +145,7 @@ const handleLogout = async () => {
     </div>
     <div v-else class="user-menu">
       
-      <button class="user-button" @click="toggleMenu">
+      <button class="user-button" @click="toggleMenu" ref="buttonRef">
         <img :src="userAvatar"
              alt="User avatar"
              class="avatar"
@@ -133,7 +154,7 @@ const handleLogout = async () => {
       </button>
       
       <transition name="menu-fade">
-        <div v-if="isMenuOpen" class="menu">
+        <div v-if="isMenuOpen" class="menu" ref="menuRef">
           <router-link to="/profile" class="menu-item" @click="toggleMenu">{{ t('common.profile') }}</router-link>
           <router-link to="/subscriptions" class="menu-item" @click="toggleMenu">{{ t('channel.subscribed') }}</router-link>
           
@@ -202,7 +223,6 @@ const handleLogout = async () => {
   gap: 1rem;
 }
 
-
 .user-button {
   display: flex;
   align-items: center;
@@ -211,12 +231,15 @@ const handleLogout = async () => {
   border: none;
   background: none;
   cursor: pointer;
+  position: relative;
+  z-index: 1;
 }
 
 .avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
+  object-fit: cover;
 }
 
 .username {
@@ -230,9 +253,11 @@ const handleLogout = async () => {
   margin-top: 0.5rem;
   background-color: white;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  min-width: 150px;
-  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1000;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .menu-item {
@@ -240,7 +265,14 @@ const handleLogout = async () => {
   padding: 0.75rem 1rem;
   text-decoration: none;
   color: #333;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
 }
 
 .menu-item:hover {
@@ -254,6 +286,7 @@ const handleLogout = async () => {
   background: none;
   cursor: pointer;
   color: #dc3545;
+  font-weight: 500;
 }
 
 .logout:hover {
@@ -266,8 +299,8 @@ const handleLogout = async () => {
 }
 
 .create-channel:hover {
-  background-color: #28a745;
-  color: white;
+  background-color: #f0fff4;
+  color: #28a745;
 }
 
 /* Menu animation */
@@ -285,6 +318,19 @@ const handleLogout = async () => {
 @media (max-width: 768px) {
   .username {
     display: none;
+  }
+  
+  .menu {
+    right: -10px;
+  }
+  
+  .auth-buttons {
+    gap: 0.5rem;
+  }
+  
+  .auth-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 14px;
   }
 }
 </style>

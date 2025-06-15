@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { subscriptionApi } from '../';
 import { getAvatarUrl } from '@/shared/lib/avatar';
 
 const router = useRouter();
+const { t } = useI18n();
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 const subscriptions = ref<any[]>([]);
@@ -18,7 +20,7 @@ const loadSubscriptions = async () => {
     const response = await subscriptionApi.getSubscribedChannels();
     subscriptions.value = response.items;
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load subscriptions';
+    error.value = err instanceof Error ? err.message : t('subscriptions.loadError');
   } finally {
     isLoading.value = false;
   }
@@ -43,7 +45,7 @@ const unsubscribe = async (channelId: string, index: number) => {
     // Show success message
     const successMessage = document.createElement('div');
     successMessage.className = 'subscription-list__success-message';
-    successMessage.textContent = 'Unsubscribed from channel';
+    successMessage.textContent = t('subscriptions.unsubscribeSuccess');
     document.body.appendChild(successMessage);
     
     // Remove the success message after 3 seconds
@@ -51,7 +53,7 @@ const unsubscribe = async (channelId: string, index: number) => {
       document.body.removeChild(successMessage);
     }, 3000);
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to unsubscribe';
+    error.value = err instanceof Error ? err.message : t('subscriptions.unsubscribeError');
   }
 };
 
@@ -61,25 +63,25 @@ onMounted(loadSubscriptions);
 
 <template>
   <div class="subscription-list">
-    <h2 class="subscription-list__title">Your Subscriptions</h2>
+    <h2 class="subscription-list__title">{{ t('subscriptions.yourSubscriptions') }}</h2>
     
     <div v-if="isLoading" class="subscription-list__loading">
       <div class="subscription-list__loading-spinner"/>
-      <p>Loading subscriptions...</p>
+      <p>{{ t('subscriptions.loadingSubscriptions') }}</p>
     </div>
     
     <div v-else-if="error" class="subscription-list__error">
       <div class="subscription-list__error-icon">!</div>
       <p>{{ error }}</p>
       <button class="subscription-list__retry-button" @click="loadSubscriptions">
-        Retry
+        {{ t('common.retry') }}
       </button>
     </div>
     
     <div v-else-if="subscriptions.length === 0" class="subscription-list__empty">
-      <p>You haven't subscribed to any channels yet.</p>
+      <p>{{ t('subscriptions.noSubscriptions') }}</p>
       <button class="subscription-list__browse-button" @click="router.push('/')">
-        Browse Channels
+        {{ t('subscriptions.exploreChannels') }}
       </button>
     </div>
     
@@ -98,7 +100,7 @@ onMounted(loadSubscriptions);
           <div class="subscription-list__info">
             <h3 class="subscription-list__name">{{ subscription.channelName }}</h3>
             <p class="subscription-list__date">
-              Subscribed on {{ new Date(subscription.subscribedAt).toLocaleDateString() }}
+              {{ t('subscriptions.subscribedOn') }} {{ new Date(subscription.subscribedAt).toLocaleDateString() }}
             </p>
           </div>
         </div>
@@ -107,7 +109,7 @@ onMounted(loadSubscriptions);
           class="subscription-list__unsubscribe-button" 
           @click="unsubscribe(subscription.channelId, index)"
         >
-          Unsubscribe
+          {{ t('channel.unsubscribe') }}
         </button>
       </div>
     </div>

@@ -440,7 +440,13 @@ h1 {
 
 .avatar-section {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+h3 {
+  align-self: flex-start;
+  margin-bottom: 1rem;
 }
 
 .avatar-container {

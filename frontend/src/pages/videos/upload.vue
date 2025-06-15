@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { VideoUploadForm } from '@/features/video-upload/ui';
 import { channelStore } from '@/entities/channel';
 
 const router = useRouter();
+const { t } = useI18n();
 const isLoading = ref(true);
 const hasChannel = ref(false);
 
@@ -33,15 +35,15 @@ onMounted(async () => {
   <div class="upload-page">
     <div v-if="isLoading" class="loading">
       <div class="loading-spinner"/>
-      <p>Checking channel status...</p>
+      <p>{{ t('video.checkingChannelStatus') }}</p>
     </div>
     <VideoUploadForm v-else-if="hasChannel" />
     <!-- This should never show as we redirect, but just in case -->
     <div v-else class="no-channel">
-      <h2>You need to create a channel first</h2>
-      <p>You'll be redirected to the channel creation page...</p>
+      <h2>{{ t('video.needChannelFirst') }}</h2>
+      <p>{{ t('video.redirectingToChannelCreation') }}</p>
       <router-link to="/channel/create" class="create-channel-btn">
-        Create Channel
+        {{ t('channel.createChannel') }}
       </router-link>
     </div>
   </div>

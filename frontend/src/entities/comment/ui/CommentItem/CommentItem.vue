@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Comment } from '../../model/types';
 import { commentStore } from '../../model/commentStore';
 import { userStore } from '@/features/auth/model/userStore';
+
+const { t } = useI18n();
 
 const props = defineProps({
   comment: {
@@ -35,15 +38,49 @@ const formattedDate = computed(() => {
     const diffMonth = Math.floor(diffDay / 30);
     const diffYear = Math.floor(diffDay / 365);
 
-    if (diffSec < 60) return 'just now';
-    if (diffMin < 60) return `${diffMin} ${diffMin === 1 ? 'minute' : 'minutes'} ago`;
-    if (diffHour < 24) return `${diffHour} ${diffHour === 1 ? 'hour' : 'hours'} ago`;
-    if (diffDay < 30) return `${diffDay} ${diffDay === 1 ? 'day' : 'days'} ago`;
-    if (diffMonth < 12) return `${diffMonth} ${diffMonth === 1 ? 'month' : 'months'} ago`;
-    return `${diffYear} ${diffYear === 1 ? 'year' : 'years'} ago`;
+    // Простое форматирование без использования плюрализации
+    if (diffSec < 60) return t('comments.justNow');
+    
+    // Для русского языка используем функцию для правильного склонения
+    const formatRussianTime = (count: number, one: string, few: string, many: string) => {
+      // Правила склонения для русского языка
+      const lastDigit = count % 10;
+      const lastTwoDigits = count % 100;
+      
+      if (lastDigit === 1 && lastTwoDigits !== 11) {
+        return `${count} ${one} назад`;
+      } else if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) {
+        return `${count} ${few} назад`;
+      } else {
+        return `${count} ${many} назад`;
+      }
+    };
+    
+    if (diffMin < 60) {
+      if (diffMin === 1) return t('comments.minuteAgo');
+      return formatRussianTime(diffMin, 'минуту', 'минуты', 'минут');
+    }
+    
+    if (diffHour < 24) {
+      if (diffHour === 1) return t('comments.hourAgo');
+      return formatRussianTime(diffHour, 'час', 'часа', 'часов');
+    }
+    
+    if (diffDay < 30) {
+      if (diffDay === 1) return t('comments.dayAgo');
+      return formatRussianTime(diffDay, 'день', 'дня', 'дней');
+    }
+    
+    if (diffMonth < 12) {
+      if (diffMonth === 1) return t('comments.monthAgo');
+      return formatRussianTime(diffMonth, 'месяц', 'месяца', 'месяцев');
+    }
+    
+    if (diffYear === 1) return t('comments.yearAgo');
+    return formatRussianTime(diffYear, 'год', 'года', 'лет');
   } catch (error) {
     console.error('Error formatting date:', error);
-    return 'some time ago';
+    return t('comments.someTimeAgo');
   }
 });
 
@@ -86,8 +123,8 @@ const saveEdit = async () => {
     console.error('Failed to update comment:', error);
     
     // Show a user-friendly error message
-    const errorMessage = error instanceof Error ? error.message : 'Failed to update comment';
-    alert(`Error: ${errorMessage}. Please try again.`);
+    const errorMessage = error instanceof Error ? error.message : t('comments.updateError');
+    alert(`${t('common.error')}: ${errorMessage}. ${t('comments.tryAgain')}`);
   }
 };
 
@@ -105,7 +142,7 @@ const toggleReplies = async () => {
       console.error('Failed to fetch replies:', error);
       
       // Show an alert with a more user-friendly message
-      alert('Could not load replies. Please try again later.');
+      alert(t('comments.loadRepliesError'));
       
       // Hide the replies section since we couldn't load them
       showReplies.value = false;
@@ -136,8 +173,8 @@ const handleDelete = () => {
     console.error('Failed to delete comment:', error);
     
     // Show a user-friendly error message
-    const errorMessage = error instanceof Error ? error.message : 'Failed to delete comment';
-    alert(`Error: ${errorMessage}. Please try again.`);
+    const errorMessage = error instanceof Error ? error.message : t('comments.deleteError');
+    alert(`${t('common.error')}: ${errorMessage}. ${t('comments.tryAgain')}`);
   }
 };
 
@@ -176,6 +213,20 @@ const handleImageError = (event: Event): void => {
     target.src = `https://api.dicebear.com/9.x/thumbs/svg?seed=${username}`;
   }
 };
+
+const formatReplyCount = (count: number) => {
+  // Правила склонения для русского языка
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+  
+  if (lastDigit === 1 && lastTwoDigits !== 11) {
+    return `Показать ${count} ответ`;
+  } else if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) {
+    return `Показать ${count} ответа`;
+  } else {
+    return `Показать ${count} ответов`;
+  }
+};
 </script>
 
 <template>
@@ -183,7 +234,7 @@ const handleImageError = (event: Event): void => {
     <div class="comment__avatar">
       <img 
         :src="getCommentAvatarUrl(comment.user)"
-        :alt="comment.user ? comment.user.username : 'User'" 
+        :alt="comment.user ? comment.user.username : t('comments.user')" 
         class="comment__avatar-img"
         @error="handleImageError"
       />
@@ -196,20 +247,14 @@ const handleImageError = (event: Event): void => {
       </div>
       
       <div v-if="!isEditing" class="comment__text">
-        <span v-if="comment.user">
-          <router-link 
-            :to="`/channel/${comment.userId}`" 
-            class="comment__mention"
-          >@{{ comment.user.username }},</router-link> {{ comment.content }}
-        </span>
-        <span v-else>{{ comment.content }}</span>
+        <span>{{ comment.content }}</span>
       </div>
       
       <div v-else class="comment__edit-form">
         <textarea 
           v-model="editContent"
           class="comment__edit-textarea"
-          placeholder="Edit your comment..."
+          :placeholder="t('comments.editYourComment')"
           rows="3"
         />
         
@@ -218,25 +263,25 @@ const handleImageError = (event: Event): void => {
             class="comment__button comment__button--cancel"
             @click="cancelEditing"
           >
-            Cancel
+            {{ t('common.cancel') }}
           </button>
           <button 
             class="comment__button comment__button--save"
             :disabled="editContent.trim() === ''"
             @click="saveEdit"
           >
-            Save
+            {{ t('common.save') }}
           </button>
         </div>
       </div>
       
       <div class="comment__actions">
         <button 
-          v-if="isAuthenticated"
+          v-if="isAuthenticated && !isReply"
           class="comment__action-button"
           @click="toggleReplyForm"
         >
-          Reply
+          {{ t('comments.reply') }}
         </button>
         
         <button 
@@ -244,7 +289,7 @@ const handleImageError = (event: Event): void => {
           class="comment__action-button"
           @click="handleEdit"
         >
-          Edit
+          {{ t('comments.edit') }}
         </button>
         
         <button 
@@ -252,7 +297,7 @@ const handleImageError = (event: Event): void => {
           class="comment__action-button comment__action-button--delete"
           @click="handleDelete"
         >
-          Delete
+          {{ t('comments.delete') }}
         </button>
       </div>
       
@@ -265,14 +310,14 @@ const handleImageError = (event: Event): void => {
           class="comment__replies-button"
           @click="toggleReplies"
         >
-          <span v-if="!showReplies">Show {{ replyCount }} {{ (replyCount === 1) ? 'reply' : 'replies' }}</span>
-          <span v-else>Hide replies</span>
+          <span v-if="!showReplies">{{ formatReplyCount(replyCount) }}</span>
+          <span v-else>{{ t('comments.hideReplies') }}</span>
         </button>
       </div>
       
       <div v-if="showReplies && !isReply" class="comment__replies">
         <div v-if="isLoadingReplies" class="comment__replies-loading">
-          Loading replies...
+          {{ t('comments.loadingReplies') }}
         </div>
         
         <template v-else>
