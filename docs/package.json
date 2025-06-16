@@ -6,6 +6,7 @@
     "docusaurus": "docusaurus",
     "start": "docusaurus start --config ./docusaurus.config.js",
     "build": "docusaurus build --config ./docusaurus.config.js",
+    "release": "pnpm run build && node ../devops/docs/release.js",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
