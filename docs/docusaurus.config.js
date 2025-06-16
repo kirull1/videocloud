@@ -45,10 +45,7 @@ const config = {
           routeBasePath: '/',
           path: 'content',
           editUrl: ({locale, versionDocsDirPath, docPath}) => {
-            if (locale !== 'en') {
-              return `https://crowdin.com/project/videocloud/${locale}`;
-            }
-            return `https://github.com/yourusername/video-cloud/edit/main/${versionDocsDirPath}/${docPath}`;
+            return `https://github.com/kirull1/video-cloud/edit/main/docs/${versionDocsDirPath}/${docPath}`;
           },
           include: ['**/*.{md,mdx}'],
           exclude: [

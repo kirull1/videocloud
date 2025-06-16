@@ -22,7 +22,7 @@ sidebar_position: 1
 ### 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/yourusername/video-cloud.git
+git clone https://github.com/kirull1/video-cloud.git
 cd video-cloud
 ```
 

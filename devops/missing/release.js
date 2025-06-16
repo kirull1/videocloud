@@ -12,23 +12,19 @@ let s3 = new (EasyYandexS3.default)({
 });
 
 export async function main() {
-  console.log("‼️ START RELEASE DOCS")
-
-  console.log("CLEAN UP BUCKET")
-  await s3.CleanUp();
-  console.log("CLEAN UP BUCKET IS END")
+  console.log("‼️ START RELEASE MISSING")
 
   let upload = await s3.Upload(
     {
-      path: resolve('./build'),
+      path: resolve('./dist'),
       save_name: true
     },
-    '/'
+    '/error'
   );
   
   console.log(upload);
 
-  console.log("‼️ END RELEASE DOCS")
+  console.log("‼️ END RELEASE MISSING")
 }
 
 main();
